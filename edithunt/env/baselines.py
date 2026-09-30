@@ -92,10 +92,12 @@ def agent_careful(env: ToolEnv, steps: int = 50, seed: int = 0, **_) -> None:
     others = [s for s in study_states(min_cities=5) if s not in (d["source"], d["target"])]
     keep = [x for st in rng.sample(others, 6) for x in CITIES[st][:3]]
     for _ in range(6):  # drop cities the tools refuse (grader-only cities), as an agent would
-        kw = dict(name="g", layer=L, position="city_last", dev_cities=src, templates=tpls, steps=steps,
-                  keep_cities=keep[:4], max_norm=nrm)
-        if c.get("preserve_state"):  # hop-2 recipe (Phase 3 hop2n): source cities keep their state
-            kw["keep_state_cities"] = d["dev_source_cities"]
+        if c.get("preserve_state"):  # v2 / hop-2 recipe (Phase 3 hop2n): source cities keep their state
+            kw = dict(name="g", layer=L, position="city_last", dev_cities=src, templates=tpls, steps=steps,
+                      keep_cities=keep[:4], max_norm=nrm, keep_state_cities=d["dev_source_cities"])
+        else:  # v1 recipe: best on medium in the first calibration (lower country/generic KL than v2)
+            kw = dict(name="g", layer=L, position="city_last", dev_cities=src, templates=tpls[:1], steps=30,
+                      keep_cities=keep[:8], max_norm=nrm)
         o = json.loads(env.call("optimize_vector", kw))
         if "error" not in o:
             break

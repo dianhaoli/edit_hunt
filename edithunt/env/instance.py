@@ -167,7 +167,7 @@ def validate_instance(S: Subject, inst: Instance, handoff: int, threshold: float
 
 
 def generate(S: Subject, tier: str, n: int, seed: int, handoff: int, valid: dict | None = None,
-             pairs: list[tuple[str, str]] | None = None, validate: bool = True, max_tries: int = 30,
+             pairs: list[tuple[str, str]] | None = None, validate: bool = True, max_tries: int = 80,
              bs: int = 16, max_cities: int | None = None) -> list[Instance]:
     valid = valid if valid is not None else load_validity(S.name)
     rng = random.Random(seed)

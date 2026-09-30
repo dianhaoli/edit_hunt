@@ -1,4 +1,6 @@
-# EditHunt: progress report (as of 2026-09-30)
+# EditHunt: progress report (as of 2026-09-30, evening)
+
+**Start with `FINDINGS.md`** (2-page summary, 3 figures in `results/figures/`).
 
 This covers what has been built, what has been measured, what it means, and what remains.
 All numbers below are real measurements from this repo. Nothing is extrapolated.
@@ -13,11 +15,11 @@ Every rate is given with its sample size n and a 95% Wilson confidence interval.
 | Core library (dataset, hooks, exact answer scoring, batching) | **Done**, verified with explicit correctness checks |
 | Phase 0: which prompts the subject model already answers correctly | **Done** for Qwen2.5-1.5B (rerun in bf16 on A10G, 2026-09-30) |
 | Phase 1: replicate and scale experiments A and B (does a "state direction" exist?) | **Done** (1.5B, 30 pairs): premise holds, mean-diff flip 0.82-0.89 over L6-21, handoff at L22. See LAB_NOTEBOOK 2026-09-30 |
-| Phase 2 (meaning & specificity) | **Done** (1.5B, 30 pairs): a state variable (STATE_Q flips 0.97-0.98 at L8-21); main collateral damage is third-state leakage 0.16-0.24. Country probe redesigned (state-entangled) |
+| Phase 2 (meaning & specificity) | **Done** (1.5B, 3B, gemma, 7B; 30 pairs each): a state variable (STATE_Q flips 0.97-0.98 at L8-21); main collateral damage is third-state leakage 0.16-0.24. Country probe redesigned (state-entangled) |
 | Phase 3 (hop separation) | **Done** (1.5B, 12 pairs, n=42): achievable only deliberately. Norm-capped city-token vector trained with a keep-state term: HOP2 0.98-1.00 (0.93-1.00 on unseen state-question wording). Mean-diff ≤0.02; naive capped gradient 0.24 at L8 but 0.86 at L20, so the hard tier needs a layer ceiling around 8 |
-| Phase 4 (difficulty ladder) | **Running** (1.5B, 12 pairs), relaunched after a crash at pair 9 (empty-template bug; now fixed, with per-pair checkpoints). Debug artifacts fixed: DAS undertrained; uncapped C2 overwrites the residual |
-| Phase 5 (other models) | **In progress.** Phase 0+1 done on Qwen2.5-3B and gemma-2-2b: premise holds on both (mean-diff 0.86 [0.78,0.91] n=105 / 0.91 [0.84,0.95] n=104; handoff at 0.86 / 0.69 of depth). Phase 2 running on both. 7B queued after Phase 4. Llama gated; OLMo-2-1B and SmolLM2-1.7B downloaded as fallbacks |
-| Phase 6 (environment prototype: grader, tools, Claude agent loop) | **Built and smoke-tested** on Qwen2.5-0.5B. Tier settings are placeholders. Grader still uses the old full-vocab country KL and has no leakage term; to update from Phase 4. ANT_KEY now available; **real Claude API not called yet** |
+| Phase 4 (difficulty ladder) + 4b | **Done** (1.5B, 12 pairs): leakage separates methods. Gradient 'output target' edits leak 56-100%; mean-diff 14-24%; DAS ≈0 but flips ≤0.71; leak-aware gradient (4b) flips 0.83-0.97 on the unseen template with 7-12% leakage |
+| Phase 5 (other models) | **Phases 0-2 done** on Qwen2.5-3B, gemma-2-2b, Qwen2.5-7B: premise and 'state variable' meaning hold in all four models; handoff at 0.69-0.86 of depth. Ladder/hop separation only on 1.5B |
+| Phase 6 (environment) | **Rebuilt from data**: leakage term, P(US) country probe, tiers easy/medium/hard, keep_cities/keep_state_cities tool options. Scripted calibration: medium mean-diff 1/7, naive gradient 0/7, careful 3/7; hard 0/8, 0/8, 3/8. Larger calibration (seed 1) running. **Claude run blocked: API credit balance too low** |
 
 **Headline so far (Phase 0):** the zero-shot failure in the original notebook ("only 4/16 Texas cities
 correct") is mostly an artifact of how the answer was read. When you ask "which of the 50 state capitals

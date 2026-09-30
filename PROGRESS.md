@@ -14,9 +14,9 @@ Every rate is given with its sample size n and a 95% Wilson confidence interval.
 | Phase 0: which prompts the subject model already answers correctly | **Done** for Qwen2.5-1.5B (rerun in bf16 on A10G, 2026-09-30) |
 | Phase 1: replicate and scale experiments A and B (does a "state direction" exist?) | **Done** (1.5B, 30 pairs): premise holds, mean-diff flip 0.82-0.89 over L6-21, handoff at L22. See LAB_NOTEBOOK 2026-09-30 |
 | Phase 2 (meaning & specificity) | **Done** (1.5B, 30 pairs): a state variable (STATE_Q flips 0.97-0.98 at L8-21); main collateral damage is third-state leakage 0.16-0.24. Country probe redesigned (state-entangled) |
-| Phases 3–4 (hop separation, difficulty ladder) | Scripts written; Phase 4 ndev pooling fixed |
-| Phase 5 (other models) | Not started. 3B is downloaded. 7B, Gemma and Llama are blocked on this laptop (see §6) |
-| Phase 6 (environment prototype: grader, tools, Claude agent loop) | **Built and smoke-tested** on Qwen2.5-0.5B. Tier settings are placeholders. **The real Claude API has not been called yet** |
+| Phases 3–4 (hop separation, difficulty ladder) | **Running** (1.5B, 12 pairs each). Debug exposed two artifacts, now fixed: DAS undertrained at 10 steps; uncapped C2 overwrites the residual (abs(v)≈15× mean-diff). Added norm-capped C2, third-state leakage, held-out state-belief wording. See LAB_NOTEBOOK 2026-09-30 session 2 |
+| Phase 5 (other models) | Not started. On the A10G: Qwen2.5-3B, gemma-2-2b (HF_TOKEN set), Qwen2.5-7B downloading; loader now uses device_map so 7B fits past 15 GB host RAM |
+| Phase 6 (environment prototype: grader, tools, Claude agent loop) | **Built and smoke-tested** on Qwen2.5-0.5B. Tier settings are placeholders. Grader still uses the old full-vocab country KL and has no leakage term; to update from Phase 4. ANT_KEY now available; **real Claude API not called yet** |
 
 **Headline so far (Phase 0):** the zero-shot failure in the original notebook ("only 4/16 Texas cities
 correct") is mostly an artifact of how the answer was read. When you ask "which of the 50 state capitals

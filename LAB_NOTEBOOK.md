@@ -142,3 +142,16 @@ variable and do not leak. A grader that includes third-state leakage would separ
    penalized, uncapped/answer-direction C2 fails anyway; decide after Phase 4.
 4. Order: Phase 4 + Phase 3 (running concurrently on the A10G) -> Phase 5 (3B, gemma-2-2b, 7B) -> set tiers
    + grader in edithunt/env -> Claude calibration (ANT_KEY now in .env) -> FINDINGS.md. Deadline Oct 8.
+
+### Phase 5 setup + Phase 0 on new models (A10G, bf16)
+- Loader: `device_map="cuda"` (host RAM is 15 GB; 7B bf16 is 15 GB). gemma-2: forced `attn_implementation="eager"`
+  (soft-capping). Check on 40 cities, fs1: sdpa vs eager argmax agree 40/40, max score diff 0.31 nats.
+- Access: gemma-2-2b granted by Dan 2026-09-30 (was 403). Llama-3.2-1B/3B still gated (403). Ungated
+  fallbacks downloaded: OLMo-2-0425-1B, SmolLM2-1.7B. Qwen2.5-3B, Qwen2.5-7B downloaded.
+- Phase 0 validity (n=343 cities, argmax over 50 capitals; greedy-correct in brackets):
+| model | zs1 | fs1 | fs2 | ho_fs | ho_zs | state_q |
+|---|---|---|---|---|---|---|
+| Qwen2.5-1.5B (for reference) | 0.84 | 0.91 | — | — | — | 0.99 |
+| Qwen2.5-3B | 0.87 (0.13) | 0.90 (0.84) | 0.91 | 0.82 | 0.86 (0.36) | 1.00 |
+| gemma-2-2b (eager) | 0.94 (0.77) | 0.96 (0.94) | 0.84 | 0.90 | 0.90 (0.50) | 0.99 |
+  gemma-2-2b answers zero-shot far more often (greedy-correct zs1 0.77 vs 0.13 for Qwen-3B).

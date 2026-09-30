@@ -37,7 +37,11 @@ class Subject:
             dtype = torch.bfloat16 if self.device == "cuda" else torch.float32
         self.dtype = dtype
         self.tok = AutoTokenizer.from_pretrained(name)
-        self.model = AutoModelForCausalLM.from_pretrained(name, dtype=dtype).to(self.device).eval()
+        # cuda: load straight onto the GPU (7B bf16 = 15 GB would not fit through 15 GB host RAM)
+        kw = dict(device_map=self.device) if self.device == "cuda" else {}
+        if "gemma-2" in name.lower():  # logit soft-capping is only exact in eager attention (sdpa: argmax
+            kw["attn_implementation"] = "eager"  # agreed 40/40 cities but scores differed by up to 0.3 nats)
+        self.model = AutoModelForCausalLM.from_pretrained(name, dtype=dtype, **kw).to(self.device).eval()
         for p in self.model.parameters():
             p.requires_grad_(False)
         self.layers = self.model.model.layers

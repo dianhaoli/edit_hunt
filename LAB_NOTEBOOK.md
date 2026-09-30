@@ -332,3 +332,11 @@ capital. Leakage is evaluated on 2 further states disjoint from the keep states 
   C2nk L15 ≈ 0.97×0.79×0.86 ≈ 0.66; L8 ≈ 0.83×0.81×0.87 ≈ 0.58; C1 L8 ≈ 0.66×0.64×0.95 ≈ 0.40;
   C2n L8 ≈ 0.97×0.33×0.80 ≈ 0.26; DAS L5 ≈ 0.52×0.96×0.97 ≈ 0.48. Separation exists but the margin is modest
   (careful ~0.6-0.66 vs best naive ~0.48); per-instance variance will matter. To be measured with the real grader.
+
+### Phase 5 — Phase 0/1 on Qwen2.5-7B (28 layers, bf16, device_map)
+- Phase 0 (n=343): fs1 valid 0.96 (greedy-correct 0.58: 7B often starts with another token on fs1), ho_fs 0.94
+  (greedy 0.85), state_q 0.99.
+- Phase 1, 30 pairs, n=109 held-out on fs1: mean-diff flip L7 0.89, **L9-20 0.83-0.91** (L12 0.89 [0.82,0.94]),
+  L21 0.66, L22 0.15, L23+ 0.00. ho_fs 0.81-0.87 over L7-20 (better held-out-template generalisation than 1.5B, 0.66-0.72).
+  Full paste at city: ≥0.93 L3-18; at final: 0.57 at L22, 1.00 from L23. **Handoff L22 = 0.79 of depth, identical to 1.5B**
+  (both 28 layers). Random ≤0.01; shuffled ≤0.14; transfer to third states 0.19-0.24 (lower than 1.5B/3B/gemma ~0.3).

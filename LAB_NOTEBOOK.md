@@ -203,3 +203,34 @@ HOP2 = capital flips to target AND STATE_Q still answers the source state. HOP2h
 - Transfer to third-state cities is ~0.3 in all three models: the vector is partly "target" and partly "not-source".
 - Qwen-3B shuffled control peaks at 0.29 (L18, one layer); elsewhere ≤0.14. Same explanation as 1.5B (unbalanced
   random splits carry a scaled copy of the real vector); still unverified against group composition.
+
+### Phase 5 — Phase 2 (meaning & specificity) on Qwen2.5-3B and gemma-2-2b, 30 pairs, n=104-105 held-out
+Layers chosen per model from its Phase 1 curve (the 1.5B default list would have missed most of 3B's band; a first
+launch with that list was killed and relaunched). "rand" = random norm-matched vector at the same layer.
+| model | L | capital flip | state -> target | binKL country (rand) | KL generic (rand) | 3rd-state -> target |
+|---|---|---|---|---|---|---|
+| 3B | 3 | 0.04 | 0.10 | 0.98 (0.31) | 0.034 (0.027) | 0.03 |
+| 3B | 8 | 0.62 [0.52,0.71] | 0.69 | 0.30 (0.18) | 0.042 (0.048) | 0.28 |
+| 3B | 12 | 0.86 [0.78,0.91] | 0.97 [0.92,0.99] | 0.10 (0.08) | 0.019 (0.030) | 0.32 |
+| 3B | 20 | 0.84 [0.76,0.90] | 0.98 | 0.08 (0.02) | 0.004 (0.011) | 0.32 |
+| 3B | 30 | 0.64 | 0.94 | 0.03 (0.003) | 0.002 (0.001) | 0.14 |
+| 3B | 31 (handoff) | 0.11 | 0.00 | 0.005 | 0.002 | 0.01 |
+| gemma | 1 | 0.35 [0.26,0.44] | 0.38 | 0.32 (0.11) | 0.015 (0.016) | 0.09 |
+| gemma | 3 | 0.75 [0.66,0.82] | 0.79 | 0.13 (0.06) | 0.013 (0.016) | 0.22 |
+| gemma | 8 | 0.91 [0.84,0.95] | 0.96 [0.91,0.98] | 0.034 (0.013) | 0.005 (0.006) | 0.19 |
+| gemma | 12 | 0.90 | 0.96 | 0.028 (0.006) | 0.003 (0.003) | 0.17 |
+| gemma | 15 / 17 | 0.60 / 0.53 | 0.91 / 0.91 | 0.015 (0.005) | 0.002 (0.002) | 0.04 / 0.03 |
+| gemma | 18 (handoff) | 0.00 | 0.04 | 0.006 | 0.002 | 0.00 |
+Random controls: capital flip ≤0.01 and state->target 0.00 at every layer, 3rd-state->target 0.00 (both models).
+- **Meaning replicates: a state variable in all three models.** State-question flips ≥ capital flips at every mid layer
+  (3B L12 0.97 vs 0.86; gemma L8 0.96 vs 0.91).
+- **Gemma L15-17: the state answer still flips (0.91) but the capital only 0.53-0.60, with almost no leakage (0.03).**
+  Near the handoff the city-token state variable is still read by the state question but only partly by the capital
+  prompt. Worth one look in the hop-separation analysis on Gemma.
+- **Leakage is the main collateral damage in all three models**, and largest in 3B (0.31-0.34 vs 1.5B 0.16-0.24,
+  gemma 0.17-0.24). Generic-text KL is at the random level everywhere in the band.
+- **Early layers are fragile in Qwen**: 3B L3-5 cuts P(US) 0.88->0.52 (random 0.73), binKL 0.9-1.0. Gemma is much less so.
+- **Norm sweep has a sharp threshold** (both models): 0.5x flips only 0.16-0.18, 1x 0.86-0.91, 2x 0.90-0.96, and 2x
+  doubles leakage (3B L12 0.62, gemma L3/L8 0.66-0.67). Same shape as 1.5B.
+- Zero-shot country probe (for reference only) is even more state-entangled on gemma: full-vocab KL 3.2-3.9 for working
+  edits vs 0.04-0.07 random. Confirms the switch to the few-shot P(US) probe was necessary.

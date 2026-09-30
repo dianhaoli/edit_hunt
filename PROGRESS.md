@@ -254,3 +254,22 @@ Notes for resuming:
    in `edithunt/env/instance.py` from that data, and rebalance the KL terms.
 4. Phase 5 on 3B, 7B and Gemma.
 5. One small Claude Sonnet 5.5 calibration run per tier. Write `FINDINGS.md` with the three plots.
+
+---
+
+## 9. Phase 7: task suite / difficulty map (from 2026-09-30)
+- **Direction:** breadth. 7 interp task types on shared infra, each with its own generator, tool subset, grader, and a
+  reference solver that runs through the tools. The map measures Claude Sonnet 5.5 (cap $4.30 cumulative) and
+  gpt-6.1-sol (cap $8.00): 8 instances per task, plus 2 black-box episodes on the report tasks.
+- **Status:**
+  - Tools reworked: `extra_examples` replaces the named keep_* options.
+  - Hidden readouts validated: abbreviations 0.97 / 0.93.
+  - T5 erase dropped, since no tool-reproducible reference exists (see notebook).
+  - Instances: T1, T3, T4 and T6 done; T2 and T7 generating.
+  - Calibration batch 1 (T1/T3/T4 ×4) is queued.
+- **Next:**
+  - Batch 2: all tasks up to n=8.
+  - `experiments/suite_baselines.py` (scripted naive markers).
+  - `experiments/task_map.py` → `results/task_map.json` + `fig4_task_map.png`.
+  - FINDINGS "Task difficulty map" section with a transcript excerpt per task.
+  - Stop adding tasks on Oct 5.

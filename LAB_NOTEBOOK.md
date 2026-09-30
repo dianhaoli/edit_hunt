@@ -440,3 +440,91 @@ Observations:
 - n=2 per tier on hand-picked solvable instances: this is a cost/behaviour probe, not a pass-rate estimate.
 Remaining credit: ~$4.67 of $5 by our cost model (not checked against the Console). At ~$0.05/episode, ~20
 episodes per tier (60 total) would cost ~$3.
+
+## Phase 7 — breadth: a task suite on shared infra (2026-09-30)
+
+### Direction change (user decision)
+Stop rescuing the medium tier. Build ~7 interp task types on the same model/data/hooks/scoring code and measure where
+Claude Sonnet 5.5 lands on each (a difficulty map), plus gpt-6.1-sol as a second agent (user added an OpenAI key,
+~$9 credit). Rules: 8 random validated instances per task; every task has a reference solver that runs THROUGH the
+agent tools (instance kept only if reference reward ≥ 0.5); a black-box (prompting-only) check; **no tuning of tasks
+after seeing agent results**. Proposed changes go in a list instead.
+
+### Tool changes (all tasks)
+- `optimize_vector`: removed `keep_cities`, `keep_state_cities` and `keep_weight`, which were named fixes. Added generic
+  `extra_examples=[{template, city, answer, weight}]` (weighted NLL of the answer's first token, and a negative
+  weight pushes an answer down). `max_norm` stays. The objective `dev_cities × templates → target capital` is only
+  available in tasks that have a target capital.
+- The system prompt is now generic. The task text and reward formula come from `describe_task`, which never describes the method.
+- New pieces:
+  - Projection edits (`kind: "proj"`, h ← h − P(h − center)).
+  - A planted-edit mode (the detective task).
+  - `act_diff` (planted − clean residual per city).
+  - `cache_mean(layers=[...])`.
+  - `run_prompts(answers="states", top_k ≤ 50, model=...)`.
+  - A per-task tool subset and a tool-call budget.
+- Tools also refuse the private readout prompts (STATE_Q_HO and the hidden readouts).
+- Code: `edithunt/env/tasks.py` (specs, descriptions, graders, reference solvers, generators) and `edithunt/env/suite_run.py`
+  (a runner with a file-locked spend ledger that reserves the worst case before each episode). The agent loop has an OpenAI
+  Responses-API backend. gpt-6.1-sol rejects function tools + reasoning on /chat/completions, so the loop uses
+  /responses with `previous_response_id`.
+
+### Hidden-readout check for T3 (experiments/phase7_readouts.py, Qwen2.5-1.5B, n=343 cities)
+| readout | clean accuracy (all) | on fs1-valid cities (n=312) |
+|---|---|---|
+| postal abbreviation, few-shot "Chicago, IL" | 0.97 | 0.97 |
+| postal abbreviation in an address ("Ship to: 9 Elm Rd, {city},") | 0.93 | 0.94 |
+| state nickname ("…state nicknamed the") | 0.59 | 0.61 |
+
+→ T3 uses the two abbreviation formats as hidden readouts. Nicknames fail the ≥85% bar.
+
+### T5 (erase the state) has no tool-reproducible reference solver, so it is dropped from the calibration
+Grader: K=4 states. Behaviour = argmax over the K states on STATE_Q and STATE_Q_HO for held-out cities. Probe =
+leave-one-city-out kernel-ridge linear probe at L21 (city_last, 4 templates), retrained after the edit. Erasure is
+normalised to chance, and the result is multiplied by the KL factor.
+- **Oracle** (state means from *all* cities, including the graded ones; 3 templates; projections at L5/10/15/21, city_all):
+  behaviour 1.0 → 0.25 (= chance), probe 0.94 → 0.10, KL 0.044, **reward 0.956**. Projecting at all 22 layers is
+  worse (0.85; noisier subspaces, more KL).
+- **Dev-only** (what the tools allow: 4 dev cities per state; fs1/zs1/state_q, optionally +fs2/zs2; 4 or 7 layers):
+  reward 0.20–0.35 on {TX, IN, MN, CO}, where behaviour is unchanged at 1.0. It is 0.48–0.59 on {ME, NC, MA, WI}.
+- Using all but 2 cities per state as dev does not fix it (0.30–0.34, 0.69–0.73 and 0.22–0.41 on three sets), and with
+  2 test cities per state the clean probe drops to 0.41, so the probe stops being a usable grader.
+- **Reading:** linear erasure of the state-mean subspace generalizes only when the graded cities' own means are in the
+  subspace. Steering along the shared direction generalizes (mean-diff flip 0.89), but erasing it does not remove what
+  the model uses for *unseen* cities. Either the state information is partly city-specific, or it is re-derived
+  downstream. **T5 is not in the calibration**, because it has no reference ≥ 0.5, which is the plan's validity rule. It is
+  listed as an open "frontier" task.
+
+### Suite instances (Qwen2.5-1.5B unless noted; seed 0; reference = through the tools)
+- T1_easy: reference is the mean-diff baseline. Kept 8 of 17 candidates that passed the mean-diff prefilter.
+- T3_consistency: reference is mean-diff. It passes 8/8 of the prefiltered candidates (reference reward 0.74–0.98).
+- T4_detective: the plant is 1.0 × the mean-diff vector at a random layer in L4–16, at city_last, only on source-state
+  cities. The reference uses act_diff to scan 1 city/state at L20, then layers, then planted-vs-clean capital scores. It
+  scores 1.0 in 7 tool calls; tool-call budget 20.
+  The first plant at 0.6× and L4 flipped only 0.14 of cities, and the reference then picked a neighbouring target. A
+  planted edit that does nothing isn't an edit, so the task uses full strength. This was set before any agent run.
+- T6_handoff: 2 instances per model on 1.5B/3B/gemma/7B. The truth is the Phase 1 handoff; the reference (bisection) must land within ±1.
+- T7_minimal: the reference bisects the smallest scale of the mean-diff and gradient directions at 3 layers that flips
+  all dev prompts, ×1.1 margin. r_ref is the reference's own relative norm, so the reference scores 1.0 by construction.
+- T2_keepstate: the reference is the hop-2 recipe with generic extra_examples. It passes about 1 in 3 candidates, so generation is ongoing.
+
+### Deviations from the pasted plan
+- Black-box episodes run only for the report tasks (T4, T6). In the edit tasks the submission is a vector, and a
+  prompting-only agent cannot produce one, so black-box reward is 0 by construction and not worth paying for.
+- The Sonnet cap is $4.30 cumulative, including the $0.33 already spent. The gpt-6.1-sol cap is $8.00 of ~$9.
+  gpt-6.1-sol prices: $2/M input, $0.10/M cached input, $10/M output.
+
+### T4 environment bug found in the first episodes; fixed and episodes rerun
+The plant fires only on the dataset's city names (CITIES[source]); for Idaho these are Pocatello, Twin Falls and so
+on, but not Boise. The task text said the plant "covers the cities in the tools' city list", yet no tool exposed that
+list. A Sonnet episode on Idaho→South Carolina probed famous cities (Houston, Boise, Chicago, …), so the plant never
+fired. It spent 12 calls and hit the $0.10 cap with no submission.
+This is a mismatch between the specification and the implementation, not difficulty tuning: `describe_task` now
+includes `known_cities` (the 50-state list the plant covers), and the text says the edit fires only on those names.
+- The 4 affected T4 runs (2 interp, 2 black-box; Sonnet 1.0 / 0.0, BB 1.0 / 0.0) are archived in
+  `results/suite/runs_t4_bug/` and excluded from the map. T4 is rerun from scratch for both agents.
+- Workers were stopped mid-episode to load the fix, and their open reservations were charged at worst case in the
+  ledger (Sonnet cumulative $0.94, sol $0.21 after this).
+- First gpt-6.1-sol episode (T1): 0.91 in 20 turns, $0.079. It is slower and costlier per episode than Sonnet (4–6 turns, $0.03).
+- T2 generation: 60 tries gave 5 unique instances. The pair RNG repeats pairs and duplicates overwrite each other.
+  It is being topped up with seed 1.

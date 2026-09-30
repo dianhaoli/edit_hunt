@@ -40,6 +40,13 @@ TIERS = {
                  kl_budget=1.0, leak_weight=0.5, fwd_budget=4000, n_dev=4, target_examples=True,
                  preserve_state=True, dev_templates=["fs1", "zs1"]),
 }
+# Task-suite presets (env/tasks.py): T3 consistency and T7 minimal-edit reuse the edit-instance machinery.
+TIERS["consistency"] = dict(max_layer=15, positions=["city_last", "city_all"], max_rank=2, max_norm=None,
+                            kl_budget=1.0, leak_weight=0.0, fwd_budget=4000, n_dev=4, target_examples=True,
+                            preserve_state=False, dev_templates=["fs1", "zs1"])
+TIERS["minimal"] = dict(max_layer="handoff-1", positions=["city_last"], max_rank=1, max_norm=None,
+                        kl_budget=1.0, leak_weight=0.0, fwd_budget=4000, n_dev=4, target_examples=True,
+                        preserve_state=False, dev_templates=["fs1", "zs1"])
 PUBLIC_KEYS = ("id", "model", "tier", "source", "target", "source_capital", "target_capital",
                "dev_source", "dev_target", "dev_templates", "constraints")
 
@@ -64,9 +71,17 @@ class Instance:
     ref_pool: dict[str, list[str]] = field(default_factory=dict)  # {"source": [...], "target": [...]}
     reference: dict = field(default_factory=dict)
     leak_items: list[list[str]] = field(default_factory=list)  # [city, template key]: third-state cities (grader leakage)
+    task: str = "edit"                     # edit | consistency | minimal | erase | detective | handoff (env/tasks.py)
+    suite_task: str = ""                   # T1_easy ... T7_minimal
+    extra: dict = field(default_factory=dict)         # task-specific private data (ground truth, readouts, plant)
+    public_extra: dict = field(default_factory=dict)  # task-specific public data
 
     def public(self) -> dict:
-        return {k: getattr(self, k) for k in PUBLIC_KEYS}
+        if self.task in ("detective", "handoff", "erase"):
+            return {"id": self.id, "model": self.model, "task": self.task, "suite_task": self.suite_task,
+                    "constraints": self.constraints, "public_extra": self.public_extra}
+        return {k: getattr(self, k) for k in PUBLIC_KEYS} | {"task": self.task, "suite_task": self.suite_task,
+                                                             "public_extra": self.public_extra}
 
     def private(self) -> dict:
         return asdict(self)

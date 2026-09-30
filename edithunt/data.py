@@ -229,3 +229,46 @@ if __name__ == "__main__":
     print(f"{n} cities over {len(CITIES)} states; study states (>=6 cities): {len(study_states())}")
     for k, t in TEMPLATES.items():
         print(k, repr(t.format(city="Dallas")))
+
+
+# ---------------------------------------------------------------- hidden state-level readouts (task T3)
+# Never exposed to agent tools; used to check that an edit moved the *state variable*, not one answer.
+ABBR = {
+    "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA", "Colorado": "CO",
+    "Connecticut": "CT", "Delaware": "DE", "Florida": "FL", "Georgia": "GA", "Hawaii": "HI", "Idaho": "ID",
+    "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA",
+    "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN",
+    "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV",
+    "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC",
+    "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA",
+    "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX",
+    "Utah": "UT", "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV",
+    "Wisconsin": "WI", "Wyoming": "WY",
+}
+NICKNAMES = {
+    "Alabama": "Yellowhammer State", "Alaska": "Last Frontier", "Arizona": "Grand Canyon State",
+    "Arkansas": "Natural State", "California": "Golden State", "Colorado": "Centennial State",
+    "Connecticut": "Constitution State", "Delaware": "First State", "Florida": "Sunshine State",
+    "Georgia": "Peach State", "Hawaii": "Aloha State", "Idaho": "Gem State", "Illinois": "Prairie State",
+    "Indiana": "Hoosier State", "Iowa": "Hawkeye State", "Kansas": "Sunflower State",
+    "Kentucky": "Bluegrass State", "Louisiana": "Pelican State", "Maine": "Pine Tree State",
+    "Maryland": "Old Line State", "Massachusetts": "Bay State", "Michigan": "Great Lakes State",
+    "Minnesota": "North Star State", "Mississippi": "Magnolia State", "Missouri": "Show-Me State",
+    "Montana": "Treasure State", "Nebraska": "Cornhusker State", "Nevada": "Silver State",
+    "New Hampshire": "Granite State", "New Jersey": "Garden State", "New Mexico": "Land of Enchantment",
+    "New York": "Empire State", "North Carolina": "Tar Heel State", "North Dakota": "Peace Garden State",
+    "Ohio": "Buckeye State", "Oklahoma": "Sooner State", "Oregon": "Beaver State",
+    "Pennsylvania": "Keystone State", "Rhode Island": "Ocean State", "South Carolina": "Palmetto State",
+    "South Dakota": "Mount Rushmore State", "Tennessee": "Volunteer State", "Texas": "Lone Star State",
+    "Utah": "Beehive State", "Vermont": "Green Mountain State", "Virginia": "Old Dominion",
+    "Washington": "Evergreen State", "West Virginia": "Mountain State", "Wisconsin": "Badger State",
+    "Wyoming": "Equality State",
+}
+# key -> (template, state -> answer string)
+READOUTS = {
+    "abbr": ("Chicago, IL\nMiami, FL\nSeattle, WA\n{city},", ABBR),
+    "abbr_addr": ("Ship to: 12 Oak Ave, Chicago, IL 60601\nShip to: 400 Pine St, Miami, FL 33101\n"
+                  "Ship to: 9 Elm Rd, {city},", ABBR),
+    "nick": ("Chicago is in the state nicknamed the Prairie State. Miami is in the state nicknamed the Sunshine "
+             "State. {city} is in the state nicknamed the", NICKNAMES),
+}

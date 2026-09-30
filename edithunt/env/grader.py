@@ -22,6 +22,12 @@ Score (see `reward`):
   leak    = fraction of private third-state (city, template) items, clean-valid, whose top capital changes
             under the edit (the main collateral damage of mean-diff-like edits).
   reward  = F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))
+
+Other task kinds (inst.task; see env/tasks.py) reuse the same pieces:
+  consistency  reward = (F_cap * F_state * F_hidden)^(1/3) * KL factor; F_hidden from private readouts
+  minimal      pass = F >= min_flip and KL_mean <= kl_budget; reward = min(1, r_ref / r), r = |v| / |resid_L|
+  erase        "proj" edits; reward = mean(behaviour erasure, probe erasure) * KL factor
+  detective / handoff   {"report": {...}} graded against private ground truth
 """
 from __future__ import annotations
 
@@ -38,7 +44,7 @@ CAPS = list(CAPITALS.values())
 POSITIONS = ("city_last", "city_all", "final")
 GENERIC_TOOLS = GENERIC_SENTENCES[:10]   # visible to agent tools
 GENERIC_GRADER = GENERIC_SENTENCES[10:]  # used only by the grader
-Edit = tuple  # (layer, position, vec[d] already multiplied by scale)
+Edit = tuple  # (layer, position, vec[d] already multiplied by scale) or (layer, position, (U, center), "proj")
 
 
 def reward(F: float, kl_mean: float, kl_budget: float, leak: float = 0.0, leak_weight: float = 0.0) -> float:
@@ -48,8 +54,9 @@ def reward(F: float, kl_mean: float, kl_budget: float, leak: float = 0.0, leak_w
 def check(sub: dict, cons: dict, d_model: int, n_layers: int) -> tuple[list[Edit] | None, str | None]:
     """Validate a submission against constraints. Returns (edits, None) or (None, reason)."""
     try:
-        if sub.get("kind", "add") != "add":
-            return None, f"unsupported kind {sub.get('kind')!r}"
+        kind = sub.get("kind", "add")
+        if kind != cons.get("edit_kind", "add"):
+            return None, f"unsupported kind {kind!r} (this task takes {cons.get('edit_kind', 'add')!r})"
         es = sub.get("edits")
         if not isinstance(es, list) or not es:
             return None, "edits must be a non-empty list"
@@ -62,6 +69,18 @@ def check(sub: dict, cons: dict, d_model: int, n_layers: int) -> tuple[list[Edit
                 return None, f"edit {i}: layer {L!r} outside [0, {cons['max_layer']}]"
             if pos not in cons["positions"]:
                 return None, f"edit {i}: position {pos!r} not in {cons['positions']}"
+            if kind == "proj":
+                B = torch.tensor([[float(x) for x in b] for b in e["basis"]], dtype=torch.float32)
+                if B.dim() != 2 or B.shape[1] != d_model or not 1 <= B.shape[0] <= cons.get("max_basis", 8):
+                    return None, f"edit {i}: basis must be 1..{cons.get('max_basis', 8)} vectors of length {d_model}"
+                c = e.get("center")
+                c = torch.tensor([float(x) for x in c], dtype=torch.float32) if c is not None else None
+                if not torch.isfinite(B).all() or (c is not None and (c.shape != (d_model,) or not torch.isfinite(c).all())):
+                    return None, f"edit {i}: non-finite or malformed basis/center"
+                Q, R = torch.linalg.qr(B.T)
+                Q = Q[:, R.diagonal().abs() > 1e-6 * R.diagonal().abs().max()]
+                out.append((L, pos, (Q, c), "proj"))
+                continue
             v = torch.tensor([float(x) for x in e["vector"]], dtype=torch.float32)
             if v.shape != (d_model,):
                 return None, f"edit {i}: vector length {v.numel()} != d_model {d_model}"
@@ -92,7 +111,12 @@ def edit_positions(rule: str, encs: list[Enc], ref: list[Enc] | None = None) -> 
 
 
 def build_ivs(edits: list[Edit], encs: list[Enc], ref: list[Enc] | None = None) -> list[Intervention]:
-    return [Intervention(L, edit_positions(pos, encs, ref), "add", v) for L, pos, v in edits]
+    return [Intervention(e[0], edit_positions(e[1], encs, ref), e[3] if len(e) > 3 else "add", e[2]) for e in edits]
+
+
+def edit_summary(edits: list[Edit]) -> list[dict]:
+    return [{"layer": e[0], "position": e[1], "kind": "proj", "rank": int(e[2][0].shape[1])} if len(e) > 3
+            else {"layer": e[0], "position": e[1], "norm": e[2].norm().item()} for e in edits]
 
 
 def kl_stats(x: torch.Tensor) -> dict:
@@ -113,14 +137,46 @@ def kl_under(S: Subject, encs: list[Enc], ivs, bs: int = 16) -> torch.Tensor:
     return kl(S.logp_final(encs, bs=bs), S.logp_final(encs, ivs, bs=bs))
 
 
-def grade(S: Subject, inst, sub: dict, bs: int = 16, n_generic: int = 40, enforce: bool = True) -> dict:
+def grade(S: Subject, inst, sub: dict | None, bs: int = 16, n_generic: int = 40, enforce: bool = True) -> dict:
     """inst: env.instance.Instance (private). enforce=False skips constraint checks (reference runs)."""
+    if sub is None:
+        return {"valid": False, "reason": "no submission", "reward": 0.0}
+    task = getattr(inst, "task", "edit")
+    if task in ("detective", "handoff"):
+        from .tasks import grade_report
+        return grade_report(inst, sub)
+    if task != "edit":
+        from .tasks import GRADERS
+        return GRADERS[task](S, inst, sub, bs, enforce)
+    return grade_edit(S, inst, sub, bs, n_generic, enforce)
+
+
+def parse(S: Subject, inst, sub: dict, enforce: bool = True):
     cons = inst.constraints
     if enforce:
-        edits, why = check(sub, cons, S.d_model, S.n_layers)
-    else:
-        edits, why = check(sub, cons | {"max_layer": S.n_layers - 1, "max_rank": 99, "max_norm": None,
-                                         "positions": list(POSITIONS)}, S.d_model, S.n_layers)
+        return check(sub, cons, S.d_model, S.n_layers)
+    return check(sub, cons | {"max_layer": S.n_layers - 1, "max_rank": 99, "max_norm": None, "max_basis": 64,
+                              "positions": list(POSITIONS)}, S.d_model, S.n_layers)
+
+
+def side_effects(S: Subject, edits, cities: list[str], ref_encs, bs: int = 16, n_generic: int = 40) -> dict:
+    """P(US) binary KL on the country probe for `cities` and generic-text KL (edit at the token matching the
+    city's relative position in ref_encs)."""
+    ce = [S.encode(COUNTRY_Q, c) for c in cities]
+    pu0 = p_us(S.score(ce, COUNTRY_CANDS, bs=bs, exact=True)[0])
+    pu1 = p_us(S.score(ce, COUNTRY_CANDS, build_ivs(edits, ce), bs=bs, exact=True)[0])
+    ge = [S.encode_text(t) for t in GENERIC_GRADER[:n_generic]]
+    ref = [ref_encs[i % len(ref_encs)] for i in range(len(ge))]
+    kg = kl_under(S, ge, build_ivs(edits, ge, ref), bs)
+    res = {"p_us": {"clean": pu0.mean().item(), "edited": pu1.mean().item()},
+           "kl_country": kl_stats(binary_kl(pu0, pu1)), "kl_generic": kl_stats(kg)}
+    res["kl_mean"] = 0.5 * (res["kl_country"]["mean"] + res["kl_generic"]["mean"])
+    return res
+
+
+def grade_edit(S: Subject, inst, sub: dict, bs: int = 16, n_generic: int = 40, enforce: bool = True) -> dict:
+    cons = inst.constraints
+    edits, why = parse(S, inst, sub, enforce)
     if edits is None:
         return {"valid": False, "reason": why, "reward": 0.0}
     tgt, src = inst.target_capital, inst.source_capital
@@ -177,5 +233,5 @@ def grade(S: Subject, inst, sub: dict, bs: int = 16, n_generic: int = 40, enforc
     res |= {"F": F, "kl_mean": km, "kl_budget": cons["kl_budget"], "leak_weight": lw,
             "reward": reward(F, km, cons["kl_budget"], lk, lw),
             "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
-            "edits": [{"layer": L, "position": p, "norm": v.norm().item()} for L, p, v in edits]}
+            "edits": edit_summary(edits)}
     return res

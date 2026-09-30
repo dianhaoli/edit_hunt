@@ -17,8 +17,9 @@ class Intervention:
     layer: int
     # list (len B) of lists of *unpadded* positions; converted at apply time
     positions: list[list[int]]
-    kind: str  # "add" | "set" | "swap"
+    kind: str  # "add" | "set" | "swap" | "proj"
     # add: vec [d] or [B,d];  set: [d], [B,d] or [B,npos,d];  swap: (U [d,k], target coords [B,k])
+    # proj: (U [d,k] orthonormal, center [d] or None): x <- x - ((x - center) @ U) @ U.T
     payload: object = None
     scale: float = 1.0
 
@@ -65,6 +66,11 @@ def _apply(h: torch.Tensor, iv: Intervention, offsets: torch.Tensor) -> torch.Te
         U = U.to(dev, h.dtype); tgt = tgt.to(dev, h.dtype)
         tgt = tgt[r] if tgt.dim() == 2 else tgt
         new = x + (tgt - x @ U) @ U.T
+    elif iv.kind == "proj":
+        U, ctr = iv.payload
+        U = U.to(dev, h.dtype)
+        xc = x - ctr.to(dev, h.dtype) if ctr is not None else x
+        new = x - (xc @ U) @ U.T
     else:
         raise ValueError(iv.kind)
     h = h.clone()

@@ -234,3 +234,34 @@ Random controls: capital flip ≤0.01 and state->target 0.00 at every layer, 3rd
   doubles leakage (3B L12 0.62, gemma L3/L8 0.66-0.67). Same shape as 1.5B.
 - Zero-shot country probe (for reference only) is even more state-entangled on gemma: full-vocab KL 3.2-3.9 for working
   edits vs 0.04-0.07 random. Confirms the switch to the few-shot P(US) probe was necessary.
+
+### Phase 5 — Phase 2 on Qwen2.5-3B and gemma-2-2b (30 pairs; layers chosen from each model's Phase 1 curve)
+Note: first launched with the 1.5B default layer list (2..22), which misses most of the 3B band (L8-30) and
+overshoots gemma's handoff (L18). Killed and relaunched with per-model layers before any results were used.
+Mean-diff at city_last, n=105 (3B) / 104 (gemma) held-out cities on fs1; random = norm-matched vector.
+| model | L | capital flip | state -> target | binKL country (rand) | generic KL (rand) | 3rd-state -> target |
+|---|---|---|---|---|---|---|
+| 3B | 7 | 0.49 [0.39,0.58] | 0.59 | 0.58 (0.39) | 0.045 (0.044) | 0.23 |
+| 3B | 12 | 0.86 [0.78,0.91] | 0.97 [0.92,0.99] | 0.10 (0.08) | 0.019 (0.030) | 0.32 |
+| 3B | 20 | 0.84 [0.76,0.90] | 0.98 | 0.08 (0.02) | 0.004 (0.011) | 0.32 |
+| 3B | 30 | 0.64 [0.54,0.72] | 0.94 | 0.03 (0.003) | 0.002 (0.001) | 0.14 |
+| 3B | 31 (handoff) | 0.11 | 0.00 | 0.005 | 0.002 | 0.01 |
+| gemma | 3 | 0.75 [0.66,0.82] | 0.79 | 0.13 (0.06) | 0.013 (0.016) | 0.22 |
+| gemma | 8 | 0.91 [0.84,0.95] | 0.96 [0.91,0.98] | 0.034 (0.013) | 0.005 (0.006) | 0.19 |
+| gemma | 12 | 0.90 [0.83,0.95] | 0.96 | 0.028 (0.006) | 0.003 (0.003) | 0.17 |
+| gemma | 15 / 17 | 0.60 / 0.53 | 0.91 / 0.91 | 0.015 (0.005) | 0.002 | 0.04 / 0.03 |
+| gemma | 18 (handoff) | 0.00 | 0.04 | 0.006 | 0.002 | 0.00 |
+Random norm-matched: capital flip ≤0.01, state flip 0.00, 3rd-state -> target 0.00 at every layer, both models.
+- **Meaning replicates: a state variable in all three models.** The state-question answer moves to the target
+  at least as often as the capital does, at every layer (3B L20 0.98 vs 0.84; gemma L8 0.96 vs 0.91). Late in
+  the band the gap widens (3B L30 0.94 vs 0.64; gemma L17 0.91 vs 0.53): the state variable is still set, but the
+  capital readout depends on it less there.
+- **Leakage is the main collateral damage in all three:** 3B 0.31-0.34 over L10-25 (higher than 1.5B's 0.16-0.24);
+  gemma 0.17-0.24 over L3-12, but only 0.03-0.04 at L15-17 (with capital flip 0.53-0.60).
+- **Country damage:** mid-band binKL is small but above random (3B 0.08-0.10 vs 0.02-0.08; gemma 0.03 vs 0.01).
+  Early layers are fragile in 3B: at L3-5 even random vectors cut P(US) 0.88 -> 0.64-0.73 (binKL 0.3-0.5).
+  The old zero-shot full-vocab country KL (KLczs) is 1.1-1.6 for 3B and 3.2-3.9 for gemma under a working edit,
+  vs ≤0.2 random: gemma's zero-shot "country" prompt is even more state-entangled. This confirms the probe change.
+- Generic-text KL is at the random level in both models.
+- **Norm sweep replicates** (x0.25 / x0.5 / x2): capital flip 0.00-0.02 / 0.16-0.18 / 0.88-0.96; at x2 leakage
+  rises to 0.47-0.67. As on 1.5B, overshooting the norm mainly buys leakage.

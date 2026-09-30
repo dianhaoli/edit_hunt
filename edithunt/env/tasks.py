@@ -305,7 +305,8 @@ def ref_meandiff(env, **_):
 
 
 def _accessible(env, cities: list[str]) -> list[str]:
-    return [c for c in cities if c.lower() not in env._held]
+    from .tools import _letters
+    return [c for c in cities if _letters(c) not in env._held]
 
 
 def ref_keepstate(env, seed: int = 0, steps: int = 50, **_):

@@ -295,8 +295,9 @@ Findings:
 - **Layer ceiling ≤4-5 hurts mean-diff**, especially on the held-out few-shot template (ho_fs 0.38 at L4 vs 0.66-0.72
   at L8-15). **Few dev examples** hurt at low layers (ndev=1: 0.40 at L4) but not at L8 (0.81).
 - **Prompting fails on few-shot templates** (0.05 fs1, 0.24 ho_fs) but works on the zero-shot held-out template (0.97).
-  Its vector version (C4v: resid with context minus without) does nothing at the city token (0.00), because the context
-  sentence comes *before* the city and the fs1 prompt's city token doesn't attend to it in the way the few-shot answer needs.
+  Its vector version (C4v: resid with context minus without) does nothing at the city token (0.00), and its norm is small
+  (7-15 at L3-8 vs ~40 for C1). Not yet explained: either the context barely changes the city-token state variable, or
+  the prompt works through the final token instead. Untested.
 - Averaging over two training templates (C1t) gives no gain over C1. city_all ≈ city_last (+0.02-0.07 flip, more country KL).
 - **Implication for tiers:** a leakage term in the reward is what makes the naive gradient approach fail. With
   leak_weight≈1, C2n at L8 scores about 1.0 × (1-0.6) ≈ 0.4; C1 at L8 ≈ 0.7 × 0.65 ≈ 0.45; DAS ≈ 0.55-0.65.

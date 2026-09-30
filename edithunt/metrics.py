@@ -29,3 +29,15 @@ def fmt(r: dict) -> str:
 def kl(logp_clean: torch.Tensor, logp_edit: torch.Tensor) -> torch.Tensor:
     """KL(clean || edit) per row, inputs are log-softmax [B,V]."""
     return (logp_clean.exp() * (logp_clean - logp_edit)).sum(-1)
+
+
+def binary_kl(p: torch.Tensor, q: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
+    """KL(Bern(p) || Bern(q)) elementwise."""
+    p = p.clamp(eps, 1 - eps); q = q.clamp(eps, 1 - eps)
+    return p * (p / q).log() + (1 - p) * ((1 - p) / (1 - q)).log()
+
+
+def p_us(scores: torch.Tensor) -> torch.Tensor:
+    """scores [B, len(COUNTRY_CANDS)] exact log-probs -> P(US) among the candidate countries."""
+    from .data import N_US
+    return scores.softmax(-1)[:, :N_US].sum(-1)

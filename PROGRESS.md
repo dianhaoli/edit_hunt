@@ -13,7 +13,8 @@ Every rate is given with its sample size n and a 95% Wilson confidence interval.
 | Core library (dataset, hooks, exact answer scoring, batching) | **Done**, verified with explicit correctness checks |
 | Phase 0: which prompts the subject model already answers correctly | **Done** for Qwen2.5-1.5B (rerun in bf16 on A10G, 2026-09-30) |
 | Phase 1: replicate and scale experiments A and B (does a "state direction" exist?) | **Done** (1.5B, 30 pairs): premise holds, mean-diff flip 0.82-0.89 over L6-21, handoff at L22. See LAB_NOTEBOOK 2026-09-30 |
-| Phases 2–4 (meaning, hop separation, difficulty ladder) | **Scripts written, not yet run** |
+| Phase 2 (meaning & specificity) | **Done** (1.5B, 30 pairs): a state variable (STATE_Q flips 0.97-0.98 at L8-21); main collateral damage is third-state leakage 0.16-0.24. Country probe redesigned (state-entangled) |
+| Phases 3–4 (hop separation, difficulty ladder) | Scripts written; Phase 4 ndev pooling fixed |
 | Phase 5 (other models) | Not started. 3B is downloaded. 7B, Gemma and Llama are blocked on this laptop (see §6) |
 | Phase 6 (environment prototype: grader, tools, Claude agent loop) | **Built and smoke-tested** on Qwen2.5-0.5B. Tier settings are placeholders. **The real Claude API has not been called yet** |
 

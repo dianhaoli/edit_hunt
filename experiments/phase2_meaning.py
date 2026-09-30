@@ -9,23 +9,27 @@ import time
 import torch
 
 from edithunt.common import base_args, save, seed_all, valid_table
-from edithunt.data import (CAPITALS, CITIES, CITY2STATE, COUNTRY_Q, GENERIC_SENTENCES, STATE_Q, STATES,
+from edithunt.data import (CAPITALS, CITIES, CITY2STATE, COUNTRY_CANDS, COUNTRY_Q, COUNTRY_Q_ZS, GENERIC_SENTENCES, STATE_Q, STATES,
                            TEMPLATES)
 from edithunt.instances import eligible_states, pick_pairs
-from edithunt.metrics import fmt, kl, rate
+from edithunt.metrics import binary_kl, fmt, kl, p_us, rate
 from edithunt.model import Subject
 from edithunt.runner import Job, run_jobs
 from edithunt.vectors import meandiff, random_like
 
 ap = base_args(__doc__)
 ap.add_argument("--n_pairs", type=int, default=12)
-ap.add_argument("--layers", default="2,4,6,8,10,12,14,16,18,20,22")
+ap.add_argument("--layers", default="2,3,4,5,6,8,10,12,15,18,21,22")
+ap.add_argument("--scales", default="0.25,0.5,2")  # norm sweep of the mean-diff vector (x1 is "meandiff")
+ap.add_argument("--scale_layers", default="4,8,15")
 args = ap.parse_args()
 seed_all(args.seed)
 S = Subject(args.model)
 V = valid_table(args.model)
 caps = list(CAPITALS.values())
 layers = [int(x) for x in args.layers.split(",")]
+scales = [float(x) for x in args.scales.split(",")] if args.scales else []
+scale_layers = {int(x) for x in args.scale_layers.split(",")} if args.scale_layers else set()
 states = eligible_states(V, "fs1")
 pairs = pick_pairs(states, args.n_pairs, args.seed)
 gen_encs = [S.encode_text(t) for t in GENERIC_SENTENCES]
@@ -34,7 +38,9 @@ t0 = time.time()
 
 # clean references (no edit) for KL
 city_pool = sorted({c for s in states for c in CITIES[s] if V["fs1"][c]})
-clean_country = dict(zip(city_pool, S.logp_final([S.encode(COUNTRY_Q, c) for c in city_pool], bs=args.bs)))
+_csc, _ = S.score([S.encode(COUNTRY_Q, c) for c in city_pool], COUNTRY_CANDS, bs=args.bs, exact=True)
+clean_pus = dict(zip(city_pool, p_us(_csc)))
+clean_czs = dict(zip(city_pool, S.logp_final([S.encode(COUNTRY_Q_ZS, c) for c in city_pool], bs=args.bs)))
 clean_gen = S.logp_final(gen_encs, bs=args.bs)
 clean_state_sc, _ = S.score([S.encode(STATE_Q, c) for c in city_pool], STATES, bs=args.bs)
 clean_state = dict(zip(city_pool, [STATES[i] for i in clean_state_sc.argmax(1).tolist()]))
@@ -45,9 +51,12 @@ for pi, (src, tgt) in enumerate(pairs):
     vecs, sp = meandiff(S, V, src, tgt, layers, args.seed)
     thirds = [s for s in states if s not in (src, tgt)][pi % 4::8][:2]
     third_c = [c for s in thirds for c in CITIES[s] if V["fs1"][c]][:6]
-    cap_jobs, st_jobs, co_jobs, gen_jobs = [], [], [], []
+    cap_jobs, st_jobs, co_jobs, cz_jobs, gen_jobs = [], [], [], [], []
     for L in layers:
-        for vn, v in (("meandiff", vecs[L]), ("random", random_like(vecs[L], 1000 * pi + L))):
+        variants = [("meandiff", vecs[L]), ("random", random_like(vecs[L], 1000 * pi + L))]
+        if L in scale_layers:
+            variants += [(f"meandiff_x{a:g}", a * vecs[L]) for a in scales]
+        for vn, v in variants:
             for x in sp["test_s"] + third_c:
                 kind = "test" if x in sp["test_s"] else "third"
                 for tn in ("fs1", "ho_fs"):
@@ -58,6 +67,8 @@ for pi, (src, tgt) in enumerate(pairs):
                 st_jobs.append(Job(e, [(L, "add", [e.city_last], v)], dict(L=L, vec=vn, city=x, kind=kind)))
                 e = S.encode(COUNTRY_Q, x)
                 co_jobs.append(Job(e, [(L, "add", [e.city_last], v)], dict(L=L, vec=vn, city=x, kind=kind)))
+                e = S.encode(COUNTRY_Q_ZS, x)
+                cz_jobs.append(Job(e, [(L, "add", [e.city_last], v)], dict(L=L, vec=vn, city=x, kind=kind)))
             for gi, e in enumerate(gen_encs):
                 gen_jobs.append(Job(e, [(L, "add", [min(GEN_POS, e.final)], v)], dict(L=L, vec=vn, gi=gi)))
     sc = run_jobs(S, cap_jobs, caps, exact=[CAPITALS[src], CAPITALS[tgt]], bs=args.bs)
@@ -70,10 +81,16 @@ for pi, (src, tgt) in enumerate(pairs):
         p = STATES[s.argmax()]
         rows.append(dict(j.meta, pair=f"{src}->{tgt}", probe="state", pred=p, to_target=p == tgt,
                          kept=p == clean_state[j.meta["city"]], clean=clean_state[j.meta["city"]]))
-    _, lp = run_jobs(S, co_jobs, caps[:1], bs=args.bs, return_logp=True)
-    for j, l in zip(co_jobs, lp):
-        c0 = clean_country[j.meta["city"]]
-        rows.append(dict(j.meta, pair=f"{src}->{tgt}", probe="country", kl=kl(c0[None], l[None]).item(),
+    pu = p_us(run_jobs(S, co_jobs, COUNTRY_CANDS, exact=True, bs=args.bs))
+    for j, q in zip(co_jobs, pu):
+        p0 = clean_pus[j.meta["city"]]
+        rows.append(dict(j.meta, pair=f"{src}->{tgt}", probe="country", kl=binary_kl(p0, q).item(),
+                         pus_clean=p0.item(), pus=q.item(), kept=bool((p0 > 0.5) == (q > 0.5))))
+    # reference only: full-vocab KL on the zero-shot country prompt (state-entangled, see data.py)
+    _, lp = run_jobs(S, cz_jobs, caps[:1], bs=args.bs, return_logp=True)
+    for j, l in zip(cz_jobs, lp):
+        c0 = clean_czs[j.meta["city"]]
+        rows.append(dict(j.meta, pair=f"{src}->{tgt}", probe="country_zs", kl=kl(c0[None], l[None]).item(),
                          kept=bool(c0.argmax() == l.argmax())))
     _, lp = run_jobs(S, gen_jobs, caps[:1], bs=args.bs, return_logp=True)
     for j, l in zip(gen_jobs, lp):
@@ -84,7 +101,7 @@ for pi, (src, tgt) in enumerate(pairs):
 
 agg = {}
 for L in layers:
-    for vn in ("meandiff", "random"):
+    for vn in sorted({r["vec"] for r in rows if r["L"] == L}):
         R = [r for r in rows if r["L"] == L and r["vec"] == vn]
         d = {}
         for T in ("fs1", "ho_fs"):
@@ -94,13 +111,16 @@ for L in layers:
         d["state_to_target"] = rate([r["to_target"] for r in R if r["probe"] == "state" and r["kind"] == "test"])
         d["state_kept"] = rate([r["kept"] for r in R if r["probe"] == "state" and r["kind"] == "test"])
         d["third_state_to_target"] = rate([r["to_target"] for r in R if r["probe"] == "state" and r["kind"] == "third"])
-        for pr in ("country", "generic"):
+        pc = [r for r in R if r["probe"] == "country" and r["kind"] == "test"]
+        d["country_pus_clean"] = sum(r["pus_clean"] for r in pc) / len(pc)
+        d["country_pus_edit"] = sum(r["pus"] for r in pc) / len(pc)
+        for pr in ("country", "country_zs", "generic"):
             rr = [r for r in R if r["probe"] == pr and (pr == "generic" or r["kind"] == "test")]
             d[f"{pr}_top1_kept"] = rate([r["kept"] for r in rr])
             kls = torch.tensor([r["kl"] for r in rr])
             d[f"{pr}_kl_mean"] = kls.mean().item(); d[f"{pr}_kl_median"] = kls.median().item()
         agg[f"{vn}|L{L}"] = d
-        print(f"L{L:2d} {vn:8s} capflip {fmt(d['capital_flip_fs1'])} state->tgt {fmt(d['state_to_target'])} "
-              f"state kept {d['state_kept']['rate']:.2f} country kept {d['country_top1_kept']['rate']:.2f} "
-              f"KLc {d['country_kl_mean']:.3f} KLg {d['generic_kl_mean']:.3f} third->tgt {d['third_capital_to_target']['rate']:.2f}")
+        print(f"L{L:2d} {vn:14s} capflip {fmt(d['capital_flip_fs1'])} state->tgt {fmt(d['state_to_target'])} "
+              f"state kept {d['state_kept']['rate']:.2f} P(US) {d['country_pus_clean']:.2f}->{d['country_pus_edit']:.2f} "
+              f"KLc {d['country_kl_mean']:.3f} KLczs {d['country_zs_kl_mean']:.3f} KLg {d['generic_kl_mean']:.3f} third->tgt {d['third_capital_to_target']['rate']:.2f}")
 save(args.model, "phase2_meaning", vars(args) | {"pairs": pairs}, {"agg": agg, "rows": rows})

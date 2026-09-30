@@ -149,7 +149,18 @@ HELDOUT_TEMPLATES = ["ho_fs", "ho_zs"]
 STATE_Q = ("Q: Which US state is Chicago in?\nA: The state of Illinois.\n"
            "Q: Which US state is Miami in?\nA: The state of Florida.\n"
            "Q: Which US state is {city} in?\nA: The state of")
-COUNTRY_Q = "{city} is a city in the country of"
+# Country probe (collateral-damage check). The zero-shot form "{city} is a city in the country of" is NOT
+# state-independent: base Qwen2.5-1.5B answers " Texas" etc. (the state) with p~0.3-0.7, so full-vocab KL on it
+# measures the intended state change, not collateral damage (it was ~1.0 nats for working edits). We use a
+# few-shot prompt and read only a restricted set of country answers: P(US) = mass of the first N_US
+# candidates among COUNTRY_CANDS (exact multi-token scores, renormalised). Damage = change in P(US).
+COUNTRY_Q_ZS = "{city} is a city in the country of"
+COUNTRY_Q = ("Lyon is a city in the country of France.\nOsaka is a city in the country of Japan.\n"
+             "Toronto is a city in the country of Canada.\n{city} is a city in the country of")
+COUNTRY_CANDS = ["the United States", "United States", "America", "the USA", "Canada", "Mexico", "France",
+                 "Japan", "England", "the United Kingdom", "Germany", "Spain", "Italy", "China", "India",
+                 "Australia"]
+N_US = 4
 
 GENERIC_SENTENCES = [
     "The quick brown fox jumps over the lazy dog near the old barn.",

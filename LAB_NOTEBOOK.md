@@ -265,3 +265,44 @@ Random norm-matched: capital flip ≤0.01, state flip 0.00, 3rd-state -> target 
 - Generic-text KL is at the random level in both models.
 - **Norm sweep replicates** (x0.25 / x0.5 / x2): capital flip 0.00-0.02 / 0.16-0.18 / 0.88-0.96; at x2 leakage
   rises to 0.47-0.67. As on 1.5B, overshooting the norm mainly buys leakage.
+
+### Phase 4 (Qwen2.5-1.5B, bf16): difficulty ladder, 12 pairs, n=42 held-out source cities (fs1)
+Held-out templates: ho_fs (few-shot), ho_zs (zero-shot). 3rd>tgt / 3rd kept: 2 other states' cities (n≈70), fs1.
+binKLc = binary KL on P(US) (country probe). ndev "all" = half of the source state's valid cities (3-6).
+| class | L | flip fs1 [CI] | ho_fs | ho_zs | state>tgt | 3rd>tgt | 3rd kept | binKLc | KLgen | abs(v) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| C0 paste (1 city) | 4 / 8 / 15 | 0.86 / 1.00 / 1.00 | 0.69-0.72 | 0.92-0.95 | 0.98-1.00 | 0.94-1.00 | 0.00 | 0.22-0.24 | 0.05-0.17 | 51-62 |
+| C1 mean-diff | 3 | 0.52 [0.38,0.67] | 0.14 | 0.41 | 0.52 | 0.06 | 0.81 | 0.43 | 0.029 | 37 |
+| C1 | 4 | 0.69 [0.54,0.81] | 0.38 | 0.67 | 0.81 | 0.14 | 0.69 | 0.16 | 0.024 | 40 |
+| C1 | 5 | 0.76 [0.61,0.87] | 0.55 | 0.77 | 0.90 | 0.17 | 0.76 | 0.11 | 0.028 | 41 |
+| C1 | 8 | 0.88 [0.75,0.95] | 0.66 | 0.79 | 0.95 | 0.19 | 0.65 | 0.12 | 0.014 | 42 |
+| C1 | 15 | 0.88 [0.75,0.95] | 0.72 | 0.82 | 0.93 | 0.24 | 0.67 | 0.08 | 0.003 | 39 |
+| C1 ndev=1 | 4 / 5 / 8 | 0.40 / 0.55 / 0.81 | 0.21 / 0.34 / 0.76 | | | 0.18-0.28 | 0.47-0.57 | 0.10-0.24 | | 57-60 |
+| C2 uncapped | 3-8 | 1.00 | 0.97-1.00 | 0.87-1.00 | 0.90 | **1.00** | 0.00 | 0.61-0.67 | 0.18-0.38 | 460-470 |
+| C2kl (+generic KL) | 3-8 | 0.98-1.00 | 0.97-1.00 | 0.79-0.92 | 0.83-0.93 | **1.00** | 0.00 | 0.64-0.75 | 0.04-0.08 | 460-470 |
+| C2n capped at abs(C1) | 3 / 5 / 8 | 0.95 / 0.98 / 1.00 | 0.90-1.00 | 0.79-0.90 | 0.69-0.83 | **0.83 / 0.76 / 0.56** | 0.11-0.33 | 0.20-0.31 | 0.04-0.11 | 37-42 |
+| C2nkl capped+KL | 3 / 5 / 8 | 0.95 / 0.98 / 1.00 | 0.90-0.97 | 0.77-0.85 | 0.64-0.79 | 0.78 / 0.69 / 0.57 | 0.14-0.35 | 0.19-0.31 | 0.016-0.021 | 37-42 |
+| C3 DAS rank-1 | 4 / 5 / 8 | 0.50 / 0.67 / 0.67 | 0.38-0.52 | 0.44-0.62 | 0.31-0.55 | **0.00-0.01** | 0.94-0.96 | 0.05-0.06 | 0.003 | — |
+| C3 DAS rank-4 | 4 / 5 / 8 | 0.60 / 0.71 / 0.71 | 0.38-0.59 | 0.54-0.64 | 0.36-0.55 | 0.00-0.03 | 0.90-0.94 | 0.05-0.07 | 0.004 | — |
+| C4 prompt ("Note that X is located in T.") | — | 0.05 | 0.24 | **0.97** | | | | | | |
+| C4v prompt-derived vector | 3-21 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.86-1.00 | ≤0.1 | ≤0.006 | 7-40 |
+Findings:
+- **Leakage is the separating axis.** Every vector trained on "output the target capital" (C2, C2kl, and even norm-capped
+  C2n/C2nkl) is largely an *answer* direction: 56-100% of other states' cities go to the target capital. The generic-KL
+  penalty (C2kl) removes generic damage but not leakage or country damage. Mean-diff leaks 0.06-0.24; DAS ≈0.
+- **No Phase 4 class gets high flip AND low leakage.** C2n: flip ~1.0, leak 0.56-0.83. DAS: leak 0, flip ≤0.71.
+  C1: in between. So the "careful method succeeds" cell was missing -> Phase 4b (leak-aware gradient) added.
+- **Layer ceiling ≤4-5 hurts mean-diff**, especially on the held-out few-shot template (ho_fs 0.38 at L4 vs 0.66-0.72
+  at L8-15). **Few dev examples** hurt at low layers (ndev=1: 0.40 at L4) but not at L8 (0.81).
+- **Prompting fails on few-shot templates** (0.05 fs1, 0.24 ho_fs) but works on the zero-shot held-out template (0.97).
+  Its vector version (C4v: resid with context minus without) does nothing at the city token (0.00), because the context
+  sentence comes *before* the city and the fs1 prompt's city token doesn't attend to it in the way the few-shot answer needs.
+- Averaging over two training templates (C1t) gives no gain over C1. city_all ≈ city_last (+0.02-0.07 flip, more country KL).
+- **Implication for tiers:** a leakage term in the reward is what makes the naive gradient approach fail. With
+  leak_weight≈1, C2n at L8 scores about 1.0 × (1-0.6) ≈ 0.4; C1 at L8 ≈ 0.7 × 0.65 ≈ 0.45; DAS ≈ 0.55-0.65.
+  The medium tier needs a method that beats all three; see Phase 4b.
+
+### Ops note: queued jobs sat idle ~60 min
+The Phase 7B and 4b launchers waited with `while pgrep -f phase4_ladder.py`. My own background waiter's command line
+contained that string, so the launchers kept waiting until it was killed at its 2 h limit (Phase 4 had finished at
+~06:10; jobs started 07:08). Use PID-based waits (`while kill -0 $PID`) from now on.

@@ -307,3 +307,28 @@ Findings:
 The Phase 7B and 4b launchers waited with `while pgrep -f phase4_ladder.py`. My own background waiter's command line
 contained that string, so the launchers kept waiting until it was killed at its 2 h limit (Phase 4 had finished at
 ~06:10; jobs started 07:08). Use PID-based waits (`while kill -0 $PID`) from now on.
+
+### Phase 4b (Qwen2.5-1.5B): leak-aware careful method, 12 pairs, n=42 source cities, n=72 third-state cities
+C2nk = C2n (norm cap abs(C1)) + keep term: dev cities (2 each, fs1+fs2) of 4 *other* states must keep their own
+capital. Leakage is evaluated on 2 further states disjoint from the keep states (the Phase 4 third states).
+| method | L | flip fs1 [CI] | ho_fs | 3rd->tgt fs1 / ho_fs | 3rd kept fs1 | state>tgt | binKLc | KLgen |
+|---|---|---|---|---|---|---|---|---|
+| C1 | 5 / 8 / 15 | 0.76 / 0.88 / 0.88 | 0.55 / 0.66 / 0.72 | 0.18-0.22 / 0.12-0.23 | 0.64-0.75 | 0.90-0.95 | 0.08-0.11 | 0.002-0.026 |
+| C2n | 5 / 8 / 15 | 0.98 / 1.00 / 1.00 | 0.97 | 0.56-0.76 / 0.58-0.74 | 0.14-0.33 | 0.33-0.83 | 0.20-0.39 | 0.05-0.11 |
+| **C2nk** | 4 | 0.50 [0.36,0.64] | 0.59 | 0.14 / 0.09 | 0.65 | 0.24 | 0.21 | 0.056 |
+| **C2nk** | 5 | 0.76 [0.61,0.87] | 0.69 | 0.07 / 0.07 | 0.78 | 0.31 | 0.22 | 0.061 |
+| **C2nk** | 8 | 0.88 [0.75,0.95] | 0.83 | 0.10 / 0.07 | 0.81 | 0.19 | 0.20 | 0.065 |
+| **C2nk** | 15 | 0.93 [0.81,0.98] | 0.97 | 0.12 / 0.12 | 0.79 | 0.12 | 0.22 | 0.063 |
+| C3 DAS r1 | 5 / 8 | 0.67 / 0.67 | 0.52 / 0.48 | 0.01 / 0.00 | 0.94-0.96 | 0.31-0.55 | 0.05-0.06 | 0.003 |
+- **A careful method now fills the missing cell**: at L8-15 it matches or beats mean-diff on flips (held-out few-shot
+  template 0.83-0.97 vs 0.66-0.72) while cutting leakage to the target 2x (0.07-0.12 vs 0.20-0.23), and it
+  generalises to states never in the keep set (kept 0.79-0.81 vs C2n 0.22-0.33).
+- **It is no longer a state edit**: STATE_Q moves to the target only 0.12-0.31 (C1: 0.90-0.95). The keep term pushes the
+  optimizer from an answer direction ("say Sacramento") to a source-conditional one ("Texas cities -> Sacramento"),
+  i.e. closer to a hop-2 edit. Fine for a tier that grades capital flips + leakage; it would be caught by a tier that
+  also requires the *state* belief to move (not currently proposed).
+- Cost: country damage 0.20-0.22 binKL, ~2.5x mean-diff (0.08). Generic KL 0.06 vs 0.01-0.03.
+- Rough reward under F(ho_fs) × (1 - leak_changed) × (1 - KL_mean/1.0), KL_mean = mean(binKLc, KLgen):
+  C2nk L15 ≈ 0.97×0.79×0.86 ≈ 0.66; L8 ≈ 0.83×0.81×0.87 ≈ 0.58; C1 L8 ≈ 0.66×0.64×0.95 ≈ 0.40;
+  C2n L8 ≈ 0.97×0.33×0.80 ≈ 0.26; DAS L5 ≈ 0.52×0.96×0.97 ≈ 0.48. Separation exists but the margin is modest
+  (careful ~0.6-0.66 vs best naive ~0.48); per-instance variance will matter. To be measured with the real grader.

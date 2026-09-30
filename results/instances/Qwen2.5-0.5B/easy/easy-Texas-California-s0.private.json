@@ -1,0 +1,186 @@
+{
+ "id": "easy-Texas-California-s0",
+ "model": "Qwen/Qwen2.5-0.5B",
+ "tier": "easy",
+ "source": "Texas",
+ "target": "California",
+ "source_capital": "Austin",
+ "target_capital": "Sacramento",
+ "dev_source": [
+  "Fort Worth",
+  "San Antonio",
+  "Dallas",
+  "Lubbock"
+ ],
+ "dev_target": [
+  "Oakland",
+  "San Diego",
+  "Fresno",
+  "San Jose"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 11,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false
+ },
+ "test_cities": [
+  "Houston",
+  "El Paso"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Houston",
+   "ho_fs"
+  ],
+  [
+   "Houston",
+   "ho_zs"
+  ],
+  [
+   "El Paso",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Fort Worth",
+   "San Antonio",
+   "Dallas",
+   "Lubbock",
+   "Houston"
+  ],
+  "target": [
+   "Oakland",
+   "San Diego",
+   "Fresno",
+   "San Jose",
+   "Los Angeles",
+   "San Francisco"
+  ]
+ },
+ "reference": {
+  "layer": 3,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "kl_country": {
+    "mean": 0.9344711899757385,
+    "sd": 1.2997581958770752,
+    "n": 2,
+    "ci95": [
+     -0.8669017650709079,
+     2.735844145022385
+    ],
+    "max": 1.853538990020752
+   },
+   "kl_generic": {
+    "mean": 0.006182233802974224,
+    "sd": 0.012968786992132664,
+    "n": 40,
+    "ci95": [
+     0.002163165075273292,
+     0.010201302530675155
+    ],
+    "max": 0.07976818829774857
+   },
+   "F": 1.0,
+   "kl_mean": 0.4703267118893564,
+   "kl_budget": 1.0,
+   "reward": 0.5296732881106436,
+   "formula": "F * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 3,
+     "position": "city_last",
+     "norm": 6.38676118850708
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   3,
+   7,
+   11
+  ]
+ }
+}

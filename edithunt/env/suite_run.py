@@ -110,27 +110,28 @@ def main():
         out = out_root / task / f"{inst.id}{'.bb' if bb else ''}.json"
         if out.exists():
             continue
+        if S is None or S.name != inst.model:  # before reserving: a load failure spends nothing
+            from ..model import Subject
+            import gc, torch
+            S = None; gc.collect(); torch.cuda.empty_cache()
+            S = Subject(inst.model)
         amount = a.max_cost + MARGIN
         if not reserve(prov, amount, cap):
             print(f"budget stop before {inst.id} (cap ${cap})", flush=True)
             break
-        cost = 0.0
+        cost = a.max_cost  # worst case unless the episode returns (covers Ctrl-C / unknown partial spend)
         try:
-            if S is None or S.name != inst.model:
-                from ..model import Subject
-                S = None
-                import torch; torch.cuda.empty_cache()
-                S = Subject(inst.model)
             rec = episode(S, inst, a.model, client, bb, a.max_turns, 16000, a.effort or None, a.max_cost, a.bs)
             cost = rec["cost_usd"]
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(json.dumps(rec, indent=1, default=str))
+            tmp = out.with_suffix(".tmp")
+            tmp.write_text(json.dumps(rec, indent=1, default=str))
+            tmp.replace(out)  # atomic: resume never sees a partial record
             g = rec["grade"]
             print(f"{task:15s} {inst.id:55s} {'BB ' if bb else ''}reward {g['reward']:.3f} turns {rec['turns']} "
                   f"calls {rec['tool_calls']} ${cost:.4f} stop {rec['stop_reason']}", flush=True)
-        except Exception as e:  # keep going; the ledger still gets settled
+        except Exception as e:  # keep going; the ledger still gets settled (worst case charged)
             print(f"ERROR {inst.id}: {type(e).__name__}: {e}", flush=True)
-            cost = a.max_cost  # unknown partial spend: charge the worst case
         finally:
             settle(prov, amount, cost, f"{a.model}/{inst.id}{'.bb' if bb else ''}")
     with ledger() as d:

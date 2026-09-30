@@ -407,15 +407,15 @@ def ref_detective(env, **_):
     r = _call(env, "act_diff", template="zs1", cities=[src_city], layers=list(range(probe_L + 1)))
     L = min(int(k) for k, v in r["diff_by_layer"].items() if v[0][2] > 1e-3)
     cs = CITIES[src][:8]
-    sc = {}
-    for m in ("planted", "clean"):
-        o = _call(env, "run_prompts", template="fs1", cities=cs, top_k=50, model=m)
-        sc[m] = {}
-        for res in o["results"]:
-            for cap, v in res["top_capitals"]:
-                sc[m][cap] = sc[m].get(cap, 0.0) + v
-    gain = {cap: sc["planted"][cap] - sc["clean"][cap] for cap in sc["planted"] if cap != CAPITALS[src]}
-    tcap = max(gain, key=gain.get)
+    # target = the capital the planted model most often answers (top-1) on source cities instead of the source capital
+    # (2026-09-30 fix: summed log-prob gains picked a neighbouring capital whose score rose most on 3/8 instances)
+    o = _call(env, "run_prompts", template="fs1", cities=cs, top_k=50, model="planted")
+    votes = {}
+    for res in o["results"]:
+        top = max(res["top_capitals"], key=lambda cv: cv[1])[0]
+        if top != CAPITALS[src]:
+            votes[top] = votes.get(top, 0) + 1
+    tcap = max(votes, key=votes.get)
     tgt = next(s for s, cp in CAPITALS.items() if cp == tcap)
     _call(env, "submit_report", report={"source": src, "target": tgt, "layer": L})
 

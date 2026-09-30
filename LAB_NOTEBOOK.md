@@ -428,7 +428,7 @@ known solvable) — a favourable selection, not a random sample.
 | medium Indiana->South Dakota | **0.89** | 1.00 | 0.09 | 0.018 | 14 | $0.076 | 0.59 / 0.88 | 5 optimize calls, keep_cities+max_norm+KL, L5 |
 | hard Indiana->South Dakota | **0.73** | 1.00 | 0.50 | 0.024 | 3 | $0.020 | 0.00 / 0.92 | one call with keep_cities+keep_state_cities+KL, L6 |
 | hard Maine->Maryland | 0.31 | 1.00 | 0.69 | 0.527 | 9 | $0.054 | 0.00 / 0.54 | keep_state etc., country KL blew up |
-Total spend **$0.33** (6 episodes; $0.019-0.076 each, mean $0.045). Pass (≥0.5): easy 2/2, medium 1/2, hard 1/2.
+Total spend **$0.27** (corrected 2026-09-30 from $0.33; the per-record costs sum to $0.2667) (6 episodes; $0.019-0.076 each, mean $0.045). Pass (≥0.5): easy 2/2, medium 1/2, hard 1/2.
 Observations:
 - **Claude reaches for the careful recipe unprompted** (keep_cities, max_norm, KL on medium; keep_state_cities on
   hard) — it reads the reward formula and the tool schema. It solved a hard instance in 3 turns with one call.
@@ -511,7 +511,7 @@ normalised to chance, and the result is multiplied by the KL factor.
 ### Deviations from the pasted plan
 - Black-box episodes run only for the report tasks (T4, T6). In the edit tasks the submission is a vector, and a
   prompting-only agent cannot produce one, so black-box reward is 0 by construction and not worth paying for.
-- The Sonnet cap is $4.30 cumulative, including the $0.33 already spent. The gpt-6.1-sol cap is $8.00 of ~$9.
+- The Sonnet cap is $4.30 cumulative, including the $0.27 already spent. The gpt-6.1-sol cap is $8.00 of ~$9.
   gpt-6.1-sol prices: $2/M input, $0.10/M cached input, $10/M output.
 
 ### T4 environment bug found in the first episodes; fixed and episodes rerun

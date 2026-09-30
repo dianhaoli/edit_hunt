@@ -183,7 +183,8 @@ def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_token
     messages = [{"role": "user", "content": _first_msg(env)}]
     tools = tools_for(env)
     usage = {"input_tokens": 0, "output_tokens": 0, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}
-    nudges, stop, t0 = 0, None, time.time()
+    nudges, stop, end, t0 = 0, None, "max_turns", time.time()
+    served = set()
     for turn in range(max_turns):
         # auto-caching: the history is append-only, so each turn reads the previous turns from cache
         kw = dict(model=model, max_tokens=max_tokens, system=SYSTEM, tools=tools, messages=messages,
@@ -194,18 +195,22 @@ def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_token
             kw["extra_headers"] = {"anthropic-beta": "server-side-fallback-2026-07-01"}
             kw["extra_body"] = {"fallbacks": "default"}
         resp = client.messages.create(**kw)
+        served.add(getattr(resp, "model", None))
         for k in usage:
             usage[k] += getattr(resp.usage, k, 0) or 0
         messages.append({"role": "assistant", "content": resp.content})  # echo blocks unchanged
         stop = resp.stop_reason
-        if max_cost is not None and cost(usage) >= max_cost:
-            stop = "cost_cap"
-            break
+        capped = max_cost is not None and cost(usage) >= max_cost
         if stop == "refusal":
+            end = "refusal"
             break
         uses = [b for b in resp.content if b.type == "tool_use"]
+        if capped and not uses:
+            end = "cost_cap"
+            break
         if not uses:
             if nudges >= max_nudges:
+                end = "no_tool_calls"
                 break
             nudges += 1
             messages.append({"role": "user", "content": "Continue. Submit when you are done."})
@@ -217,10 +222,16 @@ def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_token
                             "is_error": out.startswith('{"error"')})
         messages.append({"role": "user", "content": results})
         if env.done:
+            end = "submitted"
+            break
+        if capped:  # the capping turn's tool calls were run (so a submit in it counts); stop now
+            end = "cost_cap"
             break
     log = [{"role": m["role"], "content": m["content"] if isinstance(m["content"], str)
             else [x if isinstance(x, dict) else _dump(x) for x in m["content"]]} for m in messages]
-    return {"messages": log, "turns": turn + 1, "stop_reason": stop, "usage": usage, "cost_usd": round(cost(usage), 4),
+    return {"messages": log, "turns": turn + 1, "stop_reason": stop, "end": end,
+            "served_models": sorted(m for m in served if m), "usage": usage,
+            "cost_usd": round(cost(usage), 4),
             "secs": round(time.time() - t0, 1)}
 
 
@@ -234,7 +245,8 @@ def run_episode_openai(client, env: ToolEnv, model: str, max_turns: int = 40, ma
     log = [{"role": "user", "content": _first_msg(env)}]
     new_input = list(log)
     usage = {"input_tokens": 0, "output_tokens": 0, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}
-    nudges, stop, prev, t0 = 0, None, None, time.time()
+    nudges, stop, end, prev, t0 = 0, None, "max_turns", None, time.time()
+    served = set()
     for turn in range(max_turns):
         kw = dict(model=model, instructions=SYSTEM, input=new_input, tools=tools, max_output_tokens=max_tokens)
         if effort:
@@ -248,15 +260,20 @@ def run_episode_openai(client, env: ToolEnv, model: str, max_turns: int = 40, ma
         usage["input_tokens"] += u.input_tokens - cached
         usage["cache_read_input_tokens"] += cached
         usage["output_tokens"] += u.output_tokens
+        usage["reasoning_tokens"] = usage.get("reasoning_tokens", 0) + (
+            getattr(getattr(u, "output_tokens_details", None), "reasoning_tokens", 0) or 0)  # logged, not priced
+        served.add(getattr(resp, "model", None))
         stop = resp.status
         items = [it.model_dump(exclude_none=True) for it in resp.output]
         log.append({"role": "assistant", "content": [it for it in items if it.get("type") != "reasoning"]})
-        if max_cost is not None and cost(usage, "openai") >= max_cost:
-            stop = "cost_cap"
-            break
+        capped = max_cost is not None and cost(usage, "openai") >= max_cost
         calls = [it for it in resp.output if it.type == "function_call"]
+        if capped and not calls:
+            end = "cost_cap"
+            break
         if not calls:
             if nudges >= max_nudges:
+                end = "no_tool_calls"
                 break
             nudges += 1
             new_input = [{"role": "user", "content": "Continue. Submit when you are done."}]
@@ -272,8 +289,13 @@ def run_episode_openai(client, env: ToolEnv, model: str, max_turns: int = 40, ma
             new_input.append({"type": "function_call_output", "call_id": c.call_id, "output": out})
         log.append({"role": "user", "content": new_input})
         if env.done:
+            end = "submitted"
             break
-    return {"messages": log, "turns": turn + 1, "stop_reason": stop, "usage": usage,
+        if capped:
+            end = "cost_cap"
+            break
+    return {"messages": log, "turns": turn + 1, "stop_reason": stop, "end": end,
+            "served_models": sorted(m for m in served if m), "usage": usage,
             "cost_usd": round(cost(usage, "openai"), 4), "secs": round(time.time() - t0, 1)}
 
 

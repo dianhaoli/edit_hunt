@@ -93,7 +93,7 @@ Same shape in all four models (Fig. 1). Bigger Qwen models generalize better to 
   may be unsolvable); (b) measure leakage as "switched to target" only and lower leak_weight, then re-find a
   separating layer ceiling / dev-city count from Phase 4 (mean-diff at L≤4 with 1-2 dev cities flips 0.33-0.40);
   (c) make the tool optimizer match Phase 4b (absolute lr, more steps) and re-test the careful recipe.
-- **Claude Sonnet 5.5 probe** (6 episodes, effort medium, ≤25 turns, **$0.33 total, $0.02-0.08 each**; hand-picked
+- **Claude Sonnet 5.5 probe** (6 episodes, effort medium, ≤25 turns, **$0.27 total, $0.02-0.08 each**; hand-picked
   instances known to be solvable, so not a pass-rate estimate): easy 2/2, medium 1/2 (0.89, 0.32), hard 1/2 (0.73,
   0.31). Claude found the careful recipe unprompted (keep_cities / keep_state_cities / max_norm / KL), solving a hard
   instance in 3 turns with one call. **Implication:** the tool's named keep_* options make the careful method too

@@ -115,6 +115,8 @@ class Subject:
     def forward(self, encs, interventions=(), capture=None, use_cache=False, grad=False):
         """Returns (final-position log-probs [B,V] float32, state, cache, (mask,pos))."""
         P = self._shared_prefix(encs)
+        if P and capture and any(p < P for ps in capture.values() for row in ps for p in row):
+            P = 0  # a capture inside the shared prefix needs the full forward (the cached prefix has no residuals)
         ids, mask, pos, offs = self._batch(encs, P)
         for iv in interventions:
             assert all(p >= P for ps in iv.positions for p in ps), "intervention inside shared prefix"

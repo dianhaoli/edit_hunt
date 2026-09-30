@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import unicodedata
 
 import torch
 
@@ -180,11 +181,14 @@ class ToolEnv:
         self._clean: dict = {}  # (prompt text, cands) -> (top candidate, logp final)
         held = list(inst.test_cities) + sorted({c for c, _ in getattr(inst, "leak_items", [])})  # grader-only cities
         held += list(getattr(inst, "extra", {}).get("private_cities", []))
-        self._held = {c.lower() for c in held}
-        self._held_re = [re.compile(r"\b" + re.escape(c) + r"\b", re.I) for c in held]
+        # guards compare normalised text (unicode/zero-width/case/spacing/punctuation), so spelling variants
+        # ("Los  Angeles", "Los-Angeles", "LosAngeles", "Ames" + zero-width) and near-copies of templates are refused
+        self._held = {_letters(c) for c in held}
+        self._held_re = [re.compile(r"(?<![a-z0-9])" + " ?".join(map(re.escape, _norm(c).split())) + r"(?![a-z0-9])")
+                         for c in held]
         private_tpls = list(inst.test_templates.values()) + [STATE_Q_HO] + [t for t, _ in READOUTS.values()]
         self._private_tpls = set(private_tpls)
-        self._held_tpl = [re.compile(".*".join(re.escape(p) for p in t.split("{city}")), re.S) for t in private_tpls]
+        self._held_tpl = [re.compile(".*".join(re.escape(_norm(p)) for p in t.split("{city}")), re.S) for t in private_tpls]
         self.templates = dict(inst.dev_templates) | {"state_q": STATE_Q, "country_q": COUNTRY_Q}
         # no target capital in tasks where it is unknown (erase) or secret (detective)
         self.tgt_cap = inst.target_capital if self.task not in ("detective", "erase") and inst.target_capital else None
@@ -216,6 +220,10 @@ class ToolEnv:
             out = {"error": f"bad arguments: {e}"}
         except AssertionError as e:
             out = {"error": f"encoding failed: {e}"}
+        except Exception as e:  # e.g. CUDA OOM / linalg errors: a tool error, not a dead episode
+            if isinstance(e, torch.cuda.OutOfMemoryError):
+                torch.cuda.empty_cache()
+            out = {"error": f"internal error in {name}: {type(e).__name__}: {str(e)[:200]}"}
         out["budget_left"] = self.budget - self.used
         if self.call_budget is not None:
             out["tool_calls_left"] = self.call_budget - self.calls
@@ -232,7 +240,7 @@ class ToolEnv:
             return self.templates[t]
         if not isinstance(t, str) or "{city}" not in t:
             raise ToolError("template must be a known key or a string containing '{city}'")
-        if t in self._private_tpls:
+        if t in self._private_tpls or any(p.fullmatch(_norm(t)) for p in self._held_tpl):
             raise ToolError("that template is held out")
         return t
 
@@ -241,12 +249,17 @@ class ToolEnv:
             cs = [cs]
         if not cs or len(cs) > MAX_PROMPTS:
             raise ToolError(f"give 1..{MAX_PROMPTS} cities")
-        bad = [c for c in cs if c.lower() in self._held]
+        if not all(isinstance(c, str) for c in cs):
+            raise ToolError("cities must be strings")
+        bad = [c for c in cs if _letters(c) in self._held]
         if bad:
             raise ToolError(f"held-out cities are not accessible: {bad}")
         return list(cs)
 
     def _check_text(self, s: str):
+        if not isinstance(s, str):
+            raise ToolError("prompts must be strings")
+        s = _norm(s)
         if any(r.search(s) for r in self._held_re):
             raise ToolError("prompt mentions a held-out city")
         if any(p.fullmatch(s) for p in self._held_tpl):
@@ -266,11 +279,12 @@ class ToolEnv:
         out = []
         for p in prompts:
             self._check_text(p)
-            hit = None
-            for c in ALL_CITIES:
-                m = [x for x in re.finditer(r"(?<![A-Za-z])" + re.escape(c) + r"(?![A-Za-z])", p)]
-                if m and (hit is None or m[-1].start() > hit[1].start()):
-                    hit = (c, m[-1])
+            ms = [(c, x) for c in ALL_CITIES
+                  for x in re.finditer(r"(?<![A-Za-z])" + re.escape(c) + r"(?![A-Za-z])", p)]
+            # drop matches nested in a longer one ("Bend" inside "South Bend"), then take the last-mentioned city
+            ms = [(c, x) for c, x in ms if not any(y.start() <= x.start() and x.end() <= y.end() and
+                                                   (y.end() - y.start()) > (x.end() - x.start()) for _, y in ms)]
+            hit = max(ms, key=lambda cm: cm[1].start()) if ms else None
             e = None
             if hit:
                 c, m = hit
@@ -384,7 +398,7 @@ class ToolEnv:
             if self.tgt_cap and answers == "capitals":
                 r["target_capital_rank"] = int((s > s[CAPS.index(self.tgt_cap)]).sum()) + 1
             res.append(r)
-        return {"results": res, "note": f"top_{answers}: exact full-sequence log-prob ranking over the 50 {answers}"}
+        return {"results": res, "note": f"top_{answers}: full-sequence log-prob ranking over the 50 {answers} (the top entry is exact; lower ranks of pruned multi-token candidates use a first-token bound)"}
 
     def t_logit_lens(self, template: str, city: str, layer: int, position="final", top_k: int = 10,
                      model: str = "planted") -> dict:
@@ -399,7 +413,7 @@ class ToolEnv:
         h = st.captures[L][0, 0].to(self.S.device)
         with torch.no_grad():
             lp = torch.log_softmax(self.S.model.lm_head(self.S.model.model.norm(h.to(self.S.dtype))).float(), -1).cpu()
-        tp, ti = lp.topk(min(int(top_k), 30))
+        tp, ti = lp.topk(max(1, min(int(top_k), 30)))
         first = torch.tensor([lp[t[0]] for t in self.S.cand_tokens(CAPS)])
         order = first.argsort(descending=True)[:5].tolist()
         out = {"token": self.S.tok.decode([e.ids[p]]), "index": p,
@@ -487,7 +501,7 @@ class ToolEnv:
         cos = {k: _r(v @ u / (v.norm() * u.norm()).clamp_min(1e-12), 3) for k, u in self.regs.items() if k != name}
         with torch.no_grad():
             lg = self.S.model.lm_head(self.S.model.model.norm(v.to(self.S.device, self.S.dtype))).float().cpu()
-        ti = lg.topk(min(int(top_k), 20)).indices.tolist()
+        ti = lg.topk(max(1, min(int(top_k), 20))).indices.tolist()
         return {"register": name, "norm": _r(v.norm()), "cos": dict(list(cos.items())[:12]),
                 "unembed_top_tokens": [self.S.tok.decode([t]) for t in ti]}
 
@@ -639,6 +653,17 @@ class ToolEnv:
             raise ToolError(f"report rejected: {why}")
         self.submission = {"report": report}
         return {"status": "submitted"}
+
+
+def _norm(s: str) -> str:
+    """Canonical text for the held-out guards: NFKC, no format chars (zero-width), lower case, every run of
+    non-alphanumerics -> one space."""
+    s = "".join(ch for ch in unicodedata.normalize("NFKC", s) if unicodedata.category(ch) != "Cf")
+    return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
+
+
+def _letters(s: str) -> str:
+    return _norm(s).replace(" ", "")
 
 
 def _drop_empty(args: dict) -> dict:

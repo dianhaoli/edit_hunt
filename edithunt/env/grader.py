@@ -12,11 +12,16 @@ Score (see `reward`):
             clean model answers correctly -- whose argmax over the 50 capitals (exact full-sequence
             log-prob) is the target capital. On tiers with preserve_state, an item only counts if the
             city's state-belief answer (STATE_Q, argmax over 50 states) is unchanged by the edit.
-  KL_mean = 0.5 * (mean KL_country + mean KL_generic), KL(clean || edited) of the next-token
-            distribution at the final position, on (a) COUNTRY_Q for the held-out cities (edit at the
-            city positions) and (b) generic sentences, with each edit applied at the token at the same
-            relative index as the city in a held-out prompt (clipped to the sentence).
-  reward  = F * (1 - min(1, KL_mean / kl_budget))
+  KL_mean = 0.5 * (mean KL_country + mean KL_generic).
+            KL_country: binary KL on P(US) from the few-shot COUNTRY_Q probe (exact scores over
+            COUNTRY_CANDS) for the held-out cities, edit at the city positions. (Full-vocab KL on a
+            zero-shot country prompt was state-entangled: working edits scored ~1-3.5 nats there because the
+            model answers the *state*. See LAB_NOTEBOOK 2026-09-30.)
+            KL_generic: full-vocab KL(clean || edited) at the final position of generic sentences, each edit
+            applied at the token at the same relative index as the city in a held-out prompt.
+  leak    = fraction of private third-state (city, template) items, clean-valid, whose top capital changes
+            under the edit (the main collateral damage of mean-diff-like edits).
+  reward  = F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))
 """
 from __future__ import annotations
 
@@ -24,9 +29,9 @@ import math
 
 import torch
 
-from ..data import CAPITALS, COUNTRY_Q, GENERIC_SENTENCES, STATE_Q, STATES
+from ..data import CAPITALS, CITY2STATE, COUNTRY_CANDS, COUNTRY_Q, GENERIC_SENTENCES, STATE_Q, STATES
 from ..hooks import Intervention
-from ..metrics import kl, rate
+from ..metrics import binary_kl, kl, p_us, rate
 from ..model import Enc, Subject, pos_rule
 
 CAPS = list(CAPITALS.values())
@@ -36,8 +41,8 @@ GENERIC_GRADER = GENERIC_SENTENCES[10:]  # used only by the grader
 Edit = tuple  # (layer, position, vec[d] already multiplied by scale)
 
 
-def reward(F: float, kl_mean: float, kl_budget: float) -> float:
-    return F * (1.0 - min(1.0, kl_mean / kl_budget))
+def reward(F: float, kl_mean: float, kl_budget: float, leak: float = 0.0, leak_weight: float = 0.0) -> float:
+    return F * (1.0 - leak_weight * leak) * (1.0 - min(1.0, kl_mean / kl_budget))
 
 
 def check(sub: dict, cons: dict, d_model: int, n_layers: int) -> tuple[list[Edit] | None, str | None]:
@@ -147,13 +152,30 @@ def grade(S: Subject, inst, sub: dict, bs: int = 16, n_generic: int = 40, enforc
     F = (res["flip_eff"] if cons.get("preserve_state") else res["flip"])["rate"]
     # specificity
     ce = [S.encode(COUNTRY_Q, c) for c in cities]
-    kc = kl_under(S, ce, build_ivs(edits, ce), bs)
+    pu0 = p_us(S.score(ce, COUNTRY_CANDS, bs=bs, exact=True)[0])
+    pu1 = p_us(S.score(ce, COUNTRY_CANDS, build_ivs(edits, ce), bs=bs, exact=True)[0])
+    kc = binary_kl(pu0, pu1)
+    res["p_us"] = {"clean": pu0.mean().item(), "edited": pu1.mean().item()}
+    # third-state leakage (private items; absent on instances generated before 2026-09-30 -> leak 0, n=0)
+    li = [tuple(x) for x in getattr(inst, "leak_items", [])]
+    changed, to_tgt = [], []
+    for tk in T:
+        cs = [c for c, t in li if t == tk]
+        if cs:
+            le = [S.encode(T[tk], c) for c in cs]
+            pl = predict(S, le, CAPS, build_ivs(edits, le), bs)
+            changed += [p != CAPITALS[CITY2STATE[c]] for c, p in zip(cs, pl)]
+            to_tgt += [p == tgt for p in pl]
+    res["leak"], res["leak_to_target"] = rate(changed), rate(to_tgt)
     ge = [S.encode_text(t) for t in GENERIC_GRADER[:n_generic]]
     ref = [encs[i % len(encs)] for i in range(len(ge))]
     kg = kl_under(S, ge, build_ivs(edits, ge, ref), bs)
     res["kl_country"], res["kl_generic"] = kl_stats(kc), kl_stats(kg)
     km = 0.5 * (res["kl_country"]["mean"] + res["kl_generic"]["mean"])
-    res |= {"F": F, "kl_mean": km, "kl_budget": cons["kl_budget"], "reward": reward(F, km, cons["kl_budget"]),
-            "formula": "F * (1 - min(1, KL_mean / kl_budget))",
+    lk = res["leak"]["rate"] if res["leak"]["n"] else 0.0
+    lw = cons.get("leak_weight", 0.0)
+    res |= {"F": F, "kl_mean": km, "kl_budget": cons["kl_budget"], "leak_weight": lw,
+            "reward": reward(F, km, cons["kl_budget"], lk, lw),
+            "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
             "edits": [{"layer": L, "position": p, "norm": v.norm().item()} for L, p, v in edits]}
     return res

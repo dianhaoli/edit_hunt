@@ -166,8 +166,9 @@ class ToolEnv:
         self.submission: dict | None = None
         self.log: list[dict] = []
         self._clean: dict[str, tuple[str, torch.Tensor]] = {}  # prompt text -> (top capital, logp final)
-        self._held = {c.lower() for c in inst.test_cities}
-        self._held_re = [re.compile(r"\b" + re.escape(c) + r"\b", re.I) for c in inst.test_cities]
+        held = list(inst.test_cities) + sorted({c for c, _ in getattr(inst, "leak_items", [])})  # grader-only cities
+        self._held = {c.lower() for c in held}
+        self._held_re = [re.compile(r"\b" + re.escape(c) + r"\b", re.I) for c in held]
         self._held_tpl = inst.heldout_patterns()
         self.templates = dict(inst.dev_templates) | {"state_q": STATE_Q, "country_q": COUNTRY_Q}
         self.tgt_cap = inst.target_capital

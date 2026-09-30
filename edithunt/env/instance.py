@@ -57,6 +57,7 @@ class Instance:
     test_items: list[list[str]] = field(default_factory=list)  # [city, template key], clean-valid only
     ref_pool: dict[str, list[str]] = field(default_factory=dict)  # {"source": [...], "target": [...]}
     reference: dict = field(default_factory=dict)
+    leak_items: list[list[str]] = field(default_factory=list)  # [city, template key]: third-state cities (grader leakage)
 
     def public(self) -> dict:
         return {k: getattr(self, k) for k in PUBLIC_KEYS}
@@ -114,6 +115,10 @@ def make_instance(S: Subject, source: str, target: str, tier: str, seed: int, va
     dev_s, test = src_ok[:k], [c for c in C[source] if c not in src_ok[:k]]
     dev_t = tgt_ok[:k] if P["target_examples"] else []
     items = [[c, tk] for c in test for tk in HELDOUT_TEMPLATES if valid[tk][c]]
+    others = sorted(s for s in study_states(min_cities=5) if s not in (source, target))
+    leak_c = [c for st in rng.sample(others, 2) for c in CITIES[st][:max_cities][:4]]
+    validity(S, leak_c, HELDOUT_TEMPLATES, valid, bs)
+    leak = [[c, tk] for c in leak_c for tk in HELDOUT_TEMPLATES if valid[tk][c]]
     if len(dev_s) < k or len(items) < min_test or (P["target_examples"] and len(dev_t) < k):
         return None
     cons = {"max_layer": resolve_layer(P["max_layer"], S.n_layers, handoff), "positions": P["positions"],
@@ -122,7 +127,7 @@ def make_instance(S: Subject, source: str, target: str, tier: str, seed: int, va
     iid = re.sub(r"\s+", "_", f"{tier}-{source}-{target}-s{seed}")
     return Instance(iid, S.name, tier, source, target, CAPITALS[source], CAPITALS[target], dev_s, dev_t,
                     {t: TEMPLATES[t] for t in dt}, cons, test, {t: TEMPLATES[t] for t in HELDOUT_TEMPLATES},
-                    items, {"source": src_ok, "target": tgt_ok})
+                    items, {"source": src_ok, "target": tgt_ok}, leak_items=leak)
 
 
 def reference_vector(S: Subject, inst: Instance, layer: int, bs: int = 16) -> torch.Tensor:

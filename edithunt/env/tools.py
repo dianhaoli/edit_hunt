@@ -387,10 +387,12 @@ class ToolEnv:
     def t_optimize_vector(self, name: str, layer: int, position: str, dev_cities: list[str],
                           templates: list[str], steps: int = 50, kl_weight: float = 0.0,
                           init: str | None = None, lr: float = 0.05, keep_cities: list[str] | None = None,
-                          keep_weight: float = 1.0, max_norm: float | None = None) -> dict:
+                          keep_weight: float = 1.0, max_norm: float | None = None,
+                          keep_state_cities: list[str] | None = None) -> dict:
         """Adam on an additive vector: maximize log p(first token of target capital) at the final
         position (+ kl_weight * KL on generic sentences) (+ keep_weight * NLL of each keep city's OWN
-        state capital, with the vector added at the keep city's position, on the same templates).
+        state capital, with the vector added at the keep city's position, on the same templates)
+        (+ keep_weight * NLL of each keep_state city's OWN state on the state_q prompt, vector applied).
         lr is relative: step ~ lr*|resid|/sqrt(d)."""
         L, pos = self._layer(layer), self._pos(position)
         steps = int(steps)
@@ -408,9 +410,14 @@ class ToolEnv:
                              if e.city in CITY2STATE], device=self.S.device)
         if len(kids) != len(kencs):
             raise ToolError("keep_cities must be cities from the dataset (unknown city given)")
+        sencs = self._encs("state_q", keep_state_cities) if keep_state_cities else []
+        sids = torch.tensor([self.S.cand_tokens([CITY2STATE[e.city]])[0][0] for e in sencs
+                             if e.city in CITY2STATE], device=self.S.device)
+        if len(sids) != len(sencs):
+            raise ToolError("keep_state_cities must be cities from the dataset (unknown city given)")
         ge = [self.S.encode_text(t) for t in GENERIC_TOOLS[:4]] if kl_weight > 0 else []
         gclean = torch.stack([c[1] for c in self._clean_run(ge)]).to(self.S.device) if ge else None
-        self._spend(steps * (len(encs) + len(ge) + len(kencs)))
+        self._spend(steps * (len(encs) + len(ge) + len(kencs) + len(sencs)))
         tok = self.S.cand_tokens([self.tgt_cap])[0][0]
         cap_first = torch.tensor([t[0] for t in self.S.cand_tokens(CAPS)])
         maxn = self.inst.constraints.get("max_norm")
@@ -435,6 +442,9 @@ class ToolEnv:
             if kencs:
                 lk, *_ = self.S.forward(kencs, [Intervention(L, pos_rule(kencs, pos), "add", v)], grad=True)
                 loss = loss - keep_weight * lk[torch.arange(len(kencs)), kids].mean()
+            if sencs:
+                ls, *_ = self.S.forward(sencs, [Intervention(L, pos_rule(sencs, pos), "add", v)], grad=True)
+                loss = loss - keep_weight * ls[torch.arange(len(sencs)), sids].mean()
             opt.zero_grad(); loss.backward(); opt.step()
             if maxn is not None:
                 with torch.no_grad():

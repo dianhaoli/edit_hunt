@@ -340,3 +340,35 @@ capital. Leakage is evaluated on 2 further states disjoint from the keep states 
   L21 0.66, L22 0.15, L23+ 0.00. ho_fs 0.81-0.87 over L7-20 (better held-out-template generalisation than 1.5B, 0.66-0.72).
   Full paste at city: ≥0.93 L3-18; at final: 0.57 at L22, 1.00 from L23. **Handoff L22 = 0.79 of depth, identical to 1.5B**
   (both 28 layers). Random ≤0.01; shuffled ≤0.14; transfer to third states 0.19-0.24 (lower than 1.5B/3B/gemma ~0.3).
+
+## Phase 6 — environment rebuilt from Phases 2-4b, and scripted-baseline calibration (Qwen2.5-1.5B)
+
+### Changes
+- **Grader** (`edithunt/env/grader.py`): country damage = binary KL on P(US) from the few-shot COUNTRY_Q probe (was
+  full-vocab KL on a state-entangled zero-shot prompt); new **leakage** term: private third-state items (2 other
+  states × ≤4 cities × held-out templates, clean-valid), leak = fraction whose top capital changes;
+  reward = F × (1 − leak_weight·leak) × (1 − min(1, KL_mean/kl_budget)). Leak cities are blocked in the agent tools.
+- **Tiers** (`edithunt/env/instance.py`), all n_dev=4 with target examples, dev templates fs1+zs1, held-out ho_fs+ho_zs:
+  easy: layer ≤ handoff−1, city_last/city_all, rank 2, leak_weight 0. medium: layer ≤ 15, city_last, rank 1,
+  leak_weight 1. hard: preserve_state, layer ≤ 8, any position, rank 2, leak_weight 0.5. kl_budget 1.0 everywhere.
+- **Validation** still = mean-diff reference flip ≥ 0.8 on the private pool. This no longer makes mean-diff pass by
+  construction (the review's concern), because medium/hard are hard through leakage / state preservation, not flip.
+- **Tools**: `optimize_vector` gained `keep_cities` (other cities must keep their own capital), `keep_state_cities`
+  (cities must keep their own state on state_q) and an agent-chosen `max_norm`. Without these the careful methods of
+  Phases 3/4b were not expressible (hard tier was unsolvable through the tools). Agent system prompt now states the
+  leak term. `vec_info` bf16 dtype bug fixed. Agent loop: top-level prompt caching.
+- **Scripted baselines** (`edithunt/env/baselines.py`): meandiff (C1), gradient (naive optimize_vector + generic KL),
+  careful (norm-capped optimize_vector with keep_cities; + keep_state_cities on preserve_state tiers), random.
+
+### Calibration: pass = reward ≥ 0.5; instances from random pairs (seed 0), 7-8 per tier after validation
+| tier | meandiff | gradient (naive) | careful v1 (1 template, 8 keep, 30 steps) | careful v2 (2 templates, 4 keep, 50 steps, +keep_state) | random |
+|---|---|---|---|---|---|
+| easy | 7/8 (mean 0.70) | 5/8 (0.64) | 7/8 (0.73) | — | 0/8 |
+| medium | **1/7 (0.29)** | **0/7 (0.20)** | **3/7 (0.50)** | 1/7 (0.42) | 0/7 |
+| hard | 0/8 (0.00) | 0/8 (0.00) | 1/8 (0.21, no keep_state) | **3/8 (0.41)** | 0/8 |
+- Easy: every working method passes. Medium: naive methods fail (mean-diff flips 0.50-0.83 but leaks; naive gradient
+  flips 1.00 but leaks almost everything); careful reaches 3/7. Hard: naive methods score exactly 0 (the state answer
+  moves on every item); careful-with-keep-state reaches 3/8.
+- careful v2 raised country/generic KL (0.09-0.34 vs 0.04-0.15), which cost medium; v1 is the better medium recipe.
+- Caveats: 7-8 instances per tier, 3-6 held-out items each, so per-instance F is coarse (steps of 0.17-0.33) and pass
+  rates have CIs of ±0.3. The scripted careful agent is a lower bound on a deliberate agent, not a ceiling.

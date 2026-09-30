@@ -65,11 +65,12 @@ TOOLS = [
     _tool("optimize_vector", "Gradient-optimize an additive vector (Adam) at `layer`/`position` to raise the "
           "log-prob of the target capital's first token on dev_cities x templates, optionally penalizing KL on "
           "generic sentences, and optionally (keep_cities) rewarding each keep city's OWN state capital with the "
-          "vector applied to it; max_norm caps the vector norm during training. Costs steps x prompts forward passes. Result stored in register `name`.",
+          "vector applied to it; max_norm caps the vector norm during training; keep_state_cities rewards each such city's OWN state on "
+          "the state_q prompt with the vector applied. Costs steps x prompts forward passes. Result stored in register `name`.",
           {"name": {"type": "string"}, "layer": {"type": "integer"}, "position": _POS, "dev_cities": _STRS,
            "templates": _STRS, "steps": {"type": "integer"}, "kl_weight": {"type": "number"},
            "init": {"type": "string"}, "lr": {"type": "number"}, "keep_cities": _STRS,
-           "keep_weight": {"type": "number"}, "max_norm": {"type": "number"}},
+           "keep_weight": {"type": "number"}, "max_norm": {"type": "number"}, "keep_state_cities": _STRS},
           ["name", "layer", "position", "dev_cities", "templates"]),
     _tool("submit", "Submit the final edits (ends the episode). Checked against the constraints; a rejected "
           "submission returns an error and you may retry.", {"edits": _EDITS}, ["edits"]),
@@ -141,10 +142,12 @@ def _dump(b) -> dict:
 def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_tokens: int = 16000,
                 effort: str | None = None, fallbacks: bool = True, max_nudges: int = 2) -> dict:
     messages = [{"role": "user", "content": "Task (output of describe_task):\n" + env.call("describe_task", {})}]
-    usage = {"input_tokens": 0, "output_tokens": 0}
+    usage = {"input_tokens": 0, "output_tokens": 0, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}
     nudges, stop, t0 = 0, None, time.time()
     for turn in range(max_turns):
-        kw = dict(model=model, max_tokens=max_tokens, system=SYSTEM, tools=TOOLS, messages=messages)
+        # auto-caching: the history is append-only, so each turn reads the previous turns from cache
+        kw = dict(model=model, max_tokens=max_tokens, system=SYSTEM, tools=TOOLS, messages=messages,
+                  cache_control={"type": "ephemeral"})
         if effort:
             kw["output_config"] = {"effort": effort}
         if fallbacks:  # server-side refusal fallback (beta)

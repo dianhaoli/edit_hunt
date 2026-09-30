@@ -3,8 +3,9 @@
   meandiff  (C1): mean(target dev cities) - mean(source dev cities) at city_last, pick the layer
                   (<= max_layer) with the best dev flip rate minus generic-KL penalty, submit.
   gradient  (C2): optimize_vector (Adam, first-token target log-prob + KL penalty) on dev cities.
-  careful   (C2nk): optimize_vector at the top allowed layer with keep_cities = 2 cities from each of 4
-                  other states (must keep their own capital), norm capped at |mean-diff| of that layer.
+  careful   (C2nk): optimize_vector at the top allowed layer on both dev templates with keep_cities = 4
+                  cities of other states (must keep their own capital), norm capped at |mean-diff| of that
+                  layer; on preserve_state tiers also keep_state_cities = dev source cities (Phase 3 hop2n).
                   The scripted version of "notice the leakage term and regularize against it" (Phase 4b).
   random        : random direction norm-matched to the mean-difference vector (control).
 
@@ -80,7 +81,7 @@ def agent_gradient(env: ToolEnv, steps: int = 30, kl_weight: float = 1.0, **_) -
     _call(env, "submit", edits=[{"register": "g", "layer": L, "position": "city_last", "scale": 1.0}])
 
 
-def agent_careful(env: ToolEnv, steps: int = 30, seed: int = 0, **_) -> None:
+def agent_careful(env: ToolEnv, steps: int = 50, seed: int = 0, **_) -> None:
     d, c, layers, tpl, tgt = _setup(env)
     L = c["max_layer"] if c["max_layer"] < 20 else 15  # Phase 4b: L8-15 best; beyond the band it degrades
     tpls = [k for k in d["templates"] if k not in ("state_q", "country_q")]
@@ -91,9 +92,11 @@ def agent_careful(env: ToolEnv, steps: int = 30, seed: int = 0, **_) -> None:
     others = [s for s in study_states(min_cities=5) if s not in (d["source"], d["target"])]
     keep = [x for st in rng.sample(others, 6) for x in CITIES[st][:3]]
     for _ in range(6):  # drop cities the tools refuse (grader-only cities), as an agent would
-        o = json.loads(env.call("optimize_vector", dict(name="g", layer=L, position="city_last", dev_cities=src,
-                                                         templates=tpls[:1], steps=steps, keep_cities=keep[:8],
-                                                         max_norm=nrm)))
+        kw = dict(name="g", layer=L, position="city_last", dev_cities=src, templates=tpls, steps=steps,
+                  keep_cities=keep[:4], max_norm=nrm)
+        if c.get("preserve_state"):  # hop-2 recipe (Phase 3 hop2n): source cities keep their state
+            kw["keep_state_cities"] = d["dev_source_cities"]
+        o = json.loads(env.call("optimize_vector", kw))
         if "error" not in o:
             break
         bad = [x for x in keep if f"'{x}'" in o["error"]]

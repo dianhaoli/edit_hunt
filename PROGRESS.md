@@ -279,8 +279,7 @@ Notes for resuming:
   2578182; verified 45/45 Sonnet 1.5B replays identical (`experiments/verify_review_fixes.py`). Sonnet results stand.
 - Map rebuilt (Sonnet only; T7 grader-pass 6/8 shown; best scripted baseline per task named). Shortcut baselines show
   T1/T3/T4 pass with zero-effort scripts; T3 = T1. Design caveats listed; tasks NOT retuned (rule).
-- Next: rerun ALL gpt-6.1-sol episodes (~$4; OpenAI $2.91 of $8 spent) — needs the user's go-ahead; run 7B T6 in a
-  single worker; then task_map + FINDINGS "Task difficulty map" section with caveats; commit.
+- User decided (2026-09-30): do NOT rerun sol; FINDINGS §10 "Task difficulty map" written from Sonnet + scripts + reviews.
 - Limits (25 turns, $0.10) stay hidden from agents for Sonnet comparability; report `end` causes.
 
 ### Earlier snapshot (2026-09-30 ~20:35 UTC)

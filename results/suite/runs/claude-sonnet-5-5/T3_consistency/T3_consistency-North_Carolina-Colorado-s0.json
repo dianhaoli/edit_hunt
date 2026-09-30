@@ -1,0 +1,543 @@
+{
+ "instance": "T3_consistency-North_Carolina-Colorado-s0",
+ "suite_task": "T3_consistency",
+ "tier": "consistency",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 44,
+ "budget_total": 4000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "t",
+    "cities": [
+     "Vail",
+     "Aspen",
+     "Boulder",
+     "Breckenridge"
+    ],
+    "template": "{city}",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "s",
+    "cities": [
+     "Cary",
+     "Outer Banks",
+     "Greensboro",
+     "Charlotte"
+    ],
+    "template": "{city}",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "t",
+    "cities": [
+     "Vail",
+     "Aspen",
+     "Boulder",
+     "Breckenridge"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 12,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "s",
+    "cities": [
+     "Cary",
+     "Outer Banks",
+     "Greensboro",
+     "Charlotte"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 16,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "t-s"
+   },
+   "used": 16,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Cary",
+     "Greensboro",
+     "Wilmington",
+     "Durham"
+    ],
+    "vector": "d",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 32,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "Cary",
+     "Greensboro",
+     "Wilmington",
+     "Durham"
+    ],
+    "vector": "d",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.0,
+    "answers": "states"
+   },
+   "used": 44,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.0
+     }
+    ]
+   },
+   "used": 44,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 8,
+   "position": "city_last",
+   "scale": 1.0
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "F_cap": {
+   "k": 4,
+   "n": 5,
+   "rate": 0.8,
+   "ci95": [
+    0.3755282641185388,
+    0.9637768390302125
+   ]
+  },
+  "F_state": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "F_hidden": {
+   "k": 7,
+   "n": 7,
+   "rate": 1.0,
+   "ci95": [
+    0.6456611570247934,
+    1.0
+   ]
+  },
+  "hidden_by_readout": {
+   "abbr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "abbr_addr": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   }
+  },
+  "p_us": {
+   "clean": 0.945689857006073,
+   "edited": 0.8539339900016785
+  },
+  "kl_country": {
+   "mean": 0.04541865363717079,
+   "sd": 0.014829047955572605,
+   "n": 3,
+   "ci95": [
+    0.028638006172378393,
+    0.062199301101963186
+   ],
+   "max": 0.05834243446588516
+  },
+  "kl_generic": {
+   "mean": 0.006332390010356903,
+   "sd": 0.006906220223754644,
+   "n": 40,
+   "ci95": [
+    0.00419213018923823,
+    0.008472649831475576
+   ],
+   "max": 0.039886124432086945
+  },
+  "kl_mean": 0.025875521823763847,
+  "F": 0.9283177667225558,
+  "reward": 0.9042970600903386,
+  "edits": [
+   {
+    "layer": 8,
+    "position": "city_last",
+    "norm": 35.87298583984375
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":4000,\"constraints\":{\"max_layer\":15,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"North Carolina\",\"target\":\"Colorado\",\"source_capital\":\"Raleigh\",\"target_capital\":\"Denver\",\"dev_source_cities\":[\"Cary\",\"Outer Banks\",\"Greensboro\",\"Charlotte\"],\"dev_target_cities\":[\"Vail\",\"Aspen\",\"Boulder\",\"Breckenridge\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make the model treat held-out cities in North Carolina as if they were in Colorado: the capital question, the question 'which US state is <city> in?', and further hidden state-level readouts that you cannot see or query should all give the Colorado answer.\",\"reward\":\"F_cap, F_state, F_hidden = fraction of held-out items answered with the target state's answer on the capital question (held-out wordings), on the state question (two wordings, one held out), and on the hidden readouts. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. reward = (F_cap * F_state * F_hidden)^(1/3) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQS9AUKEAgSGAI4AUIIdGhpbmtpbmcSDIQycZ4Hkit9xTpWERoM9+uDlnhUJJFo0mHdIjCIgCnr1e8yuqsSOL1NVdSoj83vOwdDmW6a+XqUxgTqwM64gwXDHneVL/0myInChioqkQWbEaJbpcLSm++KTtcet/UurBmhD9kUqJmRw9nuV14oyDdGcLFqwW/Rl92M/HGxTj9qfVFY2YGpt3w2z9/wGZTYE7cQKD4tdvUZ+6f5Huj2/Up0Suttk+qybgtonHeUAkRnezCdLE5f212JwM6NExfXKiw6Lflwqak4x3vbX9uxUBu3oNESPpYJWUa5rVXuvzYf2e+HTkNtMEhW1SpGRXGr7qHN1XeCP16RpEL5p4tqTguiaMyMRwmBaDHpua99835mu4oBHM+GfFVw+FNETq/d7tyqSgrJv8sUKUpxRuYVDK8i6ezmpQ32RtJWeRcl1pZihMJtv1HwjE26vMabeZ85Y6Z5XGym8yNYyUk7ipP5qshACaLUljmXXDbax7Dw/Taa7zDY1N0SeD9p6/HlRXABAKlOrECV1RL72Mybghe6jpWnCVimXhJWUe1laedRPvg/xw1D/Ggiq8wHQDW3U8L9OTNtJlfgIR9K70ng1CVPYOUq5OSaEqPADUZMlamezjvPKyBQojf6cgi4td+WlcbHSQNmZXQRoE+wQgSarlvaCoB/H3JOoXdLgk2KYKpoJyg1dglGyFZT5O5mcwGYncmurA10zNeAESVTrlggIAu2jHB5oVW0jwlfaIYpPEjbo11+76RRole2yUbxBfOMfPtcNsShq33cLFgjt6BUaa6fYFKrNE1GIm8l8rM+NPhZoAc62DhrqyIElb/yPl0mQQer4usnmmKNieS9OfwhT+RWLf7aWiS+5JznHR4oLXAJN/14EAHknhr3HI5ZoG4X7CnBv5i+WGDlVSAdkxIrZx/HK81CA06JxDbkzN+IZPZVdEmY/FSaSiWrc7KbJrI6J3cqVRjCaIqaQMHLqh1rbaW7rpIYAQ==",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01QJ57wXvNL6oUB9DW81zppm",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "t",
+      "cities": [
+       "Vail",
+       "Aspen",
+       "Boulder",
+       "Breckenridge"
+      ],
+      "template": "{city}",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_018XEPcVusKXgDAPvcsVNesX",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "s",
+      "cities": [
+       "Cary",
+       "Outer Banks",
+       "Greensboro",
+       "Charlotte"
+      ],
+      "template": "{city}",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01QJ57wXvNL6oUB9DW81zppm",
+     "content": "{\"register\":\"t\",\"n\":4,\"norm\":57.3293,\"budget_left\":3996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_018XEPcVusKXgDAPvcsVNesX",
+     "content": "{\"register\":\"s\",\"n\":4,\"norm\":2745.8486,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSmQYKEAgSGAI4AUIIdGhpbmtpbmcSDAnlVIVzxAYd8F6fdxoMjuQS5UdO7LW9sLejIjAQM0g4IF40TKZcxJpA5asPr1ze08hxd0P6svGHdJR06pQkM1gx5yVyjl1Idxy1g6cqtgX5a79V3zvWce7alzxe14pzcLtMjg0Q8TZ/F1eCALrDcJtTv82R0u2u3er7vvq2wjO3eTpgPpbtz5uwvUh6VKE8zovb2Yw1/rTZv5PvSHNlz+yTtUVUpBwygAgJIs9HKx7AT35siTLapRdM6t/Gelvx6VadXpdNJvAZ6zG8NlphdJXpThU+AOFUZQ8KT426OPMz4rkIkn4jxYsb9wkYhxyqTmxevVDKxYpnROOktO+MKDxOcaCobiYEEKiDls/0lGJpMQa5PQ7KrXIzAKhZhdNu/bb5tTUkb5eg2rvQY+nJ61vWTY7lyfgeozoEmniqh/mYNh/3Kh6Mq0Tnv0qYuNz/2lXpvQ1UGhNmDQzULIPAYB277X7R6akrOM8E1WbfD87zVivTYzlog7NFldhwoIINRkLzHArTkcCfy1CuySckWYRRcnwOhf6OMfKbW0wTuouXFyF+gODd9mjmzJHMR6ZM7juPQaYqfbb/c2u0cX6/VocCdmpSrQoQ2Gvy2wbx/0XS6m0w/QO0LtMNpox4nO6bIjm520ExXZJHW+JHAISu9YoJKuZnSxzYV0/gBRw1k12SrwvXqxIrTgODkoZWaipe4XgFUT7s72+gOS3TvQNFMVDi2HoKZw6cHN/obYvd3p+dm4/W+C+XW7GN04BNlOVnVNiJz26EA7Ig7Q75dk3BP4s3XxmTF2b/+WL5RgUsv9eCqhaxlb13BYxzeIDQGFABzcxVXx8xNx3SQv+thxAXPu6uSCgjtLWYPjSjim++1Zj+vAAX/0xSa7AnDCi7lpynEf1/vB6595V1Wm0/8OB6wB9DKn50LCqivB7rsjnYyYpLPeE6m1tlVXdlb8ek33a7YR+7QbTzAVkG2fn1CrirwK1ukoNhYZzgnMaVfBw3QI6ppveTlS8rKQz34WX8aK+bOowTrgoNGAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01XSPXQZmKpAMPqooj3rVpJB",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "t",
+      "cities": [
+       "Vail",
+       "Aspen",
+       "Boulder",
+       "Breckenridge"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01EhVWhYzGgEWJPbfujoWu9F",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "s",
+      "cities": [
+       "Cary",
+       "Outer Banks",
+       "Greensboro",
+       "Charlotte"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01XSPXQZmKpAMPqooj3rVpJB",
+     "content": "{\"register\":\"t\",\"n\":4,\"norm\":49.5853,\"budget_left\":3988}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01EhVWhYzGgEWJPbfujoWu9F",
+     "content": "{\"register\":\"s\",\"n\":4,\"norm\":45.6997,\"budget_left\":3984}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_019JMAfuqoqJBQ7Ez58zvsmY",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "t-s"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_019JMAfuqoqJBQ7Ez58zvsmY",
+     "content": "{\"register\":\"d\",\"norm\":35.873,\"budget_left\":3984}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01LFTcHsj4vdhkGfKBPNa6bo",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Cary",
+       "Greensboro",
+       "Wilmington",
+       "Durham"
+      ],
+      "vector": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01LFTcHsj4vdhkGfKBPNa6bo",
+     "content": "{\"predictions\":[{\"city\":\"Cary\",\"clean\":\"Raleigh\",\"edited\":\"Denver\"},{\"city\":\"Greensboro\",\"clean\":\"Raleigh\",\"edited\":\"Denver\"},{\"city\":\"Wilmington\",\"clean\":\"Raleigh\",\"edited\":\"Denver\"},{\"city\":\"Durham\",\"clean\":\"Raleigh\",\"edited\":\"Denver\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":1.213,\"flip_rate\":1.0,\"kl_generic\":0.0047,\"budget_left\":3968}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Check state question.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01MvtmAnwJkNU9GrLSkfgSnH",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "Cary",
+       "Greensboro",
+       "Wilmington",
+       "Durham"
+      ],
+      "vector": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.0,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01MvtmAnwJkNU9GrLSkfgSnH",
+     "content": "{\"predictions\":[{\"city\":\"Cary\",\"clean\":\"North Carolina\",\"edited\":\"Colorado\"},{\"city\":\"Greensboro\",\"clean\":\"North Carolina\",\"edited\":\"Colorado\"},{\"city\":\"Wilmington\",\"clean\":\"Delaware\",\"edited\":\"Colorado\"},{\"city\":\"Durham\",\"clean\":\"North Carolina\",\"edited\":\"Colorado\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":4.899,\"kl_generic\":0.0047,\"budget_left\":3956}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Good enough.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01MfW4HJWYZJhdqxEeseMUTs",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 8,
+        "position": "city_last",
+        "scale": 1.0
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01MfW4HJWYZJhdqxEeseMUTs",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3956}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 6,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 14,
+  "output_tokens": 1381,
+  "cache_read_input_tokens": 23781,
+  "cache_creation_input_tokens": 5850
+ },
+ "cost_usd": 0.0332,
+ "secs": 17.9
+}

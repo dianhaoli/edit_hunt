@@ -1,0 +1,529 @@
+{
+ "instance": "T3_consistency-North_Carolina-Texas-s0",
+ "suite_task": "T3_consistency",
+ "tier": "consistency",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 44,
+ "budget_total": 4000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "tx",
+    "cities": [
+     "Corpus Christi",
+     "Houston",
+     "Laredo",
+     "El Paso"
+    ],
+    "template": "{city}",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "nc",
+    "cities": [
+     "Chapel Hill",
+     "Asheville",
+     "Cary",
+     "Greensboro"
+    ],
+    "template": "{city}",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "tx",
+    "cities": [
+     "Corpus Christi",
+     "Houston",
+     "Laredo",
+     "El Paso"
+    ],
+    "template": "The state containing {city}",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 12,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "nc",
+    "cities": [
+     "Chapel Hill",
+     "Asheville",
+     "Cary",
+     "Greensboro"
+    ],
+    "template": "The state containing {city}",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 16,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "tx-nc"
+   },
+   "used": 16,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Chapel Hill",
+     "Asheville",
+     "Cary",
+     "Greensboro"
+    ],
+    "vector": "d",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.5
+   },
+   "used": 32,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Chapel Hill",
+     "Asheville",
+     "Cary",
+     "Greensboro"
+    ],
+    "vector": "d",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.5,
+    "answers": "states"
+   },
+   "used": 44,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.5
+     }
+    ]
+   },
+   "used": 44,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 8,
+   "position": "city_last",
+   "scale": 1.5
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "F_cap": {
+   "k": 5,
+   "n": 5,
+   "rate": 1.0,
+   "ci95": [
+    0.5655085052479191,
+    1.0
+   ]
+  },
+  "F_state": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "F_hidden": {
+   "k": 7,
+   "n": 7,
+   "rate": 1.0,
+   "ci95": [
+    0.6456611570247934,
+    1.0
+   ]
+  },
+  "hidden_by_readout": {
+   "abbr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "abbr_addr": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   }
+  },
+  "p_us": {
+   "clean": 0.7550890445709229,
+   "edited": 0.4737824499607086
+  },
+  "kl_country": {
+   "mean": 0.25284281373023987,
+   "sd": 0.20165671408176422,
+   "n": 3,
+   "ci95": [
+    0.024646759738596008,
+    0.48103886772188376
+   ],
+   "max": 0.4831418991088867
+  },
+  "kl_generic": {
+   "mean": 0.010598219931125641,
+   "sd": 0.011422562412917614,
+   "n": 40,
+   "ci95": [
+    0.007058331164981299,
+    0.014138108697269983
+   ],
+   "max": 0.062252990901470184
+  },
+  "kl_mean": 0.13172051683068275,
+  "F": 1.0,
+  "reward": 0.8682794831693172,
+  "edits": [
+   {
+    "layer": 8,
+    "position": "city_last",
+    "norm": 56.6578369140625
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":4000,\"constraints\":{\"max_layer\":15,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"North Carolina\",\"target\":\"Texas\",\"source_capital\":\"Raleigh\",\"target_capital\":\"Austin\",\"dev_source_cities\":[\"Chapel Hill\",\"Asheville\",\"Cary\",\"Greensboro\"],\"dev_target_cities\":[\"Corpus Christi\",\"Houston\",\"Laredo\",\"El Paso\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make the model treat held-out cities in North Carolina as if they were in Texas: the capital question, the question 'which US state is <city> in?', and further hidden state-level readouts that you cannot see or query should all give the Texas answer.\",\"reward\":\"F_cap, F_state, F_hidden = fraction of held-out items answered with the target state's answer on the capital question (held-out wordings), on the state question (two wordings, one held out), and on the hidden readouts. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. reward = (F_cap * F_state * F_hidden)^(1/3) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQS5gUKEAgSGAI4AUIIdGhpbmtpbmcSDJ8acMLbOIcxTixLBxoMgq3bI7fmwfLLo0VnIjBLxH/3DN7gggwW6rpdjBdSJGhukKv4tM3Gs+9lRvMzki84G55y5x3R7y3jY/5MNb4qgwUHoCmDfKMEVSG+9/RyGMUHS8/XyzY091q8DTqGWaqBkGbPrsv7GUgscqOTCOkJmB3N5OH2c402DZPyeWZzpcCEVEwd39zRDy2Z2FOfiSdMwk3ht1yyYSa/HW1pOaNHAyivhdg8mdX4gUIlEQ7JBJaX2ILKn/9k6isjOQIAzk9q1O2KvwL9jVslpbfhTL3CcP2QgmCNzS8aYyq9HMs+3oQ1up/cftyawSpiWF2fJMLXvTEV+SXFh9GAXPiVVQNVm2AiqO2VGyu/wvupTmrs0DWM/C1HFHeTV0ii+yrNVPAVT+40cnGplFKC+ygCgl79YISg39UdLxeZbKEimxAGr6TDHDptlYA1kVoMKw0bGgVJd4EqWPBOCcVYHeqMRvXKVHWw96JfNEjvMBMeqDBzWyN17+QzJCD6owAbbfw+pkaHFZGt7PpMBd5pqBDM8uUyhwyadGKv4cH1FbOMMlB4T+XszazeG+shIj0jFzvF8Dvj6B1UcrasRrXabSfZJZAA15Fcz88d6qVNSTRjF0PwZe7MzYt7XY5ClHTIbNu0qCbd+MiQmPBdH7BOsyRd4XDtTSh10C7HIBsMy1UY1vTAEdrBsi1ms+tdsk3D3BFYXtjbX3AG/j5mKhq6DoRUljI7rWGcMhC5aY8a3yBQRu2gnCZLlYoo8KA3gbQ+v3CpR3lB4YKny1bMuzq1zZYRbFjhu1IhEhAT3XYky6Js+1dlzQHUk4xoK+JmTh2YTQIDW8JTLYDddVn6lhh6Xckl+Z4SI9sft5eGE5wjcm9URIRXvkkOJywlq51/vf7Er+pfi7mLOXW745/drWpM8l79iE4ymNafAqsb37eDRoPZr2sIFyLzlTeSGAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01EFZ1FKiQEPPTuhVaJeyQx7",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "tx",
+      "cities": [
+       "Corpus Christi",
+       "Houston",
+       "Laredo",
+       "El Paso"
+      ],
+      "template": "{city}",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_011fPmyEXAg3W8UYcCAwtd5K",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "nc",
+      "cities": [
+       "Chapel Hill",
+       "Asheville",
+       "Cary",
+       "Greensboro"
+      ],
+      "template": "{city}",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01EFZ1FKiQEPPTuhVaJeyQx7",
+     "content": "{\"register\":\"tx\",\"n\":4,\"norm\":2764.6353,\"budget_left\":3996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_011fPmyEXAg3W8UYcCAwtd5K",
+     "content": "{\"register\":\"nc\",\"n\":4,\"norm\":51.6794,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQS7AUKEAgSGAI4AUIIdGhpbmtpbmcSDMDLYqF+/9HbYyeTPRoMwCbaz4qladNp4AEZIjB2Js3bp15PcoI2UQaAJ7ausk4ZCd/dah+SiSGhtjiyKl2b1F9cxrhg66TjsbZeQakqiQWn5DllUuKIbk472WvjV8LgVrp0ybpNcN2xrje16bfB6f+vU0B/3B0UTUXNzGcLetyNO6/H9oG4s3QYp9cUACuh2idb6kI2DvoZUvrXWc+KaltYBMruGGL4hoj0wRUcOpqXRNXsChkU/JA+j305kGLtNW7J96hRHgz5zwrvdu7tJt8+o18luuAvJZ7sH5CZO88CqyuxJ2FfNCZTuAi3CFERhIhURUAmInSYNg6XIMtlSLJHeMC2MPZZ1wUFl1d+Nkww/qNXkIhBisPWwpzMP/mC8EVRTfqPviIYdvh3V1kve8erlf9gUobCHNvfg8luh7ZaTi3CcMr7Izat5JLbPoIGaAGz5XzrCYc/Q+D5i6NIgKlOkb5GplZNLx1fplo5lwyF4scDyvQICRObppQy/uzMWbdNNSilgsvARJHqld4x5MbDnDyLP6wC3GHCitvWuZHpW5n3/9brCsgfNCxCkYiUpEgCyPSNhkEFeoST2kLjXM2uWC4u5Qx215oz7hMZxDM9LJko0KZLKxMOcbv2lrRC8VNsiJDBp11pLvVB6m8ZPUzU5Siy1I8hVlgZ2DIc1Zgtr8CJATWPTPy+uGwlisZY5vtXu4ULu65Um+rM945+USxsT8BS9Ld3g4inhXuwk5wzSQ99INRR6v/EK0A/1FlfD32L+G3htUA99PCn96RGr4wUq8Vi6ysed037w+c+AXdBnzvCJdJf6lXlTx307Pe8yGdYKip6lLB3ijlaEIVagZND8Y/tUEST+lT98vC8sBSyoc6hKC0Qahgf7KEh7bguHIBgC3vgrEACaVvvtRvo/Y34zhwbizywh67oA7RYl9+nkKanQnBQD4BJ50/czdqHFLgvMk3qfpNdGAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01RdTbypjjHq7EjL5nGvxLHX",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "tx",
+      "cities": [
+       "Corpus Christi",
+       "Houston",
+       "Laredo",
+       "El Paso"
+      ],
+      "template": "The state containing {city}",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01Bk6CdjXoBgF6ro2irJ7B9E",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "nc",
+      "cities": [
+       "Chapel Hill",
+       "Asheville",
+       "Cary",
+       "Greensboro"
+      ],
+      "template": "The state containing {city}",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01RdTbypjjHq7EjL5nGvxLHX",
+     "content": "{\"register\":\"tx\",\"n\":4,\"norm\":52.052,\"budget_left\":3988}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01Bk6CdjXoBgF6ro2irJ7B9E",
+     "content": "{\"register\":\"nc\",\"n\":4,\"norm\":46.5877,\"budget_left\":3984}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01B5gtxC9denLnmU3eLZfdr3",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "tx-nc"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01B5gtxC9denLnmU3eLZfdr3",
+     "content": "{\"register\":\"d\",\"norm\":37.7719,\"budget_left\":3984}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01VcCxG3Ewi23AExG3Lx2yS2",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "zs1",
+      "cities": [
+       "Chapel Hill",
+       "Asheville",
+       "Cary",
+       "Greensboro"
+      ],
+      "vector": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.5
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01RyTNUjkYM9Z3A36cTgxgtY",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "state_q",
+      "cities": [
+       "Chapel Hill",
+       "Asheville",
+       "Cary",
+       "Greensboro"
+      ],
+      "vector": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.5,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01VcCxG3Ewi23AExG3Lx2yS2",
+     "content": "{\"predictions\":[{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Austin\"},{\"city\":\"Asheville\",\"clean\":\"Raleigh\",\"edited\":\"Austin\"},{\"city\":\"Cary\",\"clean\":\"Raleigh\",\"edited\":\"Austin\"},{\"city\":\"Greensboro\",\"clean\":\"Raleigh\",\"edited\":\"Austin\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":3.107,\"flip_rate\":1.0,\"kl_generic\":0.0075,\"budget_left\":3968}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01RyTNUjkYM9Z3A36cTgxgtY",
+     "content": "{\"predictions\":[{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"Texas\"},{\"city\":\"Asheville\",\"clean\":\"North Carolina\",\"edited\":\"Texas\"},{\"city\":\"Cary\",\"clean\":\"North Carolina\",\"edited\":\"Texas\"},{\"city\":\"Greensboro\",\"clean\":\"North Carolina\",\"edited\":\"Texas\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":17.428,\"kl_generic\":0.0038,\"budget_left\":3956}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Works well; check scale 1.0 on other templates quickly? Just submit at 1.5.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01Dw2aiAjMzbM5kFcxCK23jU",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 8,
+        "position": "city_last",
+        "scale": 1.5
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01Dw2aiAjMzbM5kFcxCK23jU",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3956}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 5,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 12,
+  "output_tokens": 1347,
+  "cache_read_input_tokens": 18292,
+  "cache_creation_input_tokens": 5854
+ },
+ "cost_usd": 0.0318,
+ "secs": 17.5
+}

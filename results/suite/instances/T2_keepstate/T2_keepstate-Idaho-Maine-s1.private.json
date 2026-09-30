@@ -1,0 +1,298 @@
+{
+ "id": "T2_keepstate-Idaho-Maine-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "hard",
+ "source": "Idaho",
+ "target": "Maine",
+ "source_capital": "Boise",
+ "target_capital": "Augusta",
+ "dev_source": [
+  "Twin Falls",
+  "Nampa",
+  "Sun Valley",
+  "Pocatello"
+ ],
+ "dev_target": [
+  "Bar Harbor",
+  "Lewiston",
+  "Ogunquit",
+  "Bangor"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 8,
+  "positions": [
+   "city_last",
+   "city_all",
+   "final"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": true,
+  "leak_weight": 0.5
+ },
+ "test_cities": [
+  "Coeur d'Alene",
+  "Ketchum"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Coeur d'Alene",
+   "ho_fs"
+  ],
+  [
+   "Coeur d'Alene",
+   "ho_zs"
+  ],
+  [
+   "Ketchum",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Twin Falls",
+   "Nampa",
+   "Sun Valley",
+   "Pocatello",
+   "Coeur d'Alene",
+   "Ketchum"
+  ],
+  "target": [
+   "Bar Harbor",
+   "Lewiston",
+   "Ogunquit",
+   "Bangor",
+   "Kennebunkport",
+   "Waterville",
+   "Biddeford"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "flip_eff": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "p_us": {
+    "clean": 0.912139892578125,
+    "edited": 0.8424792289733887
+   },
+   "leak": {
+    "k": 7,
+    "n": 14,
+    "rate": 0.5,
+    "ci95": [
+     0.2679886791947528,
+     0.7320113208052472
+    ]
+   },
+   "leak_to_target": {
+    "k": 1,
+    "n": 14,
+    "rate": 0.07142857142857142,
+    "ci95": [
+     0.012721886112291636,
+     0.3146926955395781
+    ]
+   },
+   "kl_country": {
+    "mean": 0.04846533387899399,
+    "sd": 0.06847600638866425,
+    "n": 2,
+    "ci95": [
+     -0.04643756911436177,
+     0.14336823687234973
+    ],
+    "max": 0.09688518196344376
+   },
+   "kl_generic": {
+    "mean": 0.024816635996103287,
+    "sd": 0.03841525688767433,
+    "n": 40,
+    "ci95": [
+     0.012911624546882132,
+     0.03672164744532444
+    ],
+    "max": 0.1989140808582306
+   },
+   "F": 0.0,
+   "kl_mean": 0.03664098493754864,
+   "kl_budget": 1.0,
+   "leak_weight": 0.5,
+   "reward": 0.0,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 37.06089401245117
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   2,
+   5,
+   8
+  ]
+ },
+ "leak_items": [
+  [
+   "Sioux Falls",
+   "ho_fs"
+  ],
+  [
+   "Sioux Falls",
+   "ho_zs"
+  ],
+  [
+   "Rapid City",
+   "ho_fs"
+  ],
+  [
+   "Rapid City",
+   "ho_zs"
+  ],
+  [
+   "Deadwood",
+   "ho_fs"
+  ],
+  [
+   "Deadwood",
+   "ho_zs"
+  ],
+  [
+   "Sturgis",
+   "ho_fs"
+  ],
+  [
+   "Sturgis",
+   "ho_zs"
+  ],
+  [
+   "Morgantown",
+   "ho_zs"
+  ],
+  [
+   "Wheeling",
+   "ho_zs"
+  ],
+  [
+   "Parkersburg",
+   "ho_fs"
+  ],
+  [
+   "Parkersburg",
+   "ho_zs"
+  ],
+  [
+   "Beckley",
+   "ho_fs"
+  ],
+  [
+   "Beckley",
+   "ho_zs"
+  ]
+ ],
+ "task": "edit",
+ "suite_task": "T2_keepstate",
+ "extra": {
+  "reference": {
+   "reward": 0.7944575314010893,
+   "F": 1.0,
+   "kl_mean": 0.07313288003206253,
+   "error": null,
+   "edits": [
+    {
+     "layer": 8,
+     "position": "city_last",
+     "norm": 34.850502014160156
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

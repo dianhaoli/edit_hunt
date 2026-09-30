@@ -1,0 +1,502 @@
+{
+ "instance": "T1_easy-Texas-Massachusetts-s0",
+ "suite_task": "T1_easy",
+ "tier": "easy",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 44,
+ "budget_total": 3000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "tx",
+    "cities": [
+     "San Antonio",
+     "Corpus Christi",
+     "Plano",
+     "Waco"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 12,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "ma",
+    "cities": [
+     "Worcester",
+     "Provincetown",
+     "Nantucket",
+     "Martha's Vineyard"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 12,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "ma-tx"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "San Antonio",
+     "Waco",
+     "Plano",
+     "Corpus Christi"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "San Antonio",
+     "Waco",
+     "Plano",
+     "Corpus Christi"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.3
+   },
+   "used": 36,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "San Antonio",
+     "Waco",
+     "Plano",
+     "Corpus Christi"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.3
+   },
+   "used": 44,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.15
+     }
+    ]
+   },
+   "used": 44,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 12,
+   "position": "city_last",
+   "scale": 1.15
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "n_items": 15,
+  "flip": {
+   "k": 15,
+   "n": 15,
+   "rate": 1.0,
+   "ci95": [
+    0.7961107336956521,
+    1.0
+   ]
+  },
+  "to_source": {
+   "k": 0,
+   "n": 15,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.20388926630434784
+   ]
+  },
+  "per_template": {
+   "ho_fs": {
+    "k": 8,
+    "n": 8,
+    "rate": 1.0,
+    "ci95": [
+     0.6755843804891231,
+     1.0
+    ]
+   },
+   "ho_zs": {
+    "k": 7,
+    "n": 7,
+    "rate": 1.0,
+    "ci95": [
+     0.6456611570247934,
+     1.0
+    ]
+   }
+  },
+  "state_kept": {
+   "k": 0,
+   "n": 8,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.3244156195108769
+   ]
+  },
+  "state_clean_correct": {
+   "k": 8,
+   "n": 8,
+   "rate": 1.0,
+   "ci95": [
+    0.6755843804891231,
+    1.0
+   ]
+  },
+  "p_us": {
+   "clean": 0.7914117574691772,
+   "edited": 0.8354906439781189
+  },
+  "leak": {
+   "k": 7,
+   "n": 13,
+   "rate": 0.5384615384615384,
+   "ci95": [
+    0.2914343243183205,
+    0.7679424569851186
+   ]
+  },
+  "leak_to_target": {
+   "k": 5,
+   "n": 13,
+   "rate": 0.38461538461538464,
+   "ci95": [
+    0.17709446581236818,
+    0.6447751902773146
+   ]
+  },
+  "kl_country": {
+   "mean": 0.15381895005702972,
+   "sd": 0.26427173614501953,
+   "n": 8,
+   "ci95": [
+    -0.029312019912973913,
+    0.3369499200270334
+   ],
+   "max": 0.7865253686904907
+  },
+  "kl_generic": {
+   "mean": 0.006065371446311474,
+   "sd": 0.010062132962048054,
+   "n": 40,
+   "ci95": [
+    0.002947084134917687,
+    0.00918365875770526
+   ],
+   "max": 0.0633377954363823
+  },
+  "F": 1.0,
+  "kl_mean": 0.0799421607516706,
+  "kl_budget": 1.0,
+  "leak_weight": 0.0,
+  "reward": 0.9200578392483294,
+  "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+  "edits": [
+   {
+    "layer": 12,
+    "position": "city_last",
+    "norm": 38.691680908203125
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":3000,\"constraints\":{\"max_layer\":21,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":3000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Texas\",\"target\":\"Massachusetts\",\"source_capital\":\"Austin\",\"target_capital\":\"Boston\",\"dev_source_cities\":[\"San Antonio\",\"Corpus Christi\",\"Plano\",\"Waco\"],\"dev_target_cities\":[\"Worcester\",\"Provincetown\",\"Nantucket\",\"Martha's Vineyard\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make prompts about cities in Texas answer the capital of Massachusetts (Boston) instead of Austin, on held-out Texas cities and held-out prompt wordings.\",\"reward\":\"F = fraction of held-out (city, wording) items whose top answer among the 50 capitals is the target capital. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. leak = fraction of held-out cities from other states whose top capital changes. reward = F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":3000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01QFTMbcsZL4Xb9HgttnFoAJ",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "tx",
+      "cities": [
+       "San Antonio",
+       "Corpus Christi",
+       "Plano",
+       "Waco"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 12,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01M7R3PdbQDdRCKadyh3by1Q",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "ma",
+      "cities": [
+       "Worcester",
+       "Provincetown",
+       "Nantucket",
+       "Martha's Vineyard"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 12,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01QFTMbcsZL4Xb9HgttnFoAJ",
+     "content": "{\"register\":\"tx\",\"n\":4,\"norm\":53.1388,\"budget_left\":2996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01M7R3PdbQDdRCKadyh3by1Q",
+     "content": "{\"register\":\"ma\",\"n\":4,\"norm\":50.3432,\"budget_left\":2992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01HShYXtCMZWaqQnFT6iyUkz",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "ma-tx"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01AnkbBq9VqqT1fofcxN77oW",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "San Antonio",
+       "Waco",
+       "Plano",
+       "Corpus Christi"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01HShYXtCMZWaqQnFT6iyUkz",
+     "content": "{\"register\":\"d\",\"norm\":33.6449,\"budget_left\":2992}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01AnkbBq9VqqT1fofcxN77oW",
+     "content": "{\"predictions\":[{\"city\":\"San Antonio\",\"clean\":\"Austin\",\"edited\":\"Boston\"},{\"city\":\"Waco\",\"clean\":\"Austin\",\"edited\":\"Springfield\"},{\"city\":\"Plano\",\"clean\":\"Austin\",\"edited\":\"Boston\"},{\"city\":\"Corpus Christi\",\"clean\":\"Austin\",\"edited\":\"Boston\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":1.866,\"flip_rate\":0.75,\"kl_generic\":0.0027,\"budget_left\":2976}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSrgUKEAgSGAI4AUIIdGhpbmtpbmcSDLPIBE+5CbOBqc35dhoMmHd+TuSDDYtdEkOhIjAfmtksQjqoqYaGCerf9jU9RIsjpbAUed4gsZ2tCIwunuT5M6XZieGII3CyGXT3l9MqywSK5dZfUjyilAhk/qqq+979RRN3W7YViTXWG9eEEUqflaSKF4FvcLsf1OJ73GRGRlkdg1WagYmN19uOI+LIJHnoaMW9i/+8pmXcRvR5rfxGdTaooCY992bZdsDZpD2BMNc4/vcH/Av21EJeI04kOvOwf8F0a8fa9izcw5wsZwi9b90JYrUcEu72ZDJPxzgZyxynrMgtkELwLoWQOGbTms0v191q7JhRJuODoSPKiVsj1n87G187JQkpfHrA6ozYtWh7AOJlLAIjfQQwXiYrQkdt7+n14e4J1lo11vURmARvMHPTAxhc5c57gq+2znaRcwgq2qT+Qy8RMaJSWJ3eQ7q0GjtI8SY79qEzNvEf/REACaOZn1C3ogUUdCm7Eh/KH8XsFbox7l9GJEgPqKKyGsu1qNfEmQ9hrQNTdPbR09m0w/l/7PfTAW3rLtFpEFY7VPFhONt9ERD1aLeJdsO/mD+Q3/pa8+7eUT17h9LUQ9oPtHz5Ayj9pQpArIXRq/6UNDPCM18O1BHl7FcVVc8N6Dousg1Qofp+l3Mn7XaC9qLDWBpRIukdR83yFmGa2stxLZY/nhd0BPmnIbg3sjYWN0ZHq2rg0weyjAiL2tfxAYK/wke7ElNC264ezLi/SJWsWGNgWtOHZf5UhcUYCLbcSE2DG18neGfH8Lv6HdClO5Bw7dX2B3MdqveiHmiTD8tlvIxsNCYBpftpZW6HkD1pLiVIQoGapktibso4kTDcPeJkXRK4tdaJzs8WhKrrOZc41u+XhdERx51f0rckABgB",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01JVxVxuFsBLyDRTAfQikZbk",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "San Antonio",
+       "Waco",
+       "Plano",
+       "Corpus Christi"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.3
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01DLYoVhnZmCQ8RMNoMAXP8S",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "San Antonio",
+       "Waco",
+       "Plano",
+       "Corpus Christi"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.3
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01JVxVxuFsBLyDRTAfQikZbk",
+     "content": "{\"predictions\":[{\"city\":\"San Antonio\",\"clean\":\"Austin\",\"edited\":\"Boston\"},{\"city\":\"Waco\",\"clean\":\"Austin\",\"edited\":\"Lincoln\"},{\"city\":\"Plano\",\"clean\":\"Austin\",\"edited\":\"Boston\"},{\"city\":\"Corpus Christi\",\"clean\":\"Austin\",\"edited\":\"Lincoln\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":11.474,\"flip_rate\":0.5,\"kl_generic\":0.0042,\"budget_left\":2964}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01DLYoVhnZmCQ8RMNoMAXP8S",
+     "content": "{\"predictions\":[{\"city\":\"San Antonio\",\"clean\":\"Austin\",\"edited\":\"Boston\"},{\"city\":\"Waco\",\"clean\":\"Austin\",\"edited\":\"Boston\"},{\"city\":\"Plano\",\"clean\":\"Austin\",\"edited\":\"Boston\"},{\"city\":\"Corpus Christi\",\"clean\":\"Austin\",\"edited\":\"Boston\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":2.65,\"flip_rate\":1.0,\"kl_generic\":0.0042,\"budget_left\":2956}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Good enough at scale ~1.15; submit.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_015XdiBPLcpyX5heMM6jfiLL",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 12,
+        "position": "city_last",
+        "scale": 1.15
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_015XdiBPLcpyX5heMM6jfiLL",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":2956}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 4,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 10,
+  "output_tokens": 1152,
+  "cache_read_input_tokens": 13101,
+  "cache_creation_input_tokens": 5747
+ },
+ "cost_usd": 0.0285,
+ "secs": 13.1
+}

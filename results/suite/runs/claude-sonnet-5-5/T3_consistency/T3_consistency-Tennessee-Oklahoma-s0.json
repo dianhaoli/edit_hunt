@@ -1,0 +1,428 @@
+{
+ "instance": "T3_consistency-Tennessee-Oklahoma-s0",
+ "suite_task": "T3_consistency",
+ "tier": "consistency",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 36,
+ "budget_total": 4000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "ok",
+    "cities": [
+     "Broken Arrow",
+     "Edmond",
+     "Lawton",
+     "Muskogee"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "tn",
+    "cities": [
+     "Knoxville",
+     "Clarksville",
+     "Memphis",
+     "Murfreesboro"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "ok-tn"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Knoxville",
+     "Clarksville",
+     "Memphis",
+     "Murfreesboro"
+    ],
+    "vector": "d",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is Miami in?\nA: The state of Florida.\nQ: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "Knoxville",
+     "Clarksville",
+     "Memphis",
+     "Murfreesboro"
+    ],
+    "vector": "d",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.0,
+    "answers": "states"
+   },
+   "used": 36,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.0
+     }
+    ]
+   },
+   "used": 36,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 8,
+   "position": "city_last",
+   "scale": 1.0
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "F_cap": {
+   "k": 3,
+   "n": 5,
+   "rate": 0.6,
+   "ci95": [
+    0.23071993220883708,
+    0.8823817688407467
+   ]
+  },
+  "F_state": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "F_hidden": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "hidden_by_readout": {
+   "abbr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "abbr_addr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   }
+  },
+  "p_us": {
+   "clean": 0.9752418398857117,
+   "edited": 0.8591379523277283
+  },
+  "kl_country": {
+   "mean": 0.08214227110147476,
+   "sd": 0.04361412301659584,
+   "n": 3,
+   "ci95": [
+    0.032788244799836684,
+    0.13149629740311283
+   ],
+   "max": 0.13250339031219482
+  },
+  "kl_generic": {
+   "mean": 0.006201805081218481,
+   "sd": 0.005301733035594225,
+   "n": 40,
+   "ci95": [
+    0.004558780991232123,
+    0.00784482917120484
+   ],
+   "max": 0.024765660986304283
+  },
+  "kl_mean": 0.04417203809134662,
+  "F": 0.8434326653017492,
+  "reward": 0.8061765254825544,
+  "edits": [
+   {
+    "layer": 8,
+    "position": "city_last",
+    "norm": 33.546146392822266
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":4000,\"constraints\":{\"max_layer\":15,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Tennessee\",\"target\":\"Oklahoma\",\"source_capital\":\"Nashville\",\"target_capital\":\"Oklahoma City\",\"dev_source_cities\":[\"Knoxville\",\"Clarksville\",\"Memphis\",\"Murfreesboro\"],\"dev_target_cities\":[\"Broken Arrow\",\"Edmond\",\"Lawton\",\"Muskogee\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make the model treat held-out cities in Tennessee as if they were in Oklahoma: the capital question, the question 'which US state is <city> in?', and further hidden state-level readouts that you cannot see or query should all give the Oklahoma answer.\",\"reward\":\"F_cap, F_state, F_hidden = fraction of held-out items answered with the target state's answer on the capital question (held-out wordings), on the state question (two wordings, one held out), and on the hidden readouts. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. reward = (F_cap * F_state * F_hidden)^(1/3) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSnQYKEAgSGAI4AUIIdGhpbmtpbmcSDH6jxY+uRw1x6nsbkxoMyb+tIzXfMs1ly89rIjAS1w7jDqxwncjVAXz/xeu6E4VReWX6jYJ7CmmjRVmsgLgA+UCsVsGfpLf3PY1t4EcqugXuO6pqb9Z1P8DCZleO79GUivEu+qIQRPkpjsBQ1O6y3NZabIwhB9un2KKuEc0qIC6/YfYqfkffyI16ZlC6l/CjD7JDP89zgvfs/OYKc8bHEcTMRqAxDtdnVmZJ6KkCvyNUwEJH0RZA9+akgASEgaPNZ1XkNslqwIj3FU+pz81YlbUIDkbR0A9n2dupgongIXqR2dT42FJi0eyfChJ7l/yqYmfhxBEC2ZBHPSi638MELnPdpK7ISRYHc8DihU3NPUadCcE6WMZN3qXcS1kLeOFIsGX/iHSlY+Yt1wjJipyu8saMIwLdsPXPSCjeW0eMgWDncDJP5tRJ8buQv5GvmN0WaRlclDLEx2q9l+3oD6SlvWCOy1s2fv35/yHBiJe49IRdzFRHTZ/sRKPXDMdrPnL9PCy/hNBcYRZ4ncuCREVnqozCZi9nhpSpxB7L+MC+G1+FJpZByZcMsKsmlHJ9dXQpguEMkuRlMN/R5WkM5qMZcyCdII288YRJt6Inz+gfIpt2kaLHGOthU3+pNdWOMOzp5A6SrF5L6vKE3C1dyIdOAFdANoIbBLTt852j47VAxUpiTcg/93S8tKwFhS0jXAPME0lTeOisiLmnYIIIS7wRvNMz/9QAXCeDq/DLLoaAJJeyXi2juzQfFS0T4YocYq/4mqh7wUUrUbhpzipKLAdxRi2OC1LxMeZk4STFXZVcU+kR6j2q9/DFMaO55UwSPE2Zclz3vO0dybt3b4TQiaIsKCChes9je46TtHh2jsNFL6pXQWZYSPDacC0hLA4cUbGeFjn5ILpz7oUvH9V9IyIKTWhZbbulwTKxIRyWS5pxFTKMwJKpqUUBrpkZr7x1GAXIoQuESu5z2tauiUbv3ut3QGvegaEdETFlAMkGIC4tZ7t6PyZ0USR6MKZfe7ZF0oEN55f40Ys0M/XWIRgB",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01VauwnUXpQJXa9373PWLNdg",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "ok",
+      "cities": [
+       "Broken Arrow",
+       "Edmond",
+       "Lawton",
+       "Muskogee"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01Qbq26uErMMVyyiUcLd2adT",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "tn",
+      "cities": [
+       "Knoxville",
+       "Clarksville",
+       "Memphis",
+       "Murfreesboro"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01VauwnUXpQJXa9373PWLNdg",
+     "content": "{\"register\":\"ok\",\"n\":4,\"norm\":48.981,\"budget_left\":3996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01Qbq26uErMMVyyiUcLd2adT",
+     "content": "{\"register\":\"tn\",\"n\":4,\"norm\":47.8781,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01F3R17vRfoNRXVc8Zj1F7DP",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "ok-tn"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01F3R17vRfoNRXVc8Zj1F7DP",
+     "content": "{\"register\":\"d\",\"norm\":33.5461,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01FpFJbsmCvPmspj2fB5kGKG",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Knoxville",
+       "Clarksville",
+       "Memphis",
+       "Murfreesboro"
+      ],
+      "vector": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_016krDzNi91vd23M47c6BS4G",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is Miami in?\nA: The state of Florida.\nQ: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "Knoxville",
+       "Clarksville",
+       "Memphis",
+       "Murfreesboro"
+      ],
+      "vector": "d",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.0,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01FpFJbsmCvPmspj2fB5kGKG",
+     "content": "{\"predictions\":[{\"city\":\"Knoxville\",\"clean\":\"Nashville\",\"edited\":\"Oklahoma City\"},{\"city\":\"Clarksville\",\"clean\":\"Nashville\",\"edited\":\"Oklahoma City\"},{\"city\":\"Memphis\",\"clean\":\"Nashville\",\"edited\":\"Oklahoma City\"},{\"city\":\"Murfreesboro\",\"clean\":\"Nashville\",\"edited\":\"Oklahoma City\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":2.685,\"flip_rate\":1.0,\"kl_generic\":0.0034,\"budget_left\":3976}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_016krDzNi91vd23M47c6BS4G",
+     "content": "{\"predictions\":[{\"city\":\"Knoxville\",\"clean\":\"Tennessee\",\"edited\":\"Oklahoma\"},{\"city\":\"Clarksville\",\"clean\":\"Tennessee\",\"edited\":\"Oklahoma\"},{\"city\":\"Memphis\",\"clean\":\"Tennessee\",\"edited\":\"Oklahoma\"},{\"city\":\"Murfreesboro\",\"clean\":\"Tennessee\",\"edited\":\"Oklahoma\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":6.95,\"kl_generic\":0.0028,\"budget_left\":3964}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Works well. Submit.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01QCqZJd2iNU5HuZQygDnVmH",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 8,
+        "position": "city_last",
+        "scale": 1.0
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01QCqZJd2iNU5HuZQygDnVmH",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3964}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 4,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 10,
+  "output_tokens": 1087,
+  "cache_read_input_tokens": 13020,
+  "cache_creation_input_tokens": 5533
+ },
+ "cost_usd": 0.0273,
+ "secs": 13.9
+}

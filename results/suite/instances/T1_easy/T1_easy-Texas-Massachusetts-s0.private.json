@@ -1,0 +1,341 @@
+{
+ "id": "T1_easy-Texas-Massachusetts-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Texas",
+ "target": "Massachusetts",
+ "source_capital": "Austin",
+ "target_capital": "Boston",
+ "dev_source": [
+  "San Antonio",
+  "Corpus Christi",
+  "Plano",
+  "Waco"
+ ],
+ "dev_target": [
+  "Worcester",
+  "Provincetown",
+  "Nantucket",
+  "Martha's Vineyard"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Houston",
+  "Dallas",
+  "El Paso",
+  "Fort Worth",
+  "Lubbock",
+  "Amarillo",
+  "Galveston",
+  "Laredo"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Houston",
+   "ho_fs"
+  ],
+  [
+   "Houston",
+   "ho_zs"
+  ],
+  [
+   "Dallas",
+   "ho_fs"
+  ],
+  [
+   "Dallas",
+   "ho_zs"
+  ],
+  [
+   "El Paso",
+   "ho_fs"
+  ],
+  [
+   "El Paso",
+   "ho_zs"
+  ],
+  [
+   "Fort Worth",
+   "ho_fs"
+  ],
+  [
+   "Fort Worth",
+   "ho_zs"
+  ],
+  [
+   "Lubbock",
+   "ho_fs"
+  ],
+  [
+   "Lubbock",
+   "ho_zs"
+  ],
+  [
+   "Amarillo",
+   "ho_fs"
+  ],
+  [
+   "Galveston",
+   "ho_fs"
+  ],
+  [
+   "Galveston",
+   "ho_zs"
+  ],
+  [
+   "Laredo",
+   "ho_fs"
+  ],
+  [
+   "Laredo",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "San Antonio",
+   "Corpus Christi",
+   "Plano",
+   "Waco",
+   "Fort Worth",
+   "Galveston",
+   "Lubbock",
+   "Houston",
+   "Amarillo",
+   "Dallas",
+   "El Paso",
+   "Laredo"
+  ],
+  "target": [
+   "Worcester",
+   "Provincetown",
+   "Nantucket",
+   "Martha's Vineyard"
+  ]
+ },
+ "reference": {
+  "layer": 14,
+  "flip": {
+   "k": 13,
+   "n": 15,
+   "rate": 0.8666666666666667,
+   "ci95": [
+    0.6211750079348376,
+    0.9626395301086407
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 15,
+   "flip": {
+    "k": 13,
+    "n": 15,
+    "rate": 0.8666666666666667,
+    "ci95": [
+     0.6211750079348376,
+     0.9626395301086407
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 15,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.20388926630434784
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 6,
+     "n": 8,
+     "rate": 0.75,
+     "ci95": [
+      0.40926987910258916,
+      0.9285223111419724
+     ]
+    },
+    "ho_zs": {
+     "k": 7,
+     "n": 7,
+     "rate": 1.0,
+     "ci95": [
+      0.6456611570247934,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 8,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3244156195108769
+    ]
+   },
+   "state_clean_correct": {
+    "k": 8,
+    "n": 8,
+    "rate": 1.0,
+    "ci95": [
+     0.6755843804891231,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7914117574691772,
+    "edited": 0.9197547435760498
+   },
+   "leak": {
+    "k": 7,
+    "n": 13,
+    "rate": 0.5384615384615384,
+    "ci95": [
+     0.2914343243183205,
+     0.7679424569851186
+    ]
+   },
+   "leak_to_target": {
+    "k": 5,
+    "n": 13,
+    "rate": 0.38461538461538464,
+    "ci95": [
+     0.17709446581236818,
+     0.6447751902773146
+    ]
+   },
+   "kl_country": {
+    "mean": 0.22530171275138855,
+    "sd": 0.41665977239608765,
+    "n": 8,
+    "ci95": [
+     -0.06342877874735015,
+     0.5140322042501273
+    ],
+    "max": 1.0033949613571167
+   },
+   "kl_generic": {
+    "mean": 0.003733284305781126,
+    "sd": 0.004976897034794092,
+    "n": 40,
+    "ci95": [
+     0.002190927935392541,
+     0.005275640676169711
+    ],
+    "max": 0.03166424483060837
+   },
+   "F": 0.8666666666666667,
+   "kl_mean": 0.11451749852858484,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.7674181679418932,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 14,
+     "position": "city_last",
+     "norm": 31.97040557861328
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Bangor",
+   "ho_fs"
+  ],
+  [
+   "Bangor",
+   "ho_zs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_fs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_zs"
+  ],
+  [
+   "Lewiston",
+   "ho_zs"
+  ],
+  [
+   "Kennebunkport",
+   "ho_fs"
+  ],
+  [
+   "Kennebunkport",
+   "ho_zs"
+  ],
+  [
+   "Cleveland",
+   "ho_zs"
+  ],
+  [
+   "Cincinnati",
+   "ho_fs"
+  ],
+  [
+   "Cincinnati",
+   "ho_zs"
+  ],
+  [
+   "Toledo",
+   "ho_zs"
+  ],
+  [
+   "Akron",
+   "ho_fs"
+  ],
+  [
+   "Akron",
+   "ho_zs"
+  ]
+ ],
+ "task": "edit",
+ "suite_task": "T1_easy",
+ "extra": {
+  "reference": {
+   "reward": 0.6999451834708452,
+   "F": 0.8,
+   "kl_mean": 0.12506852066144347,
+   "error": null,
+   "edits": [
+    {
+     "layer": 14,
+     "position": "city_last",
+     "norm": 34.58112716674805
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

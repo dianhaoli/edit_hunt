@@ -1,0 +1,314 @@
+{
+ "id": "T2_keepstate-Colorado-Wisconsin-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "hard",
+ "source": "Colorado",
+ "target": "Wisconsin",
+ "source_capital": "Denver",
+ "target_capital": "Madison",
+ "dev_source": [
+  "Pueblo",
+  "Breckenridge",
+  "Fort Collins",
+  "Aspen"
+ ],
+ "dev_target": [
+  "Milwaukee",
+  "Racine",
+  "Eau Claire",
+  "La Crosse"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 8,
+  "positions": [
+   "city_last",
+   "city_all",
+   "final"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": true,
+  "leak_weight": 0.5
+ },
+ "test_cities": [
+  "Boulder",
+  "Vail",
+  "Durango",
+  "Telluride"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Boulder",
+   "ho_fs"
+  ],
+  [
+   "Boulder",
+   "ho_zs"
+  ],
+  [
+   "Vail",
+   "ho_fs"
+  ],
+  [
+   "Vail",
+   "ho_zs"
+  ],
+  [
+   "Telluride",
+   "ho_fs"
+  ],
+  [
+   "Telluride",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Pueblo",
+   "Breckenridge",
+   "Fort Collins",
+   "Aspen",
+   "Telluride",
+   "Vail",
+   "Boulder"
+  ],
+  "target": [
+   "Milwaukee",
+   "Racine",
+   "Eau Claire",
+   "La Crosse",
+   "Oshkosh",
+   "Green Bay",
+   "Appleton",
+   "Kenosha"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 6,
+   "flip": {
+    "k": 6,
+    "n": 6,
+    "rate": 1.0,
+    "ci95": [
+     0.6096569663469354,
+     0.9999999999999999
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 6,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3903430336530645
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "flip_eff": {
+    "k": 0,
+    "n": 6,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3903430336530645
+    ]
+   },
+   "p_us": {
+    "clean": 0.6974053382873535,
+    "edited": 0.7871145606040955
+   },
+   "leak": {
+    "k": 9,
+    "n": 14,
+    "rate": 0.6428571428571429,
+    "ci95": [
+     0.3876400468214042,
+     0.8365550926279727
+    ]
+   },
+   "leak_to_target": {
+    "k": 6,
+    "n": 14,
+    "rate": 0.42857142857142855,
+    "ci95": [
+     0.21380509930400526,
+     0.6740973309713064
+    ]
+   },
+   "kl_country": {
+    "mean": 0.0390818752348423,
+    "sd": 0.03083961084485054,
+    "n": 3,
+    "ci95": [
+     0.004183570293805887,
+     0.07398018017587871
+    ],
+    "max": 0.06399521231651306
+   },
+   "kl_generic": {
+    "mean": 0.009412740357220173,
+    "sd": 0.010519877076148987,
+    "n": 40,
+    "ci95": [
+     0.0061525966751890815,
+     0.012672884039251264
+    ],
+    "max": 0.04825576767325401
+   },
+   "F": 0.0,
+   "kl_mean": 0.024247307796031237,
+   "kl_budget": 1.0,
+   "leak_weight": 0.5,
+   "reward": 0.0,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 31.367919921875
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   2,
+   5,
+   8
+  ]
+ },
+ "leak_items": [
+  [
+   "Morgantown",
+   "ho_zs"
+  ],
+  [
+   "Wheeling",
+   "ho_zs"
+  ],
+  [
+   "Parkersburg",
+   "ho_fs"
+  ],
+  [
+   "Parkersburg",
+   "ho_zs"
+  ],
+  [
+   "Beckley",
+   "ho_fs"
+  ],
+  [
+   "Beckley",
+   "ho_zs"
+  ],
+  [
+   "Philadelphia",
+   "ho_fs"
+  ],
+  [
+   "Philadelphia",
+   "ho_zs"
+  ],
+  [
+   "Pittsburgh",
+   "ho_fs"
+  ],
+  [
+   "Pittsburgh",
+   "ho_zs"
+  ],
+  [
+   "Allentown",
+   "ho_fs"
+  ],
+  [
+   "Allentown",
+   "ho_zs"
+  ],
+  [
+   "Scranton",
+   "ho_fs"
+  ],
+  [
+   "Scranton",
+   "ho_zs"
+  ]
+ ],
+ "task": "edit",
+ "suite_task": "T2_keepstate",
+ "extra": {
+  "reference": {
+   "reward": 0.6421822338875028,
+   "F": 0.8333333333333334,
+   "kl_mean": 0.06185551919043064,
+   "error": null,
+   "edits": [
+    {
+     "layer": 8,
+     "position": "city_last",
+     "norm": 37.25969696044922
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

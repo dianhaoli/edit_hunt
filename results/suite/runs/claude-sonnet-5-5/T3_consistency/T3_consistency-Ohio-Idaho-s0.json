@@ -1,0 +1,531 @@
+{
+ "instance": "T3_consistency-Ohio-Idaho-s0",
+ "suite_task": "T3_consistency",
+ "tier": "consistency",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 53,
+ "budget_total": 4000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "t8",
+    "cities": [
+     "Pocatello",
+     "Nampa",
+     "Twin Falls",
+     "Sun Valley"
+    ],
+    "template": "{city} is a city in the state of",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "s8",
+    "cities": [
+     "Toledo",
+     "Dayton",
+     "Sandusky",
+     "Akron"
+    ],
+    "template": "{city} is a city in the state of",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d8",
+    "expr": "t8 - s8"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "{city} is a city in the state of",
+    "cities": [
+     "Toledo",
+     "Dayton",
+     "Akron"
+    ],
+    "vector": "d8",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.0,
+    "answers": "states"
+   },
+   "used": 22,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Toledo",
+     "Dayton",
+     "Akron"
+    ],
+    "vector": "d8",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 32,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Toledo",
+     "Dayton",
+     "Akron",
+     "Sandusky"
+    ],
+    "vector": "d8",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.6
+   },
+   "used": 41,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Toledo",
+     "Dayton",
+     "Akron",
+     "Sandusky"
+    ],
+    "vector": "d8",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1.6,
+    "answers": "states"
+   },
+   "used": 53,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.6
+     }
+    ]
+   },
+   "used": 53,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 8,
+   "position": "city_last",
+   "scale": 1.6
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "F_cap": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "F_state": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "F_hidden": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "hidden_by_readout": {
+   "abbr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "abbr_addr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   }
+  },
+  "p_us": {
+   "clean": 0.9007572531700134,
+   "edited": 0.900765597820282
+  },
+  "kl_country": {
+   "mean": 0.016810646280646324,
+   "sd": 0.02184695191681385,
+   "n": 3,
+   "ci95": [
+    -0.00791150711683844,
+    0.04153279967813109
+   ],
+   "max": 0.04183458909392357
+  },
+  "kl_generic": {
+   "mean": 0.02022426202893257,
+   "sd": 0.021233195438981056,
+   "n": 40,
+   "ci95": [
+    0.013644026589046038,
+    0.026804497468819105
+   ],
+   "max": 0.10320373624563217
+  },
+  "kl_mean": 0.018517454154789448,
+  "F": 1.0,
+  "reward": 0.9814825458452106,
+  "edits": [
+   {
+    "layer": 8,
+    "position": "city_last",
+    "norm": 62.0505256652832
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":4000,\"constraints\":{\"max_layer\":15,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Ohio\",\"target\":\"Idaho\",\"source_capital\":\"Columbus\",\"target_capital\":\"Boise\",\"dev_source_cities\":[\"Toledo\",\"Dayton\",\"Sandusky\",\"Akron\"],\"dev_target_cities\":[\"Pocatello\",\"Nampa\",\"Twin Falls\",\"Sun Valley\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make the model treat held-out cities in Ohio as if they were in Idaho: the capital question, the question 'which US state is <city> in?', and further hidden state-level readouts that you cannot see or query should all give the Idaho answer.\",\"reward\":\"F_cap, F_state, F_hidden = fraction of held-out items answered with the target state's answer on the capital question (held-out wordings), on the state question (two wordings, one held out), and on the hidden readouts. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. reward = (F_cap * F_state * F_hidden)^(1/3) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSvgYKEAgSGAI4AUIIdGhpbmtpbmcSDOOVtn0eb/dY8fNz5hoM6e1v2ISz2kMlb9FkIjAshGgnVrg40TgiFfQ/YChXFJL6wZd6sN8wMIY4gK34IOxThUiFgjXwVXZlxhpby6cq2wVyVsgkiIJM7vJZdhXnKiVpSC9ktVa7CcHmZXei2b9K4fGnffTcyir3t8cOlAw+Qtk5J6e3xzZF1Ea8DFDy5MOUEhJqTYuuS7UvoC0QipXfHW67UD/5liXEPPszJm64LUjrsm+eqMasog2pUPyEuOhC077NzflX1g7efmU74NtnVAw0gQCu0v9+AcLrOH/WkxSqmjjqrVVHz3P5LKnJI1H7h1VbVXEswSbLfT5H8SKZ2uG9vtpx6U32zeSEba7L6ROIo6D3XSH+SW7BHNSrshVAqaXv/1h2rin9ij2IeTxJQdbADj4DebIt8mYpKR4XLI5VUpaEY6f/ghd3Mmp0Pc22fvKAhdEEocXwfpD/+q1CzcAw8VBEWW/SIcRMwa3HTC5lbdFUQruaNwLJjrWz3ApA0whGIlgljphjUjd7fT31tfHlGRuUBsnZ6n6iaO+hsFeFSExMYw17fkeUCGe/iHUGorz2sB2iNDRJrahVOO/wUx0WYiGXJ6Eab9DRD0hNrqQgmjUb4+weBN4f4n0QmI6UBXiYd7UOabwmsYjBMO08T9coDaYqjCInbQGtvMlvBe2zg3EJGyQHRSDSX1TsJn7rYz3iklfFkYhOn3LtVd0xL03bKbS8ADAftcJVvPNtTPA0BVOA5PCNIkXmDfIu6Yz/jUjXjUPGDhrbAIIS4aA/auLhnw3BY0vtQjFbhL4IJksSIaY+CUixlQ0XU/8ZMY7Txi+sX7sdSxOzSMtY7sr1qNRY5MKW2XW6wlnZKKoqUsg/4JC9+PA1/mdhQh306WdLyqsztVjvHEptLos8zJzpqhvx/q5nfII6FT0CBHND0YMgvIFIl0x7pokpb2MV2nXy+ivBlNbFMNpbOM5ypvepHTWA5yuUmZ4MgrL/ppcJuqB38t0i5WAzlXiesoUxQUtt3iEeEKAm5TDUEvQzLCJ7ePt4i/hEnRmnucxJ6PUiOk9XyRnn85DCOMAv1RgB",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_013VXyRg399P3b5gN755uCoQ",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "t8",
+      "cities": [
+       "Pocatello",
+       "Nampa",
+       "Twin Falls",
+       "Sun Valley"
+      ],
+      "template": "{city} is a city in the state of",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01BtcVj4ge7xcFx28f5QTUVL",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "s8",
+      "cities": [
+       "Toledo",
+       "Dayton",
+       "Sandusky",
+       "Akron"
+      ],
+      "template": "{city} is a city in the state of",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_013VXyRg399P3b5gN755uCoQ",
+     "content": "{\"register\":\"t8\",\"n\":4,\"norm\":54.3627,\"budget_left\":3996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01BtcVj4ge7xcFx28f5QTUVL",
+     "content": "{\"register\":\"s8\",\"n\":4,\"norm\":51.7202,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_017dddwCShMQecsqRx5kfRRC",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d8",
+      "expr": "t8 - s8"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_017dddwCShMQecsqRx5kfRRC",
+     "content": "{\"register\":\"d8\",\"norm\":38.7816,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01SCBa76QmSQ5Wjgq93wVmhd",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "{city} is a city in the state of",
+      "cities": [
+       "Toledo",
+       "Dayton",
+       "Akron"
+      ],
+      "vector": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.0,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01AGE3TWPfbW9EHUun1JyVsx",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "fs1",
+      "cities": [
+       "Toledo",
+       "Dayton",
+       "Akron"
+      ],
+      "vector": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01SCBa76QmSQ5Wjgq93wVmhd",
+     "content": "{\"predictions\":[{\"city\":\"Toledo\",\"clean\":\"Ohio\",\"edited\":\"Idaho\"},{\"city\":\"Dayton\",\"clean\":\"Ohio\",\"edited\":\"Idaho\"},{\"city\":\"Akron\",\"clean\":\"Ohio\",\"edited\":\"Idaho\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":7.798,\"kl_generic\":0.0167,\"budget_left\":3978}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01AGE3TWPfbW9EHUun1JyVsx",
+     "content": "{\"predictions\":[{\"city\":\"Toledo\",\"clean\":\"Columbus\",\"edited\":\"Carson City\"},{\"city\":\"Dayton\",\"clean\":\"Columbus\",\"edited\":\"Carson City\"},{\"city\":\"Akron\",\"clean\":\"Columbus\",\"edited\":\"Boise\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":7.209,\"flip_rate\":0.333,\"kl_generic\":0.0179,\"budget_left\":3968}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Try larger scale and other templates.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01V1CVUNxcqdnSrsZTqr4h5u",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "fs1",
+      "cities": [
+       "Toledo",
+       "Dayton",
+       "Akron",
+       "Sandusky"
+      ],
+      "vector": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.6
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01XnEmw52EPLEPNKMi9qCHGe",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "state_q",
+      "cities": [
+       "Toledo",
+       "Dayton",
+       "Akron",
+       "Sandusky"
+      ],
+      "vector": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1.6,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01V1CVUNxcqdnSrsZTqr4h5u",
+     "content": "{\"predictions\":[{\"city\":\"Toledo\",\"clean\":\"Columbus\",\"edited\":\"Boise\"},{\"city\":\"Dayton\",\"clean\":\"Columbus\",\"edited\":\"Boise\"},{\"city\":\"Akron\",\"clean\":\"Columbus\",\"edited\":\"Boise\"},{\"city\":\"Sandusky\",\"clean\":\"Columbus\",\"edited\":\"Boise\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":9.322,\"flip_rate\":1.0,\"kl_generic\":0.0638,\"budget_left\":3959}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01XnEmw52EPLEPNKMi9qCHGe",
+     "content": "{\"predictions\":[{\"city\":\"Toledo\",\"clean\":\"Ohio\",\"edited\":\"Idaho\"},{\"city\":\"Dayton\",\"clean\":\"Ohio\",\"edited\":\"Idaho\"},{\"city\":\"Akron\",\"clean\":\"Ohio\",\"edited\":\"Idaho\"},{\"city\":\"Sandusky\",\"clean\":\"Ohio\",\"edited\":\"Idaho\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":15.235,\"kl_generic\":0.0088,\"budget_left\":3947}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQS7wUKEAgSGAI4AUIIdGhpbmtpbmcSDElNbOwQIG35jvOGmxoMmARvBwIGc+rLk6AlIjCs5xQtuv6mlMwEgOzJHyfX+H2I+Euw6GL2momqYheE8W3al/qDlMuWROIWWIWlCU4qjAUzuIRXrth/ZoQSF1oenv8RdG+vkztCelBAHNtOt57rhzxbE01dI4CccRB6pOXcNmQgQNRpUpqkm6O3XIeiOP5lxpG+4BzFfWlOVpSWahmQQPD8jqPEhrEFsZCv/TQ5MYJAZCWldFDm+FLhaDdKiPJS4lcZVhYnxDdADEYnzN2sVcOdhdB4GFzIBL4wyU6eOhgBhZ1KGWtpXko1zSgJEyHZLav4++szCt1q0U4GZJLXbS8dKGTT8PCtwfBsg/4otbg8+F3YkrcS8wMKyRlweheCMwJHxg4NuG2sW6k34lLn8dqKOU1lEl7igb6Or8USnK6TelHWE+WJdnfjqzkzn76p1QQetHg6U42B76STbMrlRZLM+WNgd3RsZuZbrtDfmmuAt4ZaQCColhv4ikEci3Tcdo/Z9VxsfoUdPqPQ6D7NLYZsndIw0eJSxqdPjnEbpDlJbOeG4NVmtAvqkAuKCBz7f+Wp7eewL9sCkQANCn9IVJC6HNnOio6rtqcZTnl+xaWfWZDwzzl21lCOIa+zJYhWbQ94o090mhZDcW3yhD+TDsZE3inoy+2dzceRBU7XeLiCgV+TBRclhznXfATU2Q2IZTimkjtUjOyn/U5cb+dP0qJhjsA0iqX94VdNUAgf7Kc4qCyZVWXWpyRMD8b25s7B+45Mir4eAxv6W2gpT2QuZG4m5S2Br7Pl1RkyNP+b9irXaG7Z3d+BRQNDL9w0oByNS79w1/rJcu2ahqImtvuf9TV70WDYrt47nKgP+Klap1TxiDGiLpa+6tznxf62qGyt8lA8djQ1Pe6XKFbZOQZpbYXM+5MwhHShMwnBRDQ7uGnlfjE/YUziH6ZrPcGM0tdOEgUYIVU9dVTgxOsSGAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01EzYrAJMQrGijjkhkeUa6Xs",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d8",
+        "layer": 8,
+        "position": "city_last",
+        "scale": 1.6
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01EzYrAJMQrGijjkhkeUa6Xs",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3947}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 5,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 12,
+  "output_tokens": 1429,
+  "cache_read_input_tokens": 18310,
+  "cache_creation_input_tokens": 6159
+ },
+ "cost_usd": 0.0334,
+ "secs": 15.3
+}

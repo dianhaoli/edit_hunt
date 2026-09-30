@@ -528,3 +528,55 @@ includes `known_cities` (the 50-state list the plant covers), and the text says 
 - First gpt-6.1-sol episode (T1): 0.91 in 20 turns, $0.079. It is slower and costlier per episode than Sonnet (4–6 turns, $0.03).
 - T2 generation: 60 tries gave 5 unique instances. The pair RNG repeats pairs and duplicates overwrite each other.
   It is being topped up with seed 1.
+
+### Independent audit of the Phase 7 suite (results/audit/phase7_audit.{json,log}, run from a separate session)
+1. **Grading is deterministic and the tool logs reproduce it.** All 45 edit-task runs (T1/T2/T3/T7, both agents) were
+   replayed from their tool logs and regraded; recorded reward = replayed reward in every case.
+2. **The T2 reference is noisy, and instance validation selected lucky runs.** Rerunning the reference with seeds 0–3 on the 7
+   kept instances gives mean reward 0.54 and a pass rate of 19/28. Wisconsin→Minnesota passes 1/4 (0.59, 0.27, 0.21,
+   0.26). "Reference ≥ 0.5" was checked on one run, so T2's validity is partly a winner's curse. Report the T2 reference as
+   0.54 (19/28), not the selected 0.64.
+3. **Rewards rest on few items per instance.** Many T2 instances have 2–4 held-out cities. Re-scoring submissions on
+   4 wordings (ho_fs, ho_zs, fs2, zs2) sometimes disagrees with the reward. For example, Sonnet T3 Colorado→Maine scores
+   reward 0.68 but its extended flip is 4/11, and Ohio→Colorado scores 0.77 against 6/12. Sonnet T7 Iowa→Ohio scores 0 on
+   the held-out items but its extended flip is 7/8. Pass/fail near the threshold is noisy at the instance level (open problem 2 from before).
+4. **T2 grader gap.** T2 only checks STATE_Q for "state kept". Two failed Sonnet T2 edits kept STATE_Q (2/2) but moved the
+   hidden abbreviation readout (0/2), so the state variable moved while the visible check passed. Neither passed overall,
+   but the grader could be satisfied this way. **Proposed:** add a hidden state readout (the abbreviation) to T2's keep check.
+5. **Refusal messages are a membership oracle.** "held-out cities are not accessible: [...]" names which cities are
+   grader-only, including the *leakage* cities of other states. 16 runs saw a refusal; 3 of them revealed leakage cities
+   (Tennessee→Nevada for both agents: Dallas and Houston; California→Texas for sol: Cleveland).
+   **Exploitation check:** neither agent then trained on the leakage state's other cities. Sonnet tried Houston once, the
+   tool refused it, and Sonnet dropped it. So no result depends on the leak.
+   **Proposed:** draw leakage cities at grade time from a large pool of all other states, never refuse them, and return a
+   generic refusal for test cities.
+
+Decision: no environment changes mid-calibration, so the Sonnet and sol results stay comparable. Findings 2–5 go into
+FINDINGS as caveats and proposed fixes.
+
+### gpt-6.1-sol results INVALID: adapter/tool bug found by self-audit (2026-09-30 ~20:30 UTC). Fixed, verified; sol must be rerun
+- **Symptom:** sol hit 193 tool errors in 1545 tool results; Sonnet hit 38 in 519.
+  - 99× "basis must list 1..64 registers"
+  - 53× "only the planted model is available"
+  - "give layer or a non-empty list of layers" and others
+- **Cause:** the Responses API function tools were strict by default, so sol filled *every* optional schema property with a
+  placeholder (`"basis": []`, `"center": ""`, `"vector": ""`, `"layers": []`, `"model": "clean"`). My tools then treated these
+  as real input:
+  - an additive edit with `basis: []` was routed to projection and failed;
+  - `model="clean"` was rejected in tasks without a plant;
+  - `layers: []` was rejected.
+- **Consequence:** sol lost turns fighting spurious errors. Several of its "no submission" and cost-cap failures (T1 ×2, T3 ×3,
+  T2 ×1) plausibly come from this.
+- **Fix** (tools.py `_drop_empty`, `_model`, `_edits`; agent_loop `strict: False`):
+  - empty optional values are treated as absent (top level and inside `edits` items);
+  - `model="clean"` is allowed whenever nothing is planted;
+  - add vs proj edits are chosen by the task's `edit_kind`;
+  - the OpenAI tools are non-strict.
+- **Verification** (experiments/verify_tools_fix.py):
+  - the placeholder-filled calls now succeed;
+  - **31/31 Sonnet edit-task runs replay to identical rewards** through the fixed tools. Sonnet never sent placeholders,
+    so Sonnet results stand.
+- **Action:**
+  - All sol runs, including the T4 and T6 ones, are to be rerun from scratch after a full correctness review.
+  - Old sol runs will be moved to `results/suite/runs_sol_bug/` and kept for the record.
+  - OpenAI ledger: $2.86 spent, $0.26 of stale reservations to clear.

@@ -1,0 +1,312 @@
+{
+ "id": "T7_minimal-Indiana-New_Jersey-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "minimal",
+ "source": "Indiana",
+ "target": "New Jersey",
+ "source_capital": "Indianapolis",
+ "target_capital": "Trenton",
+ "dev_source": [
+  "South Bend",
+  "Muncie",
+  "Gary",
+  "West Lafayette"
+ ],
+ "dev_target": [
+  "Princeton",
+  "Hoboken",
+  "Atlantic City",
+  "Jersey City"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Fort Wayne",
+  "Evansville",
+  "Terre Haute"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Fort Wayne",
+   "ho_fs"
+  ],
+  [
+   "Fort Wayne",
+   "ho_zs"
+  ],
+  [
+   "Evansville",
+   "ho_zs"
+  ],
+  [
+   "Terre Haute",
+   "ho_fs"
+  ],
+  [
+   "Terre Haute",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "South Bend",
+   "Muncie",
+   "Gary",
+   "West Lafayette",
+   "Terre Haute",
+   "Fort Wayne"
+  ],
+  "target": [
+   "Princeton",
+   "Hoboken",
+   "Atlantic City",
+   "Jersey City",
+   "Asbury Park",
+   "Camden",
+   "Paterson"
+  ]
+ },
+ "reference": {
+  "layer": 21,
+  "flip": {
+   "k": 5,
+   "n": 5,
+   "rate": 1.0,
+   "ci95": [
+    0.5655085052479191,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 5,
+   "flip": {
+    "k": 5,
+    "n": 5,
+    "rate": 1.0,
+    "ci95": [
+     0.5655085052479191,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 5,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.43449149475208104
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.9217982292175293,
+    "edited": 0.9562861919403076
+   },
+   "leak": {
+    "k": 6,
+    "n": 10,
+    "rate": 0.6,
+    "ci95": [
+     0.3126695474501864,
+     0.8318224187964902
+    ]
+   },
+   "leak_to_target": {
+    "k": 4,
+    "n": 10,
+    "rate": 0.4,
+    "ci95": [
+     0.16817758120350967,
+     0.6873304525498135
+    ]
+   },
+   "kl_country": {
+    "mean": 0.015053504146635532,
+    "sd": 0.010421975515782833,
+    "n": 3,
+    "ci95": [
+     0.003259928622366714,
+     0.02684707967090435
+    ],
+    "max": 0.021765198558568954
+   },
+   "kl_generic": {
+    "mean": 0.001283726654946804,
+    "sd": 0.0008577546686865389,
+    "n": 40,
+    "ci95": [
+     0.001017905729130932,
+     0.001549547580762676
+    ],
+    "max": 0.00403769314289093
+   },
+   "F": 1.0,
+   "kl_mean": 0.008168615400791168,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9918313845992088,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 21,
+     "position": "city_last",
+     "norm": 42.375648498535156
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Sioux Falls",
+   "ho_fs"
+  ],
+  [
+   "Sioux Falls",
+   "ho_zs"
+  ],
+  [
+   "Rapid City",
+   "ho_fs"
+  ],
+  [
+   "Rapid City",
+   "ho_zs"
+  ],
+  [
+   "Deadwood",
+   "ho_fs"
+  ],
+  [
+   "Deadwood",
+   "ho_zs"
+  ],
+  [
+   "Sturgis",
+   "ho_fs"
+  ],
+  [
+   "Sturgis",
+   "ho_zs"
+  ],
+  [
+   "Macon",
+   "ho_zs"
+  ],
+  [
+   "Valdosta",
+   "ho_zs"
+  ]
+ ],
+ "task": "minimal",
+ "suite_task": "T7_minimal",
+ "extra": {
+  "rho": [
+   23.09832000732422,
+   32.36769104003906,
+   37.033145904541016,
+   43.93111038208008,
+   50.95017623901367,
+   51.338985443115234,
+   51.98350524902344,
+   52.24382019042969,
+   55.03013610839844,
+   54.556034088134766,
+   51.35958480834961,
+   52.63608169555664,
+   54.98001480102539,
+   55.33066177368164,
+   57.29684829711914,
+   60.56488800048828,
+   60.99655532836914,
+   66.4031982421875,
+   69.7337417602539,
+   80.95977020263672,
+   90.40089416503906,
+   101.46730041503906,
+   116.07325744628906,
+   137.2787322998047,
+   181.40130615234375,
+   199.98504638671875,
+   236.21957397460938,
+   226.886962890625
+  ],
+  "min_flip": 0.8,
+  "r_ref": 0.27339018274491367,
+  "reference": {
+   "reward": 1.0,
+   "F": 1.0,
+   "kl_mean": 0.0023533132625743747,
+   "error": null,
+   "edits": [
+    {
+     "layer": 21,
+     "position": "city_last",
+     "norm": 27.740163803100586
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

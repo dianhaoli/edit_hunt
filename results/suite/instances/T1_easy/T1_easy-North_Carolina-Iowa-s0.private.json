@@ -1,0 +1,286 @@
+{
+ "id": "T1_easy-North_Carolina-Iowa-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "North Carolina",
+ "target": "Iowa",
+ "source_capital": "Raleigh",
+ "target_capital": "Des Moines",
+ "dev_source": [
+  "Charlotte",
+  "Chapel Hill",
+  "Outer Banks",
+  "Cary"
+ ],
+ "dev_target": [
+  "Dubuque",
+  "Davenport",
+  "Sioux City",
+  "Council Bluffs"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Greensboro",
+  "Asheville",
+  "Winston-Salem",
+  "Boone"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Greensboro",
+   "ho_zs"
+  ],
+  [
+   "Asheville",
+   "ho_zs"
+  ],
+  [
+   "Winston-Salem",
+   "ho_fs"
+  ],
+  [
+   "Winston-Salem",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Charlotte",
+   "Chapel Hill",
+   "Outer Banks",
+   "Cary",
+   "Winston-Salem",
+   "Asheville",
+   "Greensboro"
+  ],
+  "target": [
+   "Dubuque",
+   "Davenport",
+   "Sioux City",
+   "Council Bluffs",
+   "Cedar Rapids",
+   "Ames"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.9049375653266907,
+    "edited": 0.840144157409668
+   },
+   "leak": {
+    "k": 6,
+    "n": 12,
+    "rate": 0.5,
+    "ci95": [
+     0.2537781703934222,
+     0.7462218296065778
+    ]
+   },
+   "leak_to_target": {
+    "k": 5,
+    "n": 12,
+    "rate": 0.4166666666666667,
+    "ci95": [
+     0.19325746190524656,
+     0.6804926643446272
+    ]
+   },
+   "kl_country": {
+    "mean": 0.02134145237505436,
+    "sd": 0.0074432408437132835,
+    "n": 3,
+    "ci95": [
+     0.012918632449722639,
+     0.02976427230038608
+    ],
+    "max": 0.027380019426345825
+   },
+   "kl_generic": {
+    "mean": 0.010825933888554573,
+    "sd": 0.024531306698918343,
+    "n": 40,
+    "ci95": [
+     0.0032236031799791915,
+     0.018428264597129956
+    ],
+    "max": 0.14408239722251892
+   },
+   "F": 1.0,
+   "kl_mean": 0.016083693131804466,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9839163068681955,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 33.30098342895508
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Casper",
+   "ho_fs"
+  ],
+  [
+   "Casper",
+   "ho_zs"
+  ],
+  [
+   "Laramie",
+   "ho_fs"
+  ],
+  [
+   "Laramie",
+   "ho_zs"
+  ],
+  [
+   "Jackson Hole",
+   "ho_fs"
+  ],
+  [
+   "Cody",
+   "ho_fs"
+  ],
+  [
+   "Cody",
+   "ho_zs"
+  ],
+  [
+   "Fort Wayne",
+   "ho_fs"
+  ],
+  [
+   "Fort Wayne",
+   "ho_zs"
+  ],
+  [
+   "South Bend",
+   "ho_zs"
+  ],
+  [
+   "Gary",
+   "ho_zs"
+  ],
+  [
+   "Evansville",
+   "ho_zs"
+  ]
+ ],
+ "task": "edit",
+ "suite_task": "T1_easy",
+ "extra": {
+  "reference": {
+   "reward": 0.7403079319337849,
+   "F": 0.75,
+   "kl_mean": 0.01292275742162019,
+   "error": null,
+   "edits": [
+    {
+     "layer": 21,
+     "position": "city_last",
+     "norm": 48.34461212158203
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

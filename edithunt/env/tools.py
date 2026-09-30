@@ -209,7 +209,7 @@ class ToolEnv:
                 if self.calls >= self.call_budget:
                     raise ToolError("tool-call budget exhausted; submit now")
                 self.calls += 1
-            out = fn(**(args or {}))
+            out = fn(**_drop_empty(args or {}))
         except ToolError as e:
             out = {"error": str(e)}
         except (TypeError, KeyError, ValueError) as e:
@@ -295,7 +295,7 @@ class ToolEnv:
     def _model(self, model: str) -> str:
         if model not in ("planted", "clean"):
             raise ToolError("model must be 'planted' or 'clean'")
-        if model == "clean" and "clean_access" not in self.inst.constraints.get("features", []):
+        if model == "clean" and self.plant is not None and "clean_access" not in self.inst.constraints.get("features", []):
             raise ToolError("only the planted model is available in this task")
         return model
 
@@ -322,7 +322,7 @@ class ToolEnv:
         out = []
         for e in edits:
             L, pos = self._layer(e["layer"]), self._pos(e.get("position", "city_last"))
-            if "basis" in e:
+            if self.inst.constraints.get("edit_kind", "add") == "proj" or ("basis" in e and "register" not in e):
                 B = torch.stack([self._reg(b) for b in e["basis"]]) if e["basis"] else None
                 if B is None or len(B) > 64:
                     raise ToolError("basis must list 1..64 registers")
@@ -639,6 +639,16 @@ class ToolEnv:
             raise ToolError(f"report rejected: {why}")
         self.submission = {"report": report}
         return {"status": "submitted"}
+
+
+def _drop_empty(args: dict) -> dict:
+    """Treat empty optional values ("", None, [], {}) as absent, at the top level and inside `edits` items.
+    Some agent APIs fill every schema property with a placeholder (seen with gpt-6.1-sol, 2026-09-30)."""
+    empty = lambda v: v is None or v == "" or v == [] or v == {}
+    out = {k: v for k, v in args.items() if not empty(v)}
+    if isinstance(out.get("edits"), list):
+        out["edits"] = [{k: v for k, v in e.items() if not empty(v)} if isinstance(e, dict) else e for e in out["edits"]]
+    return out
 
 
 def CITIES_OF(state: str) -> list[str]:

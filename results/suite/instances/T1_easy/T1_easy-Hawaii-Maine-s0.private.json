@@ -1,0 +1,296 @@
+{
+ "id": "T1_easy-Hawaii-Maine-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Hawaii",
+ "target": "Maine",
+ "source_capital": "Honolulu",
+ "target_capital": "Augusta",
+ "dev_source": [
+  "Waikiki",
+  "Hilo",
+  "Lihue",
+  "Lahaina"
+ ],
+ "dev_target": [
+  "Waterville",
+  "Bar Harbor",
+  "Bangor",
+  "Biddeford"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Kailua",
+  "Kona"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Kailua",
+   "ho_fs"
+  ],
+  [
+   "Kailua",
+   "ho_zs"
+  ],
+  [
+   "Kona",
+   "ho_fs"
+  ],
+  [
+   "Kona",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Waikiki",
+   "Hilo",
+   "Lihue",
+   "Lahaina",
+   "Kailua",
+   "Kona"
+  ],
+  "target": [
+   "Waterville",
+   "Bar Harbor",
+   "Bangor",
+   "Biddeford",
+   "Lewiston",
+   "Ogunquit",
+   "Kennebunkport"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7288745641708374,
+    "edited": 0.6571742296218872
+   },
+   "leak": {
+    "k": 9,
+    "n": 15,
+    "rate": 0.6,
+    "ci95": [
+     0.357464427565077,
+     0.8017577191740534
+    ]
+   },
+   "leak_to_target": {
+    "k": 7,
+    "n": 15,
+    "rate": 0.4666666666666667,
+    "ci95": [
+     0.24809225259746442,
+     0.6988336984894921
+    ]
+   },
+   "kl_country": {
+    "mean": 0.0516466423869133,
+    "sd": 0.0560840405523777,
+    "n": 2,
+    "ci95": [
+     -0.026081872179304785,
+     0.1293751569531314
+    ],
+    "max": 0.09130404889583588
+   },
+   "kl_generic": {
+    "mean": 0.01743009313941002,
+    "sd": 0.03418441489338875,
+    "n": 40,
+    "ci95": [
+     0.006836233208167553,
+     0.028023953070652485
+    ],
+    "max": 0.19581393897533417
+   },
+   "F": 1.0,
+   "kl_mean": 0.03453836776316166,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9654616322368383,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 37.22241973876953
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Pocatello",
+   "ho_fs"
+  ],
+  [
+   "Pocatello",
+   "ho_zs"
+  ],
+  [
+   "Twin Falls",
+   "ho_zs"
+  ],
+  [
+   "Coeur d'Alene",
+   "ho_fs"
+  ],
+  [
+   "Coeur d'Alene",
+   "ho_zs"
+  ],
+  [
+   "Sun Valley",
+   "ho_fs"
+  ],
+  [
+   "Sun Valley",
+   "ho_zs"
+  ],
+  [
+   "Anchorage",
+   "ho_fs"
+  ],
+  [
+   "Anchorage",
+   "ho_zs"
+  ],
+  [
+   "Fairbanks",
+   "ho_fs"
+  ],
+  [
+   "Fairbanks",
+   "ho_zs"
+  ],
+  [
+   "Ketchikan",
+   "ho_fs"
+  ],
+  [
+   "Ketchikan",
+   "ho_zs"
+  ],
+  [
+   "Sitka",
+   "ho_fs"
+  ],
+  [
+   "Sitka",
+   "ho_zs"
+  ]
+ ],
+ "task": "edit",
+ "suite_task": "T1_easy",
+ "extra": {
+  "reference": {
+   "reward": 0.9774698849068955,
+   "F": 1.0,
+   "kl_mean": 0.02253011509310454,
+   "error": null,
+   "edits": [
+    {
+     "layer": 21,
+     "position": "city_last",
+     "norm": 51.06562423706055
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

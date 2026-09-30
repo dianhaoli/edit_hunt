@@ -1,0 +1,505 @@
+{
+ "instance": "T1_easy-Hawaii-Maine-s0",
+ "suite_task": "T1_easy",
+ "tier": "easy",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 39,
+ "budget_total": 3000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "run_prompts",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Waikiki",
+     "Hilo",
+     "Bangor"
+    ],
+    "top_k": 3
+   },
+   "used": 3,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "m",
+    "cities": [
+     "Waterville",
+     "Bar Harbor",
+     "Bangor",
+     "Biddeford"
+    ],
+    "template": "zs1",
+    "layer": 15,
+    "position": "city_last"
+   },
+   "used": 7,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "h",
+    "cities": [
+     "Waikiki",
+     "Hilo",
+     "Lihue",
+     "Lahaina"
+    ],
+    "template": "zs1",
+    "layer": 15,
+    "position": "city_last"
+   },
+   "used": 11,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "m-h"
+   },
+   "used": 11,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Waikiki",
+     "Hilo",
+     "Lihue",
+     "Lahaina"
+    ],
+    "vector": "d",
+    "layer": 15,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 27,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Waikiki",
+     "Hilo",
+     "Lihue",
+     "Lahaina"
+    ],
+    "vector": "d",
+    "layer": 15,
+    "position": "city_last",
+    "scale": 1.0,
+    "answers": "states"
+   },
+   "used": 39,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 15,
+      "position": "city_last",
+      "scale": 1.0
+     }
+    ]
+   },
+   "used": 39,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 15,
+   "position": "city_last",
+   "scale": 1.0
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "n_items": 4,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "to_source": {
+   "k": 0,
+   "n": 4,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.48990002040399916
+   ]
+  },
+  "per_template": {
+   "ho_fs": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "ho_zs": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   }
+  },
+  "state_kept": {
+   "k": 0,
+   "n": 2,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.6576280471103807
+   ]
+  },
+  "state_clean_correct": {
+   "k": 2,
+   "n": 2,
+   "rate": 1.0,
+   "ci95": [
+    0.34237195288961925,
+    1.0
+   ]
+  },
+  "p_us": {
+   "clean": 0.7288745641708374,
+   "edited": 0.5274553298950195
+  },
+  "leak": {
+   "k": 7,
+   "n": 15,
+   "rate": 0.4666666666666667,
+   "ci95": [
+    0.24809225259746442,
+    0.6988336984894921
+   ]
+  },
+  "leak_to_target": {
+   "k": 6,
+   "n": 15,
+   "rate": 0.4,
+   "ci95": [
+    0.19824228082594664,
+    0.642535572434923
+   ]
+  },
+  "kl_country": {
+   "mean": 0.14100244641304016,
+   "sd": 0.19519545137882233,
+   "n": 2,
+   "ci95": [
+    -0.129524647147359,
+    0.41152953997343933
+   ],
+   "max": 0.27902647852897644
+  },
+  "kl_generic": {
+   "mean": 0.002971242880448699,
+   "sd": 0.0033778350334614515,
+   "n": 40,
+   "ci95": [
+    0.0019244409583758719,
+    0.004018044802521526
+   ],
+   "max": 0.016642427071928978
+  },
+  "F": 1.0,
+  "kl_mean": 0.07198684464674443,
+  "kl_budget": 1.0,
+  "leak_weight": 0.0,
+  "reward": 0.9280131553532556,
+  "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+  "edits": [
+   {
+    "layer": 15,
+    "position": "city_last",
+    "norm": 38.640167236328125
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":3000,\"constraints\":{\"max_layer\":21,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":3000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Hawaii\",\"target\":\"Maine\",\"source_capital\":\"Honolulu\",\"target_capital\":\"Augusta\",\"dev_source_cities\":[\"Waikiki\",\"Hilo\",\"Lihue\",\"Lahaina\"],\"dev_target_cities\":[\"Waterville\",\"Bar Harbor\",\"Bangor\",\"Biddeford\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make prompts about cities in Hawaii answer the capital of Maine (Augusta) instead of Honolulu, on held-out Hawaii cities and held-out prompt wordings.\",\"reward\":\"F = fraction of held-out (city, wording) items whose top answer among the 50 capitals is the target capital. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. leak = fraction of held-out cities from other states whose top capital changes. reward = F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":3000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_012kGozEX2QgCxRfpZ71JSA1",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "zs1",
+      "cities": [
+       "Waikiki",
+       "Hilo",
+       "Bangor"
+      ],
+      "top_k": 3
+     },
+     "name": "run_prompts",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_012kGozEX2QgCxRfpZ71JSA1",
+     "content": "{\"results\":[{\"prompt\":\"The state containing Waikiki has its capital in\",\"city\":\"Waikiki\",\"next_tokens\":[[\" Honolulu\",0.7085],[\" which\",0.04],[\" the\",0.04]],\"top_capitals\":[[\"Honolulu\",-0.34],[\"Sacramento\",-7.53],[\"Phoenix\",-8.03]],\"target_capital_rank\":43},{\"prompt\":\"The state containing Hilo has its capital in\",\"city\":\"Hilo\",\"next_tokens\":[[\" Honolulu\",0.2583],[\" what\",0.122],[\" which\",0.095]],\"top_capitals\":[[\"Honolulu\",-1.35],[\"Springfield\",-6.85],[\"Santa Fe\",-6.92]],\"target_capital_rank\":21},{\"prompt\":\"The state containing Bangor has its capital in\",\"city\":\"Bangor\",\"next_tokens\":[[\" Augusta\",0.1764],[\" Bang\",0.1374],[\" which\",0.0944]],\"top_capitals\":[[\"Augusta\",-1.73],[\"Boston\",-5.3],[\"Atlanta\",-5.73]],\"target_capital_rank\":1}],\"note\":\"top_capitals: exact full-sequence log-prob ranking over the 50 capitals\",\"budget_left\":2997}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Use mean of Maine cities minus Hawaii cities at city_last, layer ~15.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01LFyvkr6NbLNYkBxjbB7vZG",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "m",
+      "cities": [
+       "Waterville",
+       "Bar Harbor",
+       "Bangor",
+       "Biddeford"
+      ],
+      "template": "zs1",
+      "layer": 15,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01St46LMjeozMPTeT6S7h2Sk",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "h",
+      "cities": [
+       "Waikiki",
+       "Hilo",
+       "Lihue",
+       "Lahaina"
+      ],
+      "template": "zs1",
+      "layer": 15,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01LFyvkr6NbLNYkBxjbB7vZG",
+     "content": "{\"register\":\"m\",\"n\":4,\"norm\":62.4244,\"budget_left\":2993}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01St46LMjeozMPTeT6S7h2Sk",
+     "content": "{\"register\":\"h\",\"n\":4,\"norm\":67.2923,\"budget_left\":2989}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01L6p4F6SVRhczQXkQTfdb4Z",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "m-h"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01L6p4F6SVRhczQXkQTfdb4Z",
+     "content": "{\"register\":\"d\",\"norm\":38.6402,\"budget_left\":2989}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01DwgoPQDZhGRTRXcjWkDvRx",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "fs1",
+      "cities": [
+       "Waikiki",
+       "Hilo",
+       "Lihue",
+       "Lahaina"
+      ],
+      "vector": "d",
+      "layer": 15,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_014Qr4t9nAyQ9JeJiHd8JKMS",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "state_q",
+      "cities": [
+       "Waikiki",
+       "Hilo",
+       "Lihue",
+       "Lahaina"
+      ],
+      "vector": "d",
+      "layer": 15,
+      "position": "city_last",
+      "scale": 1.0,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01DwgoPQDZhGRTRXcjWkDvRx",
+     "content": "{\"predictions\":[{\"city\":\"Waikiki\",\"clean\":\"Honolulu\",\"edited\":\"Augusta\"},{\"city\":\"Hilo\",\"clean\":\"Honolulu\",\"edited\":\"Augusta\"},{\"city\":\"Lihue\",\"clean\":\"Honolulu\",\"edited\":\"Augusta\"},{\"city\":\"Lahaina\",\"clean\":\"Honolulu\",\"edited\":\"Augusta\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":10.279,\"flip_rate\":1.0,\"kl_generic\":0.0052,\"budget_left\":2973}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_014Qr4t9nAyQ9JeJiHd8JKMS",
+     "content": "{\"predictions\":[{\"city\":\"Waikiki\",\"clean\":\"Hawaii\",\"edited\":\"Maine\"},{\"city\":\"Hilo\",\"clean\":\"Hawaii\",\"edited\":\"Maine\"},{\"city\":\"Lihue\",\"clean\":\"Hawaii\",\"edited\":\"Maine\"},{\"city\":\"Lahaina\",\"clean\":\"Hawaii\",\"edited\":\"Maine\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":15.525,\"kl_generic\":0.0018,\"budget_left\":2961}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Works well. Submit.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01Dc1DWeuznbb7ywmUG5Rc27",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 15,
+        "position": "city_last",
+        "scale": 1.0
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01Dc1DWeuznbb7ywmUG5Rc27",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":2961}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 5,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 12,
+  "output_tokens": 1024,
+  "cache_read_input_tokens": 18176,
+  "cache_creation_input_tokens": 5819
+ },
+ "cost_usd": 0.0284,
+ "secs": 13.6
+}

@@ -1,0 +1,314 @@
+{
+ "id": "T3_consistency-Minnesota-Indiana-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "consistency",
+ "source": "Minnesota",
+ "target": "Indiana",
+ "source_capital": "Saint Paul",
+ "target_capital": "Indianapolis",
+ "dev_source": [
+  "Mankato",
+  "Duluth",
+  "Minneapolis",
+  "Bemidji"
+ ],
+ "dev_target": [
+  "Terre Haute",
+  "Muncie",
+  "West Lafayette",
+  "Gary"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 15,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "St. Cloud",
+  "Eden Prairie",
+  "Moorhead"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "St. Cloud",
+   "ho_zs"
+  ],
+  [
+   "Eden Prairie",
+   "ho_fs"
+  ],
+  [
+   "Eden Prairie",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Mankato",
+   "Duluth",
+   "Minneapolis",
+   "Bemidji",
+   "Eden Prairie",
+   "St. Cloud"
+  ],
+  "target": [
+   "Terre Haute",
+   "Muncie",
+   "West Lafayette",
+   "Gary",
+   "Fort Wayne",
+   "South Bend"
+  ]
+ },
+ "reference": {
+  "layer": 10,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.8001782894134521,
+    "edited": 0.7461827993392944
+   },
+   "leak": {
+    "k": 6,
+    "n": 14,
+    "rate": 0.42857142857142855,
+    "ci95": [
+     0.21380509930400526,
+     0.6740973309713064
+    ]
+   },
+   "leak_to_target": {
+    "k": 1,
+    "n": 14,
+    "rate": 0.07142857142857142,
+    "ci95": [
+     0.012721886112291636,
+     0.3146926955395781
+    ]
+   },
+   "kl_country": {
+    "mean": 0.01167774572968483,
+    "sd": 0.016441049054265022,
+    "n": 2,
+    "ci95": [
+     -0.011108385731454451,
+     0.03446387719082411
+    ],
+    "max": 0.02330332249403
+   },
+   "kl_generic": {
+    "mean": 0.004709519445896149,
+    "sd": 0.010308471508324146,
+    "n": 40,
+    "ci95": [
+     0.0015148910280930916,
+     0.007904147863699206
+    ],
+    "max": 0.06607422232627869
+   },
+   "F": 1.0,
+   "kl_mean": 0.00819363258779049,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9918063674122095,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 10,
+     "position": "city_last",
+     "norm": 32.288700103759766
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   5,
+   10,
+   15
+  ]
+ },
+ "leak_items": [
+  [
+   "New Haven",
+   "ho_fs"
+  ],
+  [
+   "New Haven",
+   "ho_zs"
+  ],
+  [
+   "Stamford",
+   "ho_fs"
+  ],
+  [
+   "Stamford",
+   "ho_zs"
+  ],
+  [
+   "Bridgeport",
+   "ho_fs"
+  ],
+  [
+   "Bridgeport",
+   "ho_zs"
+  ],
+  [
+   "Greenwich",
+   "ho_fs"
+  ],
+  [
+   "Greenwich",
+   "ho_zs"
+  ],
+  [
+   "Morgantown",
+   "ho_zs"
+  ],
+  [
+   "Wheeling",
+   "ho_zs"
+  ],
+  [
+   "Parkersburg",
+   "ho_fs"
+  ],
+  [
+   "Parkersburg",
+   "ho_zs"
+  ],
+  [
+   "Beckley",
+   "ho_fs"
+  ],
+  [
+   "Beckley",
+   "ho_zs"
+  ]
+ ],
+ "task": "consistency",
+ "suite_task": "T3_consistency",
+ "extra": {
+  "hidden_items": [
+   [
+    "St. Cloud",
+    "abbr"
+   ],
+   [
+    "St. Cloud",
+    "abbr_addr"
+   ],
+   [
+    "Eden Prairie",
+    "abbr"
+   ],
+   [
+    "Eden Prairie",
+    "abbr_addr"
+   ],
+   [
+    "Moorhead",
+    "abbr"
+   ],
+   [
+    "Moorhead",
+    "abbr_addr"
+   ]
+  ],
+  "reference": {
+   "reward": 0.9926076747942716,
+   "F": 1.0,
+   "kl_mean": 0.007392325205728412,
+   "error": null,
+   "edits": [
+    {
+     "layer": 15,
+     "position": "city_last",
+     "norm": 34.36161422729492
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

@@ -1,0 +1,322 @@
+{
+ "id": "T7_minimal-Nevada-California-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "minimal",
+ "source": "Nevada",
+ "target": "California",
+ "source_capital": "Carson City",
+ "target_capital": "Sacramento",
+ "dev_source": [
+  "Laughlin",
+  "Lake Tahoe",
+  "Reno",
+  "Sparks"
+ ],
+ "dev_target": [
+  "Oakland",
+  "San Diego",
+  "Berkeley",
+  "Santa Barbara"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Las Vegas",
+  "Henderson",
+  "Elko"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Las Vegas",
+   "ho_fs"
+  ],
+  [
+   "Las Vegas",
+   "ho_zs"
+  ],
+  [
+   "Henderson",
+   "ho_fs"
+  ],
+  [
+   "Elko",
+   "ho_fs"
+  ],
+  [
+   "Elko",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Laughlin",
+   "Lake Tahoe",
+   "Reno",
+   "Sparks",
+   "Elko",
+   "Las Vegas",
+   "Henderson"
+  ],
+  "target": [
+   "Oakland",
+   "San Diego",
+   "Berkeley",
+   "Santa Barbara",
+   "Anaheim",
+   "Palo Alto",
+   "San Jose",
+   "San Francisco",
+   "Bakersfield",
+   "Malibu",
+   "Los Angeles",
+   "Fresno"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 5,
+   "n": 5,
+   "rate": 1.0,
+   "ci95": [
+    0.5655085052479191,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 5,
+   "flip": {
+    "k": 5,
+    "n": 5,
+    "rate": 1.0,
+    "ci95": [
+     0.5655085052479191,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 5,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.43449149475208104
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.6788408160209656,
+    "edited": 0.5712283253669739
+   },
+   "leak": {
+    "k": 8,
+    "n": 11,
+    "rate": 0.7272727272727273,
+    "ci95": [
+     0.4343497069897537,
+     0.9025411942607853
+    ]
+   },
+   "leak_to_target": {
+    "k": 1,
+    "n": 11,
+    "rate": 0.09090909090909091,
+    "ci95": [
+     0.01623175226282597,
+     0.3773646254862038
+    ]
+   },
+   "kl_country": {
+    "mean": 0.0489865206182003,
+    "sd": 0.04592142999172211,
+    "n": 3,
+    "ci95": [
+     -0.0029784693176945903,
+     0.1009515105540952
+    ],
+    "max": 0.0993388444185257
+   },
+   "kl_generic": {
+    "mean": 0.008539541624486446,
+    "sd": 0.013040268793702126,
+    "n": 40,
+    "ci95": [
+     0.004498320456972768,
+     0.012580762792000124
+    ],
+    "max": 0.06658081710338593
+   },
+   "F": 1.0,
+   "kl_mean": 0.028763031121343374,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9712369688786566,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 27.331165313720703
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Pocatello",
+   "ho_fs"
+  ],
+  [
+   "Pocatello",
+   "ho_zs"
+  ],
+  [
+   "Twin Falls",
+   "ho_zs"
+  ],
+  [
+   "Coeur d'Alene",
+   "ho_fs"
+  ],
+  [
+   "Coeur d'Alene",
+   "ho_zs"
+  ],
+  [
+   "Sun Valley",
+   "ho_fs"
+  ],
+  [
+   "Sun Valley",
+   "ho_zs"
+  ],
+  [
+   "Norfolk",
+   "ho_zs"
+  ],
+  [
+   "Roanoke",
+   "ho_zs"
+  ],
+  [
+   "Charlottesville",
+   "ho_zs"
+  ],
+  [
+   "Williamsburg",
+   "ho_zs"
+  ]
+ ],
+ "task": "minimal",
+ "suite_task": "T7_minimal",
+ "extra": {
+  "rho": [
+   24.64073371887207,
+   31.43943977355957,
+   38.66672134399414,
+   44.63792037963867,
+   47.409339904785156,
+   47.05838394165039,
+   47.527069091796875,
+   49.704139709472656,
+   52.778236389160156,
+   52.555599212646484,
+   50.805267333984375,
+   51.708091735839844,
+   54.303524017333984,
+   54.31059646606445,
+   55.98515319824219,
+   59.81357192993164,
+   59.84143829345703,
+   65.0901870727539,
+   68.3989486694336,
+   79.77081298828125,
+   88.4007797241211,
+   100.45832061767578,
+   117.08836364746094,
+   138.94271850585938,
+   181.96832275390625,
+   202.57144165039062,
+   241.9185028076172,
+   212.2084503173828
+  ],
+  "min_flip": 0.8,
+  "r_ref": 0.27050806537892597,
+  "reference": {
+   "reward": 1.0,
+   "F": 0.8,
+   "kl_mean": 0.006309316260740161,
+   "error": null,
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 13.4453706741333
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

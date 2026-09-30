@@ -1,0 +1,287 @@
+{
+ "id": "T1_easy-Utah-Alaska-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Utah",
+ "target": "Alaska",
+ "source_capital": "Salt Lake City",
+ "target_capital": "Juneau",
+ "dev_source": [
+  "Moab",
+  "St. George",
+  "Provo",
+  "Orem"
+ ],
+ "dev_target": [
+  "Wasilla",
+  "Nome",
+  "Kodiak",
+  "Anchorage"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Ogden",
+  "Park City",
+  "Logan"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Ogden",
+   "ho_zs"
+  ],
+  [
+   "Park City",
+   "ho_zs"
+  ],
+  [
+   "Logan",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Moab",
+   "St. George",
+   "Provo",
+   "Orem"
+  ],
+  "target": [
+   "Wasilla",
+   "Nome",
+   "Kodiak",
+   "Anchorage",
+   "Fairbanks",
+   "Sitka",
+   "Ketchikan"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 0,
+     "n": 0,
+     "rate": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7674158215522766,
+    "edited": 0.8687164783477783
+   },
+   "leak": {
+    "k": 11,
+    "n": 14,
+    "rate": 0.7857142857142857,
+    "ci95": [
+     0.5241027622679172,
+     0.9242875166308363
+    ]
+   },
+   "leak_to_target": {
+    "k": 10,
+    "n": 14,
+    "rate": 0.7142857142857143,
+    "ci95": [
+     0.4535045882751561,
+     0.882788120898909
+    ]
+   },
+   "kl_country": {
+    "mean": 0.07425794005393982,
+    "sd": 0.05598345771431923,
+    "n": 3,
+    "ci95": [
+     0.01090669386614447,
+     0.13760918624173518
+    ],
+    "max": 0.10759063065052032
+   },
+   "kl_generic": {
+    "mean": 0.012155142612755299,
+    "sd": 0.019616996869444847,
+    "n": 40,
+    "ci95": [
+     0.006075772298691128,
+     0.01823451292681947
+    ],
+    "max": 0.11514800786972046
+   },
+   "F": 1.0,
+   "kl_mean": 0.04320654133334756,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9567934586666524,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 37.3857421875
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Fargo",
+   "ho_zs"
+  ],
+  [
+   "Grand Forks",
+   "ho_fs"
+  ],
+  [
+   "Grand Forks",
+   "ho_zs"
+  ],
+  [
+   "Minot",
+   "ho_fs"
+  ],
+  [
+   "Minot",
+   "ho_zs"
+  ],
+  [
+   "Williston",
+   "ho_zs"
+  ],
+  [
+   "New Orleans",
+   "ho_fs"
+  ],
+  [
+   "New Orleans",
+   "ho_zs"
+  ],
+  [
+   "Shreveport",
+   "ho_fs"
+  ],
+  [
+   "Shreveport",
+   "ho_zs"
+  ],
+  [
+   "Lake Charles",
+   "ho_fs"
+  ],
+  [
+   "Lake Charles",
+   "ho_zs"
+  ],
+  [
+   "Houma",
+   "ho_fs"
+  ],
+  [
+   "Houma",
+   "ho_zs"
+  ]
+ ],
+ "task": "edit",
+ "suite_task": "T1_easy",
+ "extra": {
+  "reference": {
+   "reward": 0.6648435552294055,
+   "F": 0.6666666666666666,
+   "kl_mean": 0.002734667155891657,
+   "error": null,
+   "edits": [
+    {
+     "layer": 21,
+     "position": "city_last",
+     "norm": 45.394622802734375
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

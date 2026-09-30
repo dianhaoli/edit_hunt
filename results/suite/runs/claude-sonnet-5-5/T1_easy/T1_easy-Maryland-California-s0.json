@@ -1,0 +1,651 @@
+{
+ "instance": "T1_easy-Maryland-California-s0",
+ "suite_task": "T1_easy",
+ "tier": "easy",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 52,
+ "budget_total": 3000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "src",
+    "cities": [
+     "Bethesda",
+     "Gaithersburg",
+     "Baltimore",
+     "Rockville"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 12,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "tgt",
+    "cities": [
+     "Anaheim",
+     "Fresno",
+     "San Jose",
+     "Los Angeles"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 12,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "tgt-src"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Bethesda",
+     "Baltimore",
+     "Annapolis",
+     "Frederick"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "Bethesda",
+     "Baltimore",
+     "Annapolis",
+     "Frederick"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Bethesda",
+     "Baltimore",
+     "Rockville"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 22,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Lyon is a city in the country of France.\n{city} is a city in the country of",
+    "cities": [
+     "Bethesda",
+     "Baltimore",
+     "Rockville"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 32,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is Miami in?\nA: The state of Florida.\nQ: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "Bethesda",
+     "Baltimore",
+     "Rockville"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.3,
+    "answers": "states"
+   },
+   "used": 42,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+    "cities": [
+     "Bethesda",
+     "Baltimore",
+     "Rockville"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.3
+   },
+   "used": 52,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.3
+     }
+    ]
+   },
+   "used": 52,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 12,
+   "position": "city_last",
+   "scale": 1.3
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "n_items": 7,
+  "flip": {
+   "k": 7,
+   "n": 7,
+   "rate": 1.0,
+   "ci95": [
+    0.6456611570247934,
+    1.0
+   ]
+  },
+  "to_source": {
+   "k": 0,
+   "n": 7,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.35433884297520657
+   ]
+  },
+  "per_template": {
+   "ho_fs": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "ho_zs": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   }
+  },
+  "state_kept": {
+   "k": 0,
+   "n": 4,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.48990002040399916
+   ]
+  },
+  "state_clean_correct": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "p_us": {
+   "clean": 0.7087604403495789,
+   "edited": 0.6741706132888794
+  },
+  "leak": {
+   "k": 11,
+   "n": 11,
+   "rate": 1.0,
+   "ci95": [
+    0.7411599827511859,
+    1.0
+   ]
+  },
+  "leak_to_target": {
+   "k": 8,
+   "n": 11,
+   "rate": 0.7272727272727273,
+   "ci95": [
+    0.4343497069897537,
+    0.9025411942607853
+   ]
+  },
+  "kl_country": {
+   "mean": 0.01691509783267975,
+   "sd": 0.019864948466420174,
+   "n": 4,
+   "ci95": [
+    -0.002552551664412022,
+    0.03638274732977152
+   ],
+   "max": 0.046542003750801086
+  },
+  "kl_generic": {
+   "mean": 0.0057888878509402275,
+   "sd": 0.007721486501395702,
+   "n": 40,
+   "ci95": [
+    0.0033959743928080057,
+    0.008181801309072449
+   ],
+   "max": 0.038001228123903275
+  },
+  "F": 1.0,
+  "kl_mean": 0.011351992841809988,
+  "kl_budget": 1.0,
+  "leak_weight": 0.0,
+  "reward": 0.98864800715819,
+  "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+  "edits": [
+   {
+    "layer": 12,
+    "position": "city_last",
+    "norm": 46.475833892822266
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":3000,\"constraints\":{\"max_layer\":21,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":3000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Maryland\",\"target\":\"California\",\"source_capital\":\"Annapolis\",\"target_capital\":\"Sacramento\",\"dev_source_cities\":[\"Bethesda\",\"Gaithersburg\",\"Baltimore\",\"Rockville\"],\"dev_target_cities\":[\"Anaheim\",\"Fresno\",\"San Jose\",\"Los Angeles\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make prompts about cities in Maryland answer the capital of California (Sacramento) instead of Annapolis, on held-out Maryland cities and held-out prompt wordings.\",\"reward\":\"F = fraction of held-out (city, wording) items whose top answer among the 50 capitals is the target capital. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. leak = fraction of held-out cities from other states whose top capital changes. reward = F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":3000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01A8YBgED7YsGU1m1Yse2G2n",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "src",
+      "cities": [
+       "Bethesda",
+       "Gaithersburg",
+       "Baltimore",
+       "Rockville"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 12,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01HE9pff4vzzsNZUT9UYQmfE",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "tgt",
+      "cities": [
+       "Anaheim",
+       "Fresno",
+       "San Jose",
+       "Los Angeles"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 12,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01A8YBgED7YsGU1m1Yse2G2n",
+     "content": "{\"register\":\"src\",\"n\":4,\"norm\":52.7925,\"budget_left\":2996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01HE9pff4vzzsNZUT9UYQmfE",
+     "content": "{\"register\":\"tgt\",\"n\":4,\"norm\":51.6541,\"budget_left\":2992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01T54pMh7Kjabiwif33UsZKq",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "tgt-src"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01T54pMh7Kjabiwif33UsZKq",
+     "content": "{\"register\":\"d\",\"norm\":35.7506,\"budget_left\":2992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01Y5WZSWrqsusaqFWyKqeahi",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Bethesda",
+       "Baltimore",
+       "Annapolis",
+       "Frederick"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01DwoPSqBp262x1Go7PJK8PH",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "Bethesda",
+       "Baltimore",
+       "Annapolis",
+       "Frederick"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01Y5WZSWrqsusaqFWyKqeahi",
+     "content": "{\"error\":\"held-out cities are not accessible: ['Frederick']\",\"budget_left\":2992}",
+     "is_error": true
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01DwoPSqBp262x1Go7PJK8PH",
+     "content": "{\"error\":\"held-out cities are not accessible: ['Frederick']\",\"budget_left\":2992}",
+     "is_error": true
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01QYPA6MZwvYHohxWNv4iWwt",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Bethesda",
+       "Baltimore",
+       "Rockville"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01BxDTfGLqriBVZ2J77GFrwd",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Lyon is a city in the country of France.\n{city} is a city in the country of",
+      "cities": [
+       "Bethesda",
+       "Baltimore",
+       "Rockville"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01QYPA6MZwvYHohxWNv4iWwt",
+     "content": "{\"predictions\":[{\"city\":\"Bethesda\",\"clean\":\"Montgomery\",\"edited\":\"Sacramento\"},{\"city\":\"Baltimore\",\"clean\":\"Annapolis\",\"edited\":\"Sacramento\"},{\"city\":\"Rockville\",\"clean\":\"Annapolis\",\"edited\":\"Sacramento\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":2.649,\"flip_rate\":1.0,\"kl_generic\":0.0037,\"budget_left\":2978}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01BxDTfGLqriBVZ2J77GFrwd",
+     "content": "{\"predictions\":[{\"city\":\"Bethesda\",\"clean\":\"Atlanta\",\"edited\":\"Columbia\"},{\"city\":\"Baltimore\",\"clean\":\"Boston\",\"edited\":\"Sacramento\"},{\"city\":\"Rockville\",\"clean\":\"Montgomery\",\"edited\":\"Columbia\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":2.77,\"flip_rate\":0.333,\"kl_generic\":0.0032,\"budget_left\":2968}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSswUKEAgSGAI4AUIIdGhpbmtpbmcSDM4TOXXJh1klzT5QuRoMmC0RSgb8aO2JpQh1IjCh/H5xRh6hFd75+kGxPoDCv/pkQPrXjX73mvh7PPFdSRvcgJRZ4VWylg5A64q4Cd8q0AT8fZWusEl8qSQRVoytvbj5faiDHDvy2VU+gm7Xb1aaBXE+p3val7RjVzDgKf7wxRu/uuZGOtHHkcIQd35086tyVTwWInG4W2M1CBxGnzhjrbU6OV7Hvq5pRliE+R+txZwI22WilRNFrvaKoL+kZf3g5+MWwug2ToXM88RrMO07a3nwSPMfmb/xrUrti0dC0SjvTphSWPnCET1fGh83vBxTyhrwC8a2f2/kTa1N0FWnBQOAcwsSjxNQQ01jDFbvDempxEcym5kAQWfUeQc0IctNdTqK8dpFPludVWFYxQKTeqQ/iZMY6QW/BbBY8/Qc8woYXpzNaLT+JHxeBZJ6oV2auHJ+6z7zCBkENJxEl/l21OMHP89eYF3253TsXs+LiEJU38eMrg3WiMKKusS2ghVeq3GFh2L2e8/t/fNCfTtUrPfpd6Q+lUEKug5iVQcNoUbK+sKS206BW+Y8oxvf/B8Zwgo7/zvbWOSi63FPnLMubVET7GXOlZ6OQ2DrjmkChBxD9qNpHgnJ1KPg21nxJtdOipq+rhCpvnqkqoebZP2dZiJuhN0c0wqIUgKpuBBbjbNcoAmjqPC0OfNMQL82DI4Si5Lc3j5KRALinzegOIlmhNn8dHawakUSY977LYqnlhG7gAoQi1qlnh95mld/sCosx0WJw0xnhlph3W2RqEVzdyKKakGSZa+FQ+ccBI6wM3MS2nvcC3FX6B+iYvYK+ppVteAcyCzSUyhTy65QiVMhOvjdJVnEC3+G1tsU+uyV9pI1VNJ+ZYuMgEQNVqPbBfe3GAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01NiJ8vPWoKBFBmuCz7EnTgS",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is Miami in?\nA: The state of Florida.\nQ: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "Bethesda",
+       "Baltimore",
+       "Rockville"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.3,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_013n8rCS9SPrx1ctHzbSQR4X",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+      "cities": [
+       "Bethesda",
+       "Baltimore",
+       "Rockville"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.3
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01NiJ8vPWoKBFBmuCz7EnTgS",
+     "content": "{\"predictions\":[{\"city\":\"Bethesda\",\"clean\":\"Maryland\",\"edited\":\"California\"},{\"city\":\"Baltimore\",\"clean\":\"Maryland\",\"edited\":\"California\"},{\"city\":\"Rockville\",\"clean\":\"Maryland\",\"edited\":\"California\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":18.699,\"kl_generic\":0.002,\"budget_left\":2958}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_013n8rCS9SPrx1ctHzbSQR4X",
+     "content": "{\"predictions\":[{\"city\":\"Bethesda\",\"clean\":\"Annapolis\",\"edited\":\"Sacramento\"},{\"city\":\"Baltimore\",\"clean\":\"Annapolis\",\"edited\":\"Sacramento\"},{\"city\":\"Rockville\",\"clean\":\"Annapolis\",\"edited\":\"Sacramento\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":7.847,\"flip_rate\":1.0,\"kl_generic\":0.0165,\"budget_left\":2948}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Good enough; submit at scale 1.3.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_012pLF4RaSNXCnZhgCeFcNpC",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 12,
+        "position": "city_last",
+        "scale": 1.3
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_012pLF4RaSNXCnZhgCeFcNpC",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":2948}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 6,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 14,
+  "output_tokens": 1889,
+  "cache_read_input_tokens": 23466,
+  "cache_creation_input_tokens": 6696
+ },
+ "cost_usd": 0.0404,
+ "secs": 18.1
+}

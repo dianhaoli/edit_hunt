@@ -228,8 +228,9 @@ def run_episode_openai(client, env: ToolEnv, model: str, max_turns: int = 40, ma
                        effort: str | None = None, max_nudges: int = 2, max_cost: float | None = None) -> dict:
     """Same loop over the OpenAI Responses API (function tools + reasoning; turns chained with
     previous_response_id; prompt caching is automatic)."""
+    # strict=False: optional properties stay optional (strict schemas make the model fill every field)
     tools = [{"type": "function", "name": t["name"], "description": t["description"],
-              "parameters": t["input_schema"]} for t in tools_for(env)]
+              "parameters": t["input_schema"], "strict": False} for t in tools_for(env)]
     log = [{"role": "user", "content": _first_msg(env)}]
     new_input = list(log)
     usage = {"input_tokens": 0, "output_tokens": 0, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}

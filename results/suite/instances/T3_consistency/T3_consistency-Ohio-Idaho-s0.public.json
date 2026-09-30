@@ -1,0 +1,41 @@
+{
+ "id": "T3_consistency-Ohio-Idaho-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "consistency",
+ "source": "Ohio",
+ "target": "Idaho",
+ "source_capital": "Columbus",
+ "target_capital": "Boise",
+ "dev_source": [
+  "Toledo",
+  "Dayton",
+  "Sandusky",
+  "Akron"
+ ],
+ "dev_target": [
+  "Pocatello",
+  "Nampa",
+  "Twin Falls",
+  "Sun Valley"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 15,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "task": "consistency",
+ "suite_task": "T3_consistency",
+ "public_extra": {}
+}

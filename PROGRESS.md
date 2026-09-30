@@ -273,3 +273,47 @@ Notes for resuming:
   - `experiments/task_map.py` → `results/task_map.json` + `fig4_task_map.png`.
   - FINDINGS "Task difficulty map" section with a transcript excerpt per task.
   - Stop adding tasks on Oct 5.
+
+### STATE SNAPSHOT (2026-09-30 ~20:35 UTC). Read this first after a context compaction
+**Current priority (user): correctness before any more API spend.** Next steps, in order:
+1. Subagent review for bugs, method errors and reward hacking across `edithunt/env/{tools,tasks,grader,instance,agent_loop,suite_run}.py`,
+   the instances and the run records.
+2. Fix what it finds and verify each fix (replay Sonnet runs, `experiments/verify_tools_fix.py`).
+3. Only then rerun **all gpt-6.1-sol episodes** from scratch (the adapter bug invalidated them) and rebuild the map.
+
+**Done:**
+- Tasks T1–T7 are built in `edithunt/env/tasks.py`. T5 (erase) is dropped: no tool-reproducible reference.
+- Instances are in `results/suite/instances/<task>/`: T1, T3, T4, T6, T7 have 8 each; T2 has 7. T6 spans 1.5B/3B/gemma/7B.
+- **Sonnet 5.5 calibration is complete and valid** (31/31 edit runs replay identically after the tool fix):
+  | task | pass | notes |
+  |---|---|---|
+  | T1 | 8/8 | |
+  | T2 | 1/7 | |
+  | T3 | 8/8 | |
+  | T4 | 8/8 | black-box 2/2, so T4 is solvable by prompting |
+  | T6 | 7/8 | black-box 0/2 |
+  | T7 | 3/8 | |
+- Scripted naive baselines are in `results/suite/baselines.json`:
+  - T1 gradient: 3/8
+  - T2 mean-diff and gradient: 0/7 each
+  - T3 gradient: 1/8
+  - T6 prior (0.8 × depth): 4/8
+  - T7 mean-diff: 5/8; gradient: 2/8
+- Map script: `experiments/task_map.py` writes `results/task_map.json` and `results/figures/fig4_task_map.png`.
+- The independent audit is in `results/audit/`; its findings are in the notebook under "Independent audit". Open items from it:
+  - the T2 reference is noisy (0.54 mean, 19/28 over reruns);
+  - few held-out items per instance;
+  - the T2 grader checks only STATE_Q (proposed: add a hidden readout);
+  - refusal messages are a membership oracle (proposed: generic refusal, leakage cities drawn at grade time).
+  None of these were exploited.
+
+**Budget:**
+- Anthropic: $3.01 of the $4.30 cap spent (credit $5). Sonnet is done, so no more Anthropic spend is needed.
+- OpenAI: $2.86 spent, cap $8.00 (credit ~$9), with $0.26 of stale reservations in `results/suite/ledger.json` to clear.
+- The sol rerun needs about $4.
+- The user said not to spend budget just to use it; the seed-2 extra instances were cancelled.
+
+**Gotchas:**
+- Never use pgrep -f in waiters; use literal PIDs (see memory).
+- Another Claude session may use the GPU (the audit did); check nvidia-smi before loading 7B.
+- The T6 7B episodes need about 16 GB of free GPU memory.

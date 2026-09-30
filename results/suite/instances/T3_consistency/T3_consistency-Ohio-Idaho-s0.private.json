@@ -1,0 +1,319 @@
+{
+ "id": "T3_consistency-Ohio-Idaho-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "consistency",
+ "source": "Ohio",
+ "target": "Idaho",
+ "source_capital": "Columbus",
+ "target_capital": "Boise",
+ "dev_source": [
+  "Toledo",
+  "Dayton",
+  "Sandusky",
+  "Akron"
+ ],
+ "dev_target": [
+  "Pocatello",
+  "Nampa",
+  "Twin Falls",
+  "Sun Valley"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 15,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Cleveland",
+  "Cincinnati",
+  "Youngstown"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Cleveland",
+   "ho_zs"
+  ],
+  [
+   "Cincinnati",
+   "ho_fs"
+  ],
+  [
+   "Cincinnati",
+   "ho_zs"
+  ],
+  [
+   "Youngstown",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Toledo",
+   "Dayton",
+   "Sandusky",
+   "Akron",
+   "Cleveland",
+   "Cincinnati",
+   "Youngstown"
+  ],
+  "target": [
+   "Pocatello",
+   "Nampa",
+   "Twin Falls",
+   "Sun Valley",
+   "Coeur d'Alene",
+   "Ketchum"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.9007572531700134,
+    "edited": 0.8780775666236877
+   },
+   "leak": {
+    "k": 13,
+    "n": 14,
+    "rate": 0.9285714285714286,
+    "ci95": [
+     0.6853073044604219,
+     0.9872781138877085
+    ]
+   },
+   "leak_to_target": {
+    "k": 6,
+    "n": 14,
+    "rate": 0.42857142857142855,
+    "ci95": [
+     0.21380509930400526,
+     0.6740973309713064
+    ]
+   },
+   "kl_country": {
+    "mean": 0.007301520090550184,
+    "sd": 0.0030539303552359343,
+    "n": 3,
+    "ci95": [
+     0.0038456725656937857,
+     0.010757367615406584
+    ],
+    "max": 0.010095339268445969
+   },
+   "kl_generic": {
+    "mean": 0.015179497189819813,
+    "sd": 0.021275805309414864,
+    "n": 40,
+    "ci95": [
+     0.00858605681427848,
+     0.021772937565361146
+    ],
+    "max": 0.10083053261041641
+   },
+   "F": 1.0,
+   "kl_mean": 0.011240508640184999,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.988759491359815,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 37.40614700317383
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   5,
+   10,
+   15
+  ]
+ },
+ "leak_items": [
+  [
+   "Philadelphia",
+   "ho_fs"
+  ],
+  [
+   "Philadelphia",
+   "ho_zs"
+  ],
+  [
+   "Pittsburgh",
+   "ho_fs"
+  ],
+  [
+   "Pittsburgh",
+   "ho_zs"
+  ],
+  [
+   "Allentown",
+   "ho_fs"
+  ],
+  [
+   "Allentown",
+   "ho_zs"
+  ],
+  [
+   "Scranton",
+   "ho_fs"
+  ],
+  [
+   "Scranton",
+   "ho_zs"
+  ],
+  [
+   "Minneapolis",
+   "ho_fs"
+  ],
+  [
+   "Minneapolis",
+   "ho_zs"
+  ],
+  [
+   "Duluth",
+   "ho_zs"
+  ],
+  [
+   "St. Cloud",
+   "ho_zs"
+  ],
+  [
+   "Mankato",
+   "ho_fs"
+  ],
+  [
+   "Mankato",
+   "ho_zs"
+  ]
+ ],
+ "task": "consistency",
+ "suite_task": "T3_consistency",
+ "extra": {
+  "hidden_items": [
+   [
+    "Cleveland",
+    "abbr"
+   ],
+   [
+    "Cleveland",
+    "abbr_addr"
+   ],
+   [
+    "Cincinnati",
+    "abbr"
+   ],
+   [
+    "Cincinnati",
+    "abbr_addr"
+   ],
+   [
+    "Youngstown",
+    "abbr"
+   ],
+   [
+    "Youngstown",
+    "abbr_addr"
+   ]
+  ],
+  "reference": {
+   "reward": 0.9781998372636735,
+   "F": 1.0,
+   "kl_mean": 0.021800162736326456,
+   "error": null,
+   "edits": [
+    {
+     "layer": 15,
+     "position": "city_last",
+     "norm": 53.804412841796875
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

@@ -1,0 +1,292 @@
+{
+ "id": "T7_minimal-Iowa-Nebraska-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "minimal",
+ "source": "Iowa",
+ "target": "Nebraska",
+ "source_capital": "Des Moines",
+ "target_capital": "Lincoln",
+ "dev_source": [
+  "Council Bluffs",
+  "Dubuque",
+  "Davenport",
+  "Cedar Rapids"
+ ],
+ "dev_target": [
+  "Omaha",
+  "Grand Island",
+  "Kearney",
+  "Scottsbluff"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Sioux City",
+  "Ames"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Sioux City",
+   "ho_fs"
+  ],
+  [
+   "Sioux City",
+   "ho_zs"
+  ],
+  [
+   "Ames",
+   "ho_fs"
+  ],
+  [
+   "Ames",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Council Bluffs",
+   "Dubuque",
+   "Davenport",
+   "Cedar Rapids",
+   "Ames",
+   "Sioux City"
+  ],
+  "target": [
+   "Omaha",
+   "Grand Island",
+   "Kearney",
+   "Scottsbluff"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.948600172996521,
+    "edited": 0.9072269201278687
+   },
+   "leak": {
+    "k": 3,
+    "n": 7,
+    "rate": 0.42857142857142855,
+    "ci95": [
+     0.15821692226262685,
+     0.7495457695909742
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 7,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.35433884297520657
+    ]
+   },
+   "kl_country": {
+    "mean": 0.01414884626865387,
+    "sd": 0.019439997151494026,
+    "n": 2,
+    "ci95": [
+     -0.012793615203000569,
+     0.04109130774030831
+    ],
+    "max": 0.0278949998319149
+   },
+   "kl_generic": {
+    "mean": 0.011752413585782051,
+    "sd": 0.021235868334770203,
+    "n": 40,
+    "ci95": [
+     0.005171349806908604,
+     0.018333477364655498
+    ],
+    "max": 0.1075429692864418
+   },
+   "F": 1.0,
+   "kl_mean": 0.01295062992721796,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.987049370072782,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 28.783166885375977
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "St. Louis",
+   "ho_fs"
+  ],
+  [
+   "St. Louis",
+   "ho_zs"
+  ],
+  [
+   "Biloxi",
+   "ho_zs"
+  ],
+  [
+   "Gulfport",
+   "ho_zs"
+  ],
+  [
+   "Tupelo",
+   "ho_fs"
+  ],
+  [
+   "Tupelo",
+   "ho_zs"
+  ],
+  [
+   "Hattiesburg",
+   "ho_zs"
+  ]
+ ],
+ "task": "minimal",
+ "suite_task": "T7_minimal",
+ "extra": {
+  "rho": [
+   23.06784439086914,
+   30.373428344726562,
+   36.15077209472656,
+   43.014034271240234,
+   50.65404510498047,
+   48.103233337402344,
+   52.03418731689453,
+   54.0024528503418,
+   56.151641845703125,
+   55.1702995300293,
+   52.14820098876953,
+   52.98198318481445,
+   55.4637336730957,
+   55.56108856201172,
+   56.977745056152344,
+   60.38079071044922,
+   60.7540283203125,
+   65.66260528564453,
+   69.55360412597656,
+   80.893798828125,
+   89.70268249511719,
+   100.85787963867188,
+   115.86946105957031,
+   136.37991333007812,
+   180.54617309570312,
+   197.94537353515625,
+   236.3064422607422,
+   223.9534454345703
+  ],
+  "min_flip": 0.8,
+  "r_ref": 0.3436440118962356,
+  "reference": {
+   "reward": 1.0,
+   "F": 1.0,
+   "kl_mean": 0.011778405285440385,
+   "error": null,
+   "edits": [
+    {
+     "layer": 21,
+     "position": "city_last",
+     "norm": 34.65920639038086
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

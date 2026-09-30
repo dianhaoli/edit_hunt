@@ -1,0 +1,532 @@
+{
+ "instance": "T3_consistency-Ohio-Colorado-s0",
+ "suite_task": "T3_consistency",
+ "tier": "consistency",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 60,
+ "budget_total": 4000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "t8",
+    "cities": [
+     "Telluride",
+     "Fort Collins",
+     "Vail",
+     "Aspen"
+    ],
+    "template": "{city}",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "s8",
+    "cities": [
+     "Youngstown",
+     "Cleveland",
+     "Cincinnati",
+     "Sandusky"
+    ],
+    "template": "{city}",
+    "layer": 8,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d8",
+    "expr": "t8-s8"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "{city}",
+    "cities": [
+     "Youngstown",
+     "Cleveland",
+     "Cincinnati",
+     "Sandusky"
+    ],
+    "vector": "d8",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Youngstown",
+     "Cleveland",
+     "Cincinnati",
+     "Sandusky"
+    ],
+    "vector": "d8",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 1
+   },
+   "used": 36,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "Youngstown",
+     "Cleveland",
+     "Cincinnati",
+     "Sandusky"
+    ],
+    "vector": "d8",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 0.7,
+    "answers": "states"
+   },
+   "used": 48,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "{city} is a city in the country of",
+    "cities": [
+     "Youngstown",
+     "Cleveland",
+     "Cincinnati",
+     "Sandusky"
+    ],
+    "vector": "d8",
+    "layer": 8,
+    "position": "city_last",
+    "scale": 0.7
+   },
+   "used": 60,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 0.8
+     }
+    ]
+   },
+   "used": 60,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 8,
+   "position": "city_last",
+   "scale": 0.8
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "F_cap": {
+   "k": 3,
+   "n": 5,
+   "rate": 0.6,
+   "ci95": [
+    0.23071993220883708,
+    0.8823817688407467
+   ]
+  },
+  "F_state": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "F_hidden": {
+   "k": 5,
+   "n": 6,
+   "rate": 0.8333333333333334,
+   "ci95": [
+    0.43649056343635395,
+    0.9699474141282697
+   ]
+  },
+  "hidden_by_readout": {
+   "abbr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "abbr_addr": {
+    "k": 2,
+    "n": 3,
+    "rate": 0.6666666666666666,
+    "ci95": [
+     0.2076549551264879,
+     0.9385096847238394
+    ]
+   }
+  },
+  "p_us": {
+   "clean": 0.6165559887886047,
+   "edited": 0.5248183608055115
+  },
+  "kl_country": {
+   "mean": 0.055736247450113297,
+   "sd": 0.09078031778335571,
+   "n": 3,
+   "ci95": [
+    -0.046991352732193487,
+    0.15846384763242008
+   ],
+   "max": 0.16048887372016907
+  },
+  "kl_generic": {
+   "mean": 0.005893800873309374,
+   "sd": 0.006123425904661417,
+   "n": 40,
+   "ci95": [
+    0.0039961315249926735,
+    0.007791470221626074
+   ],
+   "max": 0.023957962170243263
+  },
+  "kl_mean": 0.030815024161711335,
+  "F": 0.7937005259840998,
+  "reward": 0.7692426250987368,
+  "edits": [
+   {
+    "layer": 8,
+    "position": "city_last",
+    "norm": 31.825923919677734
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":4000,\"constraints\":{\"max_layer\":15,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Ohio\",\"target\":\"Colorado\",\"source_capital\":\"Columbus\",\"target_capital\":\"Denver\",\"dev_source_cities\":[\"Youngstown\",\"Cleveland\",\"Cincinnati\",\"Sandusky\"],\"dev_target_cities\":[\"Telluride\",\"Fort Collins\",\"Vail\",\"Aspen\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make the model treat held-out cities in Ohio as if they were in Colorado: the capital question, the question 'which US state is <city> in?', and further hidden state-level readouts that you cannot see or query should all give the Colorado answer.\",\"reward\":\"F_cap, F_state, F_hidden = fraction of held-out items answered with the target state's answer on the capital question (held-out wordings), on the state question (two wordings, one held out), and on the hidden readouts. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. reward = (F_cap * F_state * F_hidden)^(1/3) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSvgYKEAgSGAI4AUIIdGhpbmtpbmcSDM8dy5nqB/o2N7nNjxoMe1WB/R85PHvHFp3FIjCgpUWlK5qkcJ6zm/xA/n1vE7ht1CD7oOTaDT4vtow6/LYGn9WAbjMrS10gPKYGbSIq2wVWBU2IvsrgUvjjoRpaSpGzUImccNdiGa9+oEiPBBWjjDs36XTNQKVUBcJhUUbpg9MMJyiyrpxTEypNRRG2up0RmduVGxSv0qg5XA5ey0m1E2K/meJGAv6u9fuXFFmjkO+7zXKomOQM/GZu7+avGGE49yGREgku0sm7cg++m3zEm4PNzX+1qtwG5XtGo5EqH0PJBfKUjMpP/g25rQJYUw1AueMno88Xh4lyAB4mmF3Jk6+tEfyBLAmvAhaSYmSPaTbwhJrOE1492BUUknqOeRn16HXcSKPQyN/8TU25diDM6MOWldmRNV3K0ZSilSYlPFYPcs04cHwYWMKkdeqNbn13Mn1n3uLN2Tnp7x2jUavp0vBF2tbc/B2Pf+ClsJO5RV9bTicx0zpuAwQU1zsXOUqIC3ca7o9hDHnASvaPceAfDv/I3e5BrjLV/pyojHGWI7IC3Xy3BVfisZkIVhdgcIymsnZ4sBF4FdULAziv2iS0Nh3EUr5lgU3cZRyWYFTpJxQ0PmbxZoQCOS9vO91pP1BN5jaxihKXRdz0EeZ44CNtIDd16VSp6X83aoIyEZlOjMpw1Akkt3jGr/eLqsQYjpCH4l60A5nAS1gGfHf/sVwom0Movszvbj8hsyQZtwGMuuc+Tnd8EQm3UvMS1L7lqIFO6ZH8u+KTVYCtSdK7C5Atkm9rcbmqnDNtjUE1f4raTHwFdnSLf8nc3yj1WrxciM9+GHS63nWP1EeSgNV79yoZb+4e2LaV+62PLjOD9IkVdelXkfPlis2I3Yb42tvSbesFZl6G0IuDPKfkakMwVyOY468NY8UuSMUY2EIP9L3XFGUhC1oNxdih/g+ol8Md5ZRcmBXU9vul302CJpGOOEKCetV4P00EAOIP6kdP3U1bh4XLW62Bpn2NyooOqFfMJg/6yC0HqDV0PmW2GXXQGs5onx8EQq9zVnS0DE7QUWbiFXNy/y+EzEyF7tM/DxgB",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01KGM3J3VwVP1csHwQuGMLMh",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "t8",
+      "cities": [
+       "Telluride",
+       "Fort Collins",
+       "Vail",
+       "Aspen"
+      ],
+      "template": "{city}",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01Qz1qtevhpqUvUYCTxEYwLW",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "s8",
+      "cities": [
+       "Youngstown",
+       "Cleveland",
+       "Cincinnati",
+       "Sandusky"
+      ],
+      "template": "{city}",
+      "layer": 8,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01KGM3J3VwVP1csHwQuGMLMh",
+     "content": "{\"register\":\"t8\",\"n\":4,\"norm\":58.883,\"budget_left\":3996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01Qz1qtevhpqUvUYCTxEYwLW",
+     "content": "{\"register\":\"s8\",\"n\":4,\"norm\":53.0969,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01JjXi6oGMBhTv9ULB3hGUZa",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d8",
+      "expr": "t8-s8"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01JjXi6oGMBhTv9ULB3hGUZa",
+     "content": "{\"register\":\"d8\",\"norm\":39.7824,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01UMP3ei3fTefM3vtc2J69Vd",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "{city}",
+      "cities": [
+       "Youngstown",
+       "Cleveland",
+       "Cincinnati",
+       "Sandusky"
+      ],
+      "vector": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_013uk9HP4vPk4zuv976oegYZ",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Youngstown",
+       "Cleveland",
+       "Cincinnati",
+       "Sandusky"
+      ],
+      "vector": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 1
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01UMP3ei3fTefM3vtc2J69Vd",
+     "content": "{\"predictions\":[{\"city\":\"Youngstown\",\"clean\":\"Springfield\",\"edited\":\"Denver\"},{\"city\":\"Cleveland\",\"clean\":\"Columbus\",\"edited\":\"Denver\"},{\"city\":\"Cincinnati\",\"clean\":\"Phoenix\",\"edited\":\"Denver\"},{\"city\":\"Sandusky\",\"clean\":\"Springfield\",\"edited\":\"Denver\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":0.935,\"flip_rate\":1.0,\"kl_generic\":0.3637,\"budget_left\":3976}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_013uk9HP4vPk4zuv976oegYZ",
+     "content": "{\"predictions\":[{\"city\":\"Youngstown\",\"clean\":\"Columbus\",\"edited\":\"Denver\"},{\"city\":\"Cleveland\",\"clean\":\"Columbus\",\"edited\":\"Denver\"},{\"city\":\"Cincinnati\",\"clean\":\"Columbus\",\"edited\":\"Denver\"},{\"city\":\"Sandusky\",\"clean\":\"Columbus\",\"edited\":\"Denver\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":3.296,\"flip_rate\":1.0,\"kl_generic\":0.0091,\"budget_left\":3964}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Works. Check state question and a lower scale.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01P3FZvgaYhZQGVDWA5WueWG",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "Youngstown",
+       "Cleveland",
+       "Cincinnati",
+       "Sandusky"
+      ],
+      "vector": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 0.7,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01BQScBwT9RYcnxhYxWmGoqf",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "{city} is a city in the country of",
+      "cities": [
+       "Youngstown",
+       "Cleveland",
+       "Cincinnati",
+       "Sandusky"
+      ],
+      "vector": "d8",
+      "layer": 8,
+      "position": "city_last",
+      "scale": 0.7
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01P3FZvgaYhZQGVDWA5WueWG",
+     "content": "{\"predictions\":[{\"city\":\"Youngstown\",\"clean\":\"Ohio\",\"edited\":\"Colorado\"},{\"city\":\"Cleveland\",\"clean\":\"Ohio\",\"edited\":\"Colorado\"},{\"city\":\"Cincinnati\",\"clean\":\"Ohio\",\"edited\":\"Colorado\"},{\"city\":\"Sandusky\",\"clean\":\"Ohio\",\"edited\":\"Colorado\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":6.415,\"kl_generic\":0.002,\"budget_left\":3952}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01BQScBwT9RYcnxhYxWmGoqf",
+     "content": "{\"predictions\":[{\"city\":\"Youngstown\",\"clean\":\"Columbia\",\"edited\":\"Columbia\"},{\"city\":\"Cleveland\",\"clean\":\"Columbus\",\"edited\":\"Denver\"},{\"city\":\"Cincinnati\",\"clean\":\"Columbia\",\"edited\":\"Columbia\"},{\"city\":\"Sandusky\",\"clean\":\"Columbus\",\"edited\":\"Columbia\"}],\"changed_rate\":0.5,\"kl_on_these_prompts\":1.069,\"flip_rate\":0.25,\"kl_generic\":0.0136,\"budget_left\":3940}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Scale 0.7 works for states; KL looks acceptable. Submit at 0.8.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01ShEmETsXVq8kAjFFciRs4i",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d8",
+        "layer": 8,
+        "position": "city_last",
+        "scale": 0.8
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01ShEmETsXVq8kAjFFciRs4i",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3940}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 5,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 12,
+  "output_tokens": 1479,
+  "cache_read_input_tokens": 18360,
+  "cache_creation_input_tokens": 6299
+ },
+ "cost_usd": 0.0342,
+ "secs": 17.5
+}

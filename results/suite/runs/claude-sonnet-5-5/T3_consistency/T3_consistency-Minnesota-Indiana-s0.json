@@ -1,0 +1,529 @@
+{
+ "instance": "T3_consistency-Minnesota-Indiana-s0",
+ "suite_task": "T3_consistency",
+ "tier": "consistency",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 44,
+ "budget_total": 4000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "t",
+    "cities": [
+     "Terre Haute",
+     "Muncie",
+     "West Lafayette",
+     "Gary"
+    ],
+    "template": "{city}",
+    "layer": 9,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "s",
+    "cities": [
+     "Mankato",
+     "Duluth",
+     "Minneapolis",
+     "Bemidji"
+    ],
+    "template": "{city}",
+    "layer": 9,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "t",
+    "cities": [
+     "Terre Haute",
+     "Muncie",
+     "West Lafayette",
+     "Gary"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 9,
+    "position": "city_last"
+   },
+   "used": 12,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "s",
+    "cities": [
+     "Mankato",
+     "Duluth",
+     "Minneapolis",
+     "Bemidji"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 9,
+    "position": "city_last"
+   },
+   "used": 16,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "t-s"
+   },
+   "used": 16,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Mankato",
+     "Duluth",
+     "Minneapolis",
+     "Bemidji"
+    ],
+    "vector": "d",
+    "layer": 9,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 32,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is Miami in?\nA: The state of Florida.\nQ: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "Mankato",
+     "Duluth",
+     "Minneapolis",
+     "Bemidji"
+    ],
+    "vector": "d",
+    "layer": 9,
+    "position": "city_last",
+    "scale": 1.0,
+    "answers": "states"
+   },
+   "used": 44,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 9,
+      "position": "city_last",
+      "scale": 1.0
+     }
+    ]
+   },
+   "used": 44,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 9,
+   "position": "city_last",
+   "scale": 1.0
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "F_cap": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "F_state": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "F_hidden": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "hidden_by_readout": {
+   "abbr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "abbr_addr": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   }
+  },
+  "p_us": {
+   "clean": 0.8001782894134521,
+   "edited": 0.7081241607666016
+  },
+  "kl_country": {
+   "mean": 0.02895098552107811,
+   "sd": 0.03767022490501404,
+   "n": 2,
+   "ci95": [
+    -0.023257282578071165,
+    0.08115925362022738
+   ],
+   "max": 0.05558785796165466
+  },
+  "kl_generic": {
+   "mean": 0.004624870605766773,
+   "sd": 0.0039960844442248344,
+   "n": 40,
+   "ci95": [
+    0.0033864712062871534,
+    0.005863270005246393
+   ],
+   "max": 0.017239276319742203
+  },
+  "kl_mean": 0.01678792806342244,
+  "F": 1.0,
+  "reward": 0.9832120719365776,
+  "edits": [
+   {
+    "layer": 9,
+    "position": "city_last",
+    "norm": 34.729801177978516
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":4000,\"constraints\":{\"max_layer\":15,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Minnesota\",\"target\":\"Indiana\",\"source_capital\":\"Saint Paul\",\"target_capital\":\"Indianapolis\",\"dev_source_cities\":[\"Mankato\",\"Duluth\",\"Minneapolis\",\"Bemidji\"],\"dev_target_cities\":[\"Terre Haute\",\"Muncie\",\"West Lafayette\",\"Gary\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make the model treat held-out cities in Minnesota as if they were in Indiana: the capital question, the question 'which US state is <city> in?', and further hidden state-level readouts that you cannot see or query should all give the Indiana answer.\",\"reward\":\"F_cap, F_state, F_hidden = fraction of held-out items answered with the target state's answer on the capital question (held-out wordings), on the state question (two wordings, one held out), and on the hidden readouts. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. reward = (F_cap * F_state * F_hidden)^(1/3) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSoAYKEAgSGAI4AUIIdGhpbmtpbmcSDDfHH50o7SISWuhJMBoMNHwwcVUpYV0zZVayIjDsD+EA6AanoeRCcF0Rq8o3RoRwY+FgNALZqSUivfaDxFSpIiPBD+xl3cdTLheAnjEqvQV8CbIqj0SSiCHrlrOHUIoLdmhSHa4ORC6s5eaKpVa2h03ruIdvBMaLLD4OpUZhlAZJxsqCtyV+FVFqBgcFWYYvJ+t8USY/Frh4dQ+o9sInfSIchDLIxNsPP2HCvRFBFEEd1oV4FVeaLCMfJ0Gc9RQ6lGGfQgHvPpw1WfIDzJuBnYVqDzUWPX9n7nFqde4g/egmvjKw0qEFfrgwpRg3BLOBRidYcSudVS6v5mO5NvNb0dX3gHmlXbK9cK1bFU1abpvVTu7DqlozNC2YYetvBQj/BkgnkovkOPl/WrH/xEbNaqFb3m3h4nQ4zlD6sAE4z5TxIhLFilzUH7lq0PJO5mmdh4RlmElMof5xPYC/IJ+wZCorlxXt/HlAv7AkoB67lqY+rcX+ihkeHLbWr3cXSdivheXBOJgfm5uomMaYpn9Psd7acy1SoxjE65CcCxSWqPG/L0OyKlrlkKIywhg7u9p75OEhnLSD/DE5a6HkyAbnafEv5kIruaOS0dcJPIOKmil2oHoilMYS3lIKmKiIa/MqzbGEE3x3zaQRCIAg3rK0yI8rGoXz7GQhebq2gokf+QhIywBaT/fNgtyB/0kvICfjbeue5JfpXN5aRP46iZTt8g0xX+NmYkmrWKachzGvaeCuvsFO1KodXfBgrthTpodT7n/5NvAX3J82pcP2CjsrMdN7ZGrndxxboMwDj9kg1ILxRnKzHTPDZOerxw3a0Ii1Jilh75kxGhzZCCndBvE/ftv8Rh4Ndry9RAbgFUhA2FKUkNHnvEi+iQiBHswZn5nYB0cgiLXbSK/e5JR6fck9GAlHCgKHK8KfNB0S2rLc49k+FjdwUzNhMGTy1BWFG4fHiXR45hBiWM4LsdUBkxLHSm97tW3GicugJQI+PqncRpSSQPpWJtCIlyxiZDhqQI2XEHA0TsZr+JpEWzaoFhgB",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_017utw6uCtuYE1CntF6RtEnr",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "t",
+      "cities": [
+       "Terre Haute",
+       "Muncie",
+       "West Lafayette",
+       "Gary"
+      ],
+      "template": "{city}",
+      "layer": 9,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01244TrUwdidJBozSi7DWJW1",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "s",
+      "cities": [
+       "Mankato",
+       "Duluth",
+       "Minneapolis",
+       "Bemidji"
+      ],
+      "template": "{city}",
+      "layer": 9,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_017utw6uCtuYE1CntF6RtEnr",
+     "content": "{\"register\":\"t\",\"n\":4,\"norm\":2739.3918,\"budget_left\":3996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01244TrUwdidJBozSi7DWJW1",
+     "content": "{\"register\":\"s\",\"n\":4,\"norm\":55.4837,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSrQYKEAgSGAI4AUIIdGhpbmtpbmcSDH6g/iTajB+EduExPBoMJht59kSyce+D2w8VIjDxyaF6vmHWOpspRUWyjT/lxNuXsbKy8zBXcoEoyBNNo8hWZr6MHmSRknuOzPAjD5cqygVqxSgjdyT5V8wJ+dMGog4BZwdKk23c8IrIdieVZjO88wu6WeQCNmsgEP6IzXXdETYZf9neaUde/npq2H7Yjbj3LyU6tvV+K2LslKZhJfcEF7Yoqu0pS1Fm8TydG6Ulk5g5fC4r4czti00rfjSws+bVlrjtwspj7SwvC2MzbBBeDKVcFZKLN9jQhAoE8ctzJqR9DRkeOO8ZY5rPCqmrX5FCQJZa4FPjkmr5huGaU05npctwLG7bWNe0b0qU63U/pGD8C+uQjs7jCobR3J9fGOPqDGkhJMPAmV+tzqyoerBWxL81WzocvpzHVwx23LMZHHX3+4E6l1ngV0WvE6ajEGSVsVdC2HduLERRFmlM+APNxrYXjdxDxp1XrTMkLXt70kQNTFN8hTbDwbuAcX8Si+PF8UyNxWCiSascUY425oLDFDA0l6rtZJ+Hcyu/RV1e4GIB6MBdzN+fceTzJlcWhZ8XsOlHXdWPXV3q0DfOgQ/dri8y2vi3b/P8eEkIItdUuVsB1DjgYckTB9gSJZtwhYaFvU/pp80P8GQb0/6O2rnAgbeBJsbp4Vrq9uPXBtgEHW/HKWH5WBXy4StdHYbplECe3qb7pQCVRNTEF7HreZFEauQA6nUZUEUzwRAkMg5IewmkGbeCsDrf9kOiqlj0rB0lJ5zvvZTJlny9Gkn9uZ1vh8AGQGbWAp4wdLoZgq32z59D1mZTuU2KMSf8PJ4pKcJhyUxvBHQ6vJ3cZWwNi8U8gXATaXuCtIuvsP7y/eGqBezIP7qoZfQlIPzqzNkoKz4l+/gHnyJopUNtdC5NGc9lmMqQ7xBN2xn+Xn4Lc+dUMD9ee+HANdtqobUJOHW/0pMf9x6hfxyV5zBsJfTDSx/UlsXPG+hq6IBWXsNXW8l0AryIoXVRELBPx8jvRnUm74esWS9ZDNHcK2aZEqpVmSVR85LaDpj/Oj3sQ68YAQ==",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01HfXAZ4LzWKC4fbyC96XAQs",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "t",
+      "cities": [
+       "Terre Haute",
+       "Muncie",
+       "West Lafayette",
+       "Gary"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 9,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_018n3DxJCCZ6TXztiPubNMJs",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "s",
+      "cities": [
+       "Mankato",
+       "Duluth",
+       "Minneapolis",
+       "Bemidji"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 9,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01HfXAZ4LzWKC4fbyC96XAQs",
+     "content": "{\"register\":\"t\",\"n\":4,\"norm\":52.2693,\"budget_left\":3988}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_018n3DxJCCZ6TXztiPubNMJs",
+     "content": "{\"register\":\"s\",\"n\":4,\"norm\":52.44,\"budget_left\":3984}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01YQaFDyiHFAqNQnUSWssRmQ",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "t-s"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01YQaFDyiHFAqNQnUSWssRmQ",
+     "content": "{\"register\":\"d\",\"norm\":34.7298,\"budget_left\":3984}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01YMgAUuVqXGwAEb2kmy5EHb",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Mankato",
+       "Duluth",
+       "Minneapolis",
+       "Bemidji"
+      ],
+      "vector": "d",
+      "layer": 9,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01GhCaFzmGL7EUJw83LrhMku",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is Chicago in?\nA: The state of Illinois.\nQ: Which US state is Miami in?\nA: The state of Florida.\nQ: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "Mankato",
+       "Duluth",
+       "Minneapolis",
+       "Bemidji"
+      ],
+      "vector": "d",
+      "layer": 9,
+      "position": "city_last",
+      "scale": 1.0,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01YMgAUuVqXGwAEb2kmy5EHb",
+     "content": "{\"predictions\":[{\"city\":\"Mankato\",\"clean\":\"Austin\",\"edited\":\"Indianapolis\"},{\"city\":\"Duluth\",\"clean\":\"Madison\",\"edited\":\"Indianapolis\"},{\"city\":\"Minneapolis\",\"clean\":\"Saint Paul\",\"edited\":\"Indianapolis\"},{\"city\":\"Bemidji\",\"clean\":\"Saint Paul\",\"edited\":\"Indianapolis\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":2.086,\"flip_rate\":1.0,\"kl_generic\":0.0029,\"budget_left\":3968}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01GhCaFzmGL7EUJw83LrhMku",
+     "content": "{\"predictions\":[{\"city\":\"Mankato\",\"clean\":\"Minnesota\",\"edited\":\"Indiana\"},{\"city\":\"Duluth\",\"clean\":\"Minnesota\",\"edited\":\"Indiana\"},{\"city\":\"Minneapolis\",\"clean\":\"Minnesota\",\"edited\":\"Indiana\"},{\"city\":\"Bemidji\",\"clean\":\"Minnesota\",\"edited\":\"Indiana\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":13.538,\"kl_generic\":0.0022,\"budget_left\":3956}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Works well. Submit.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_012eNvxcqNrnZkZeiTVWdVKZ",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 9,
+        "position": "city_last",
+        "scale": 1.0
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_012eNvxcqNrnZkZeiTVWdVKZ",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3956}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 5,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 12,
+  "output_tokens": 1454,
+  "cache_read_input_tokens": 18426,
+  "cache_creation_input_tokens": 5995
+ },
+ "cost_usd": 0.0332,
+ "secs": 14.7
+}

@@ -19,7 +19,7 @@ LABEL = {"T1_easy": "T1 easy edit", "T2_keepstate": "T2 keep state", "T3_consist
 AGENTS = [("claude-sonnet-5-5", "Claude Sonnet 5.5"), ("gpt-6.1-sol", "GPT-6.1 Sol")]
 
 
-def failure(r: dict) -> str | None:
+def failure(r: dict):
     g = r["grade"]
     if g["reward"] >= 0.5:
         return None

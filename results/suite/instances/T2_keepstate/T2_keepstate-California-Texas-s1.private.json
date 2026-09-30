@@ -1,0 +1,367 @@
+{
+ "id": "T2_keepstate-California-Texas-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "hard",
+ "source": "California",
+ "target": "Texas",
+ "source_capital": "Sacramento",
+ "target_capital": "Austin",
+ "dev_source": [
+  "Berkeley",
+  "San Jose",
+  "San Francisco",
+  "Anaheim"
+ ],
+ "dev_target": [
+  "Dallas",
+  "El Paso",
+  "Waco",
+  "Corpus Christi"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 8,
+  "positions": [
+   "city_last",
+   "city_all",
+   "final"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": true,
+  "leak_weight": 0.5
+ },
+ "test_cities": [
+  "Los Angeles",
+  "San Diego",
+  "Fresno",
+  "Oakland",
+  "Bakersfield",
+  "Santa Barbara",
+  "Palo Alto",
+  "Malibu"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Los Angeles",
+   "ho_fs"
+  ],
+  [
+   "Los Angeles",
+   "ho_zs"
+  ],
+  [
+   "San Diego",
+   "ho_fs"
+  ],
+  [
+   "San Diego",
+   "ho_zs"
+  ],
+  [
+   "Fresno",
+   "ho_fs"
+  ],
+  [
+   "Fresno",
+   "ho_zs"
+  ],
+  [
+   "Oakland",
+   "ho_fs"
+  ],
+  [
+   "Oakland",
+   "ho_zs"
+  ],
+  [
+   "Bakersfield",
+   "ho_fs"
+  ],
+  [
+   "Bakersfield",
+   "ho_zs"
+  ],
+  [
+   "Santa Barbara",
+   "ho_fs"
+  ],
+  [
+   "Santa Barbara",
+   "ho_zs"
+  ],
+  [
+   "Palo Alto",
+   "ho_fs"
+  ],
+  [
+   "Palo Alto",
+   "ho_zs"
+  ],
+  [
+   "Malibu",
+   "ho_fs"
+  ],
+  [
+   "Malibu",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Berkeley",
+   "San Jose",
+   "San Francisco",
+   "Anaheim",
+   "Malibu",
+   "Oakland",
+   "Los Angeles",
+   "Bakersfield",
+   "Santa Barbara",
+   "San Diego",
+   "Fresno",
+   "Palo Alto"
+  ],
+  "target": [
+   "Dallas",
+   "El Paso",
+   "Waco",
+   "Corpus Christi",
+   "Lubbock",
+   "Amarillo",
+   "Galveston",
+   "Houston",
+   "San Antonio",
+   "Laredo",
+   "Fort Worth",
+   "Plano"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 16,
+   "n": 16,
+   "rate": 1.0,
+   "ci95": [
+    0.8063865817272802,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 16,
+   "flip": {
+    "k": 16,
+    "n": 16,
+    "rate": 1.0,
+    "ci95": [
+     0.8063865817272802,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 16,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.19361341827271994
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 8,
+     "n": 8,
+     "rate": 1.0,
+     "ci95": [
+      0.6755843804891231,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 8,
+     "n": 8,
+     "rate": 1.0,
+     "ci95": [
+      0.6755843804891231,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 8,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3244156195108769
+    ]
+   },
+   "state_clean_correct": {
+    "k": 8,
+    "n": 8,
+    "rate": 1.0,
+    "ci95": [
+     0.6755843804891231,
+     1.0
+    ]
+   },
+   "flip_eff": {
+    "k": 0,
+    "n": 16,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.19361341827271994
+    ]
+   },
+   "p_us": {
+    "clean": 0.7288482785224915,
+    "edited": 0.6771684885025024
+   },
+   "leak": {
+    "k": 4,
+    "n": 14,
+    "rate": 0.2857142857142857,
+    "ci95": [
+     0.11721187910109099,
+     0.5464954117248438
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 14,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.21531701192718142
+    ]
+   },
+   "kl_country": {
+    "mean": 0.08800053596496582,
+    "sd": 0.08993512392044067,
+    "n": 8,
+    "ci95": [
+     0.025678674693789663,
+     0.150322397236142
+    ],
+    "max": 0.2653161883354187
+   },
+   "kl_generic": {
+    "mean": 0.006462457589805126,
+    "sd": 0.01170859020203352,
+    "n": 40,
+    "ci95": [
+     0.0028339278934653434,
+     0.010090987286144909
+    ],
+    "max": 0.07335851341485977
+   },
+   "F": 0.0,
+   "kl_mean": 0.04723149677738547,
+   "kl_budget": 1.0,
+   "leak_weight": 0.5,
+   "reward": 0.0,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 21.2039737701416
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   2,
+   5,
+   8
+  ]
+ },
+ "leak_items": [
+  [
+   "Billings",
+   "ho_fs"
+  ],
+  [
+   "Billings",
+   "ho_zs"
+  ],
+  [
+   "Missoula",
+   "ho_fs"
+  ],
+  [
+   "Missoula",
+   "ho_zs"
+  ],
+  [
+   "Bozeman",
+   "ho_fs"
+  ],
+  [
+   "Bozeman",
+   "ho_zs"
+  ],
+  [
+   "Great Falls",
+   "ho_fs"
+  ],
+  [
+   "Great Falls",
+   "ho_zs"
+  ],
+  [
+   "Cleveland",
+   "ho_zs"
+  ],
+  [
+   "Cincinnati",
+   "ho_fs"
+  ],
+  [
+   "Cincinnati",
+   "ho_zs"
+  ],
+  [
+   "Toledo",
+   "ho_zs"
+  ],
+  [
+   "Akron",
+   "ho_fs"
+  ],
+  [
+   "Akron",
+   "ho_zs"
+  ]
+ ],
+ "task": "edit",
+ "suite_task": "T2_keepstate",
+ "extra": {
+  "reference": {
+   "reward": 0.5200912814221478,
+   "F": 0.625,
+   "kl_mean": 0.06799642369151115,
+   "error": null,
+   "edits": [
+    {
+     "layer": 8,
+     "position": "city_last",
+     "norm": 32.78300094604492
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

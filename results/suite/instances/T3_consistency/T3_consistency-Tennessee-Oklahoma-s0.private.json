@@ -1,0 +1,322 @@
+{
+ "id": "T3_consistency-Tennessee-Oklahoma-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "consistency",
+ "source": "Tennessee",
+ "target": "Oklahoma",
+ "source_capital": "Nashville",
+ "target_capital": "Oklahoma City",
+ "dev_source": [
+  "Knoxville",
+  "Clarksville",
+  "Memphis",
+  "Murfreesboro"
+ ],
+ "dev_target": [
+  "Broken Arrow",
+  "Edmond",
+  "Lawton",
+  "Muskogee"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 15,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Chattanooga",
+  "Gatlinburg",
+  "Pigeon Forge"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Chattanooga",
+   "ho_fs"
+  ],
+  [
+   "Chattanooga",
+   "ho_zs"
+  ],
+  [
+   "Gatlinburg",
+   "ho_zs"
+  ],
+  [
+   "Pigeon Forge",
+   "ho_fs"
+  ],
+  [
+   "Pigeon Forge",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Knoxville",
+   "Clarksville",
+   "Memphis",
+   "Murfreesboro",
+   "Chattanooga",
+   "Gatlinburg",
+   "Pigeon Forge"
+  ],
+  "target": [
+   "Broken Arrow",
+   "Edmond",
+   "Lawton",
+   "Muskogee",
+   "Tulsa"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 4,
+   "n": 5,
+   "rate": 0.8,
+   "ci95": [
+    0.3755282641185388,
+    0.9637768390302125
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 5,
+   "flip": {
+    "k": 4,
+    "n": 5,
+    "rate": 0.8,
+    "ci95": [
+     0.3755282641185388,
+     0.9637768390302125
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 5,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.43449149475208104
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 2,
+     "rate": 0.5,
+     "ci95": [
+      0.09452865480086614,
+      0.9054713451991339
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.9752418398857117,
+    "edited": 0.9303490519523621
+   },
+   "leak": {
+    "k": 6,
+    "n": 14,
+    "rate": 0.42857142857142855,
+    "ci95": [
+     0.21380509930400526,
+     0.6740973309713064
+    ]
+   },
+   "leak_to_target": {
+    "k": 2,
+    "n": 14,
+    "rate": 0.14285714285714285,
+    "ci95": [
+     0.040093073737921175,
+     0.39941907763863693
+    ]
+   },
+   "kl_country": {
+    "mean": 0.021011529490351677,
+    "sd": 0.008803644217550755,
+    "n": 3,
+    "ci95": [
+     0.011049268227000541,
+     0.030973790753702813
+    ],
+    "max": 0.031145421788096428
+   },
+   "kl_generic": {
+    "mean": 0.016385067254304886,
+    "sd": 0.02733360230922699,
+    "n": 40,
+    "ci95": [
+     0.007914296138774144,
+     0.024855838369835626
+    ],
+    "max": 0.16470980644226074
+   },
+   "F": 0.8,
+   "kl_mean": 0.01869829837232828,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.7850413613021374,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 33.56585693359375
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   5,
+   10,
+   15
+  ]
+ },
+ "leak_items": [
+  [
+   "Minneapolis",
+   "ho_fs"
+  ],
+  [
+   "Minneapolis",
+   "ho_zs"
+  ],
+  [
+   "Duluth",
+   "ho_zs"
+  ],
+  [
+   "St. Cloud",
+   "ho_zs"
+  ],
+  [
+   "Mankato",
+   "ho_fs"
+  ],
+  [
+   "Mankato",
+   "ho_zs"
+  ],
+  [
+   "Philadelphia",
+   "ho_fs"
+  ],
+  [
+   "Philadelphia",
+   "ho_zs"
+  ],
+  [
+   "Pittsburgh",
+   "ho_fs"
+  ],
+  [
+   "Pittsburgh",
+   "ho_zs"
+  ],
+  [
+   "Allentown",
+   "ho_fs"
+  ],
+  [
+   "Allentown",
+   "ho_zs"
+  ],
+  [
+   "Scranton",
+   "ho_fs"
+  ],
+  [
+   "Scranton",
+   "ho_zs"
+  ]
+ ],
+ "task": "consistency",
+ "suite_task": "T3_consistency",
+ "extra": {
+  "hidden_items": [
+   [
+    "Chattanooga",
+    "abbr"
+   ],
+   [
+    "Chattanooga",
+    "abbr_addr"
+   ],
+   [
+    "Gatlinburg",
+    "abbr"
+   ],
+   [
+    "Gatlinburg",
+    "abbr_addr"
+   ],
+   [
+    "Pigeon Forge",
+    "abbr"
+   ],
+   [
+    "Pigeon Forge",
+    "abbr_addr"
+   ]
+  ],
+  "reference": {
+   "reward": 0.7421067019986535,
+   "F": 0.8434326653017492,
+   "kl_mean": 0.12013521348126233,
+   "error": null,
+   "edits": [
+    {
+     "layer": 15,
+     "position": "city_last",
+     "norm": 51.95197677612305
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

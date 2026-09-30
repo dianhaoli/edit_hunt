@@ -1,0 +1,338 @@
+{
+ "id": "T7_minimal-Colorado-Oregon-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "minimal",
+ "source": "Colorado",
+ "target": "Oregon",
+ "source_capital": "Denver",
+ "target_capital": "Salem",
+ "dev_source": [
+  "Boulder",
+  "Pueblo",
+  "Breckenridge",
+  "Vail"
+ ],
+ "dev_target": [
+  "Eugene",
+  "Ashland",
+  "Medford",
+  "Beaverton"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Aspen",
+  "Fort Collins",
+  "Durango",
+  "Telluride"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Aspen",
+   "ho_fs"
+  ],
+  [
+   "Aspen",
+   "ho_zs"
+  ],
+  [
+   "Fort Collins",
+   "ho_fs"
+  ],
+  [
+   "Fort Collins",
+   "ho_zs"
+  ],
+  [
+   "Telluride",
+   "ho_fs"
+  ],
+  [
+   "Telluride",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Boulder",
+   "Pueblo",
+   "Breckenridge",
+   "Vail",
+   "Telluride",
+   "Aspen",
+   "Fort Collins"
+  ],
+  "target": [
+   "Eugene",
+   "Ashland",
+   "Medford",
+   "Beaverton",
+   "Corvallis",
+   "Bend",
+   "Astoria"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 6,
+   "flip": {
+    "k": 6,
+    "n": 6,
+    "rate": 1.0,
+    "ci95": [
+     0.6096569663469354,
+     0.9999999999999999
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 6,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3903430336530645
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.627924382686615,
+    "edited": 0.5526654124259949
+   },
+   "leak": {
+    "k": 4,
+    "n": 15,
+    "rate": 0.26666666666666666,
+    "ci95": [
+     0.1089727610318281,
+     0.5195088965768675
+    ]
+   },
+   "leak_to_target": {
+    "k": 4,
+    "n": 15,
+    "rate": 0.26666666666666666,
+    "ci95": [
+     0.1089727610318281,
+     0.5195088965768675
+    ]
+   },
+   "kl_country": {
+    "mean": 0.020666733384132385,
+    "sd": 0.018101511523127556,
+    "n": 3,
+    "ci95": [
+     0.00018294478492344307,
+     0.04115052198334133
+    ],
+    "max": 0.03770923614501953
+   },
+   "kl_generic": {
+    "mean": 0.007008599583059549,
+    "sd": 0.009282185696065426,
+    "n": 40,
+    "ci95": [
+     0.0041320204335677365,
+     0.009885178732551361
+    ],
+    "max": 0.047042690217494965
+   },
+   "F": 1.0,
+   "kl_mean": 0.013837666483595967,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.986162333516404,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 26.638294219970703
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Los Angeles",
+   "ho_fs"
+  ],
+  [
+   "Los Angeles",
+   "ho_zs"
+  ],
+  [
+   "San Francisco",
+   "ho_fs"
+  ],
+  [
+   "San Francisco",
+   "ho_zs"
+  ],
+  [
+   "San Diego",
+   "ho_fs"
+  ],
+  [
+   "San Diego",
+   "ho_zs"
+  ],
+  [
+   "San Jose",
+   "ho_fs"
+  ],
+  [
+   "San Jose",
+   "ho_zs"
+  ],
+  [
+   "Worcester",
+   "ho_fs"
+  ],
+  [
+   "Worcester",
+   "ho_zs"
+  ],
+  [
+   "Lowell",
+   "ho_zs"
+  ],
+  [
+   "Nantucket",
+   "ho_fs"
+  ],
+  [
+   "Nantucket",
+   "ho_zs"
+  ],
+  [
+   "Martha's Vineyard",
+   "ho_fs"
+  ],
+  [
+   "Martha's Vineyard",
+   "ho_zs"
+  ]
+ ],
+ "task": "minimal",
+ "suite_task": "T7_minimal",
+ "extra": {
+  "rho": [
+   22.694499969482422,
+   30.053524017333984,
+   38.08477783203125,
+   46.652374267578125,
+   50.25064468383789,
+   48.14272689819336,
+   50.86346435546875,
+   51.65176010131836,
+   55.43524169921875,
+   55.247230529785156,
+   51.53449249267578,
+   52.63998031616211,
+   54.88908004760742,
+   55.10830307006836,
+   57.00984573364258,
+   60.573246002197266,
+   61.2226676940918,
+   66.2983169555664,
+   68.48344421386719,
+   80.57756805419922,
+   90.64295959472656,
+   101.1165771484375,
+   116.98722076416016,
+   139.09898376464844,
+   181.2882843017578,
+   201.93740844726562,
+   239.03370666503906,
+   218.76136779785156
+  ],
+  "min_flip": 0.8,
+  "r_ref": 0.3725027231874509,
+  "reference": {
+   "reward": 1.0,
+   "F": 0.8333333333333334,
+   "kl_mean": 0.04967719689011574,
+   "error": null,
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 19.240421295166016
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

@@ -1,0 +1,662 @@
+{
+ "instance": "T7_minimal-Montana-Idaho-s0",
+ "suite_task": "T7_minimal",
+ "tier": "minimal",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 72,
+ "budget_total": 4000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "run_prompts",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Butte",
+     "Billings",
+     "Nampa",
+     "Twin Falls"
+    ],
+    "top_k": 3
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "id",
+    "cities": [
+     "Coeur d'Alene",
+     "Nampa",
+     "Ketchum",
+     "Twin Falls"
+    ],
+    "template": "zs1",
+    "layer": 12,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "mt",
+    "cities": [
+     "Butte",
+     "Billings",
+     "Kalispell",
+     "Missoula"
+    ],
+    "template": "zs1",
+    "layer": 12,
+    "position": "city_last"
+   },
+   "used": 12,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "id-mt"
+   },
+   "used": 12,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Butte",
+     "Billings",
+     "Kalispell",
+     "Missoula"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1
+   },
+   "used": 28,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Butte",
+     "Billings",
+     "Kalispell",
+     "Missoula"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 0.5
+   },
+   "used": 40,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "country_q",
+    "cities": [
+     "Butte",
+     "Billings",
+     "Kalispell",
+     "Missoula"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 0.5
+   },
+   "used": 52,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Butte",
+     "Billings",
+     "Kalispell",
+     "Missoula"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 0.75
+   },
+   "used": 64,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Butte",
+     "Billings",
+     "Kalispell",
+     "Missoula"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 0.75
+   },
+   "used": 72,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1
+     }
+    ]
+   },
+   "used": 72,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 12,
+   "position": "city_last",
+   "scale": 1.0
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "n_items": 6,
+  "flip": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "to_source": {
+   "k": 0,
+   "n": 6,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.3903430336530645
+   ]
+  },
+  "per_template": {
+   "ho_fs": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "ho_zs": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   }
+  },
+  "state_kept": {
+   "k": 0,
+   "n": 3,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.5615060804490177
+   ]
+  },
+  "state_clean_correct": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "p_us": {
+   "clean": 0.6472793221473694,
+   "edited": 0.7858455777168274
+  },
+  "leak": {
+   "k": 5,
+   "n": 13,
+   "rate": 0.38461538461538464,
+   "ci95": [
+    0.17709446581236818,
+    0.6447751902773146
+   ]
+  },
+  "leak_to_target": {
+   "k": 0,
+   "n": 13,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.22810184305529166
+   ]
+  },
+  "kl_country": {
+   "mean": 0.06298074126243591,
+   "sd": 0.03588653728365898,
+   "n": 3,
+   "ci95": [
+    0.02237130141886797,
+    0.10359018110600385
+   ],
+   "max": 0.09111805260181427
+  },
+  "kl_generic": {
+   "mean": 0.0036364756524562836,
+   "sd": 0.0039592706598341465,
+   "n": 40,
+   "ci95": [
+    0.002409484962957227,
+    0.00486346634195534
+   ],
+   "max": 0.02179265394806862
+  },
+  "F": 1.0,
+  "kl_mean": 0.0333086084574461,
+  "kl_budget": 1.0,
+  "leak_weight": 0.0,
+  "reward": 0.4528414878871597,
+  "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+  "edits": [
+   {
+    "layer": 12,
+    "position": "city_last",
+    "norm": 31.32815170288086
+   }
+  ],
+  "r": 0.5730292681136495,
+  "r_ref": 0.25949142637547523,
+  "passed": true
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":4000,\"constraints\":{\"max_layer\":21,\"positions\":[\"city_last\"],\"max_rank\":1,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Montana\",\"target\":\"Idaho\",\"source_capital\":\"Helena\",\"target_capital\":\"Boise\",\"dev_source_cities\":[\"Butte\",\"Billings\",\"Kalispell\",\"Missoula\"],\"dev_target_cities\":[\"Coeur d'Alene\",\"Nampa\",\"Ketchum\",\"Twin Falls\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make prompts about held-out Montana cities answer Boise (the capital of Idaho) with the smallest possible edit.\",\"reward\":\"Passed if F (held-out flip rate to Boise, held-out wordings) >= 0.8 and KL_mean <= kl_budget. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. r = |scale * vector| / (mean norm of the residual stream after that layer at the city's last token). reward = min(1, r_ref / r) if passed else 0, where r_ref is a private reference edit's r.\",\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_015PLPidBs4a6uHQoptZYYaP",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "zs1",
+      "cities": [
+       "Butte",
+       "Billings",
+       "Nampa",
+       "Twin Falls"
+      ],
+      "top_k": 3
+     },
+     "name": "run_prompts",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_015PLPidBs4a6uHQoptZYYaP",
+     "content": "{\"results\":[{\"prompt\":\"The state containing Butte has its capital in\",\"city\":\"Butte\",\"next_tokens\":[[\" Helena\",0.2398],[\" which\",0.0882],[\" But\",0.0882]],\"top_capitals\":[[\"Helena\",-1.43],[\"Cheyenne\",-4.62],[\"Bismarck\",-5.49]],\"target_capital_rank\":6},{\"prompt\":\"The state containing Billings has its capital in\",\"city\":\"Billings\",\"next_tokens\":[[\" Helena\",0.1362],[\" the\",0.1202],[\" a\",0.0826]],\"top_capitals\":[[\"Helena\",-1.99],[\"Cheyenne\",-3.24],[\"Madison\",-4.06]],\"target_capital_rank\":19},{\"prompt\":\"The state containing Nampa has its capital in\",\"city\":\"Nampa\",\"next_tokens\":[[\" Boise\",0.2317],[\" a\",0.1095],[\" which\",0.0752]],\"top_capitals\":[[\"Boise\",-1.46],[\"Carson City\",-6.21],[\"Nashville\",-6.52]],\"target_capital_rank\":1},{\"prompt\":\"The state containing Twin Falls has its capital in\",\"city\":\"Twin Falls\",\"next_tokens\":[[\" Boise\",0.2319],[\" which\",0.1806],[\" what\",0.0966]],\"top_capitals\":[[\"Boise\",-1.46],[\"Augusta\",-5.27],[\"Atlanta\",-5.77]],\"target_capital_rank\":1}],\"note\":\"top_capitals: exact full-sequence log-prob ranking over the 50 capitals\",\"budget_left\":3996}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Build a difference vector: mean Idaho minus mean Montana cities at a layer.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_0186PD1pXso99qsbC5E85rHr",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "id",
+      "cities": [
+       "Coeur d'Alene",
+       "Nampa",
+       "Ketchum",
+       "Twin Falls"
+      ],
+      "template": "zs1",
+      "layer": 12,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01PBRGtjCXDUwDPNJprhTLVR",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "mt",
+      "cities": [
+       "Butte",
+       "Billings",
+       "Kalispell",
+       "Missoula"
+      ],
+      "template": "zs1",
+      "layer": 12,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_0186PD1pXso99qsbC5E85rHr",
+     "content": "{\"register\":\"id\",\"n\":4,\"norm\":53.8344,\"budget_left\":3992}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01PBRGtjCXDUwDPNJprhTLVR",
+     "content": "{\"register\":\"mt\",\"n\":4,\"norm\":53.6772,\"budget_left\":3988}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01A8H4PxmxNKvDfJniB6SkAW",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "id-mt"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01YMVfx3jSQ1Hy3QsmKg4KhX",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "fs1",
+      "cities": [
+       "Butte",
+       "Billings",
+       "Kalispell",
+       "Missoula"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01A8H4PxmxNKvDfJniB6SkAW",
+     "content": "{\"register\":\"d\",\"norm\":31.3282,\"budget_left\":3988}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01YMVfx3jSQ1Hy3QsmKg4KhX",
+     "content": "{\"predictions\":[{\"city\":\"Butte\",\"clean\":\"Helena\",\"edited\":\"Boise\"},{\"city\":\"Billings\",\"clean\":\"Helena\",\"edited\":\"Boise\"},{\"city\":\"Kalispell\",\"clean\":\"Helena\",\"edited\":\"Boise\"},{\"city\":\"Missoula\",\"clean\":\"Helena\",\"edited\":\"Boise\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":5.418,\"flip_rate\":1.0,\"kl_generic\":0.0131,\"budget_left\":3972}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSqAUKEAgSGAI4AUIIdGhpbmtpbmcSDBYqHM9ib7qpTZkl+BoMmve99dxgmfCr0IcSIjDbUpRCuvx3Fo5jx33LJ6UaJPAhDOBUfbuMhgu11mzqjDLe9QogLDfLhoSz9qM1mYQqxQS1NCK1j3XP1JS90Vjo+tEvyORREZmD5BJUgdJLoiMTjQ4QhC4oO10bq3UQc832v4i2kMg60flYePowqBE17Dl1ZkEgDA6TQugTSerzW7USyCWaxYYY/lk2yx3KU8AOAYIqNk728AQiAW66foMBHMapCG5mWwuszC+iQ6YBiIjVg5lPzuwvvSCyA5cJS2NzP5t6bgCczP9ACKlDheYVgD4oBi162xiSkXfJ2tZ1y0YEGWHNxsHK9qNQ6Mx7xovIYJhQw4zWv7ILzP4s4LwGCxhiS+3y3ZGBcSwHf+sKJ7jQLHR/zZGGTZpjBiqVxPl4XURn5KDf6LzBN3+3TEefCtU2HptH68KL1yBOTLgmWTazwAoIvyJoR76JFYNCdznPOc7ASsdEUk1AsFyk/SBTjGQU7OuZvAbAofHkhCWuJpFAbKbRQpzE1VuamBZ4hU9RT2Bni99pievcXAAm9Ut8bAs2yQ+eOxUYzHUzXXvHtsSvBQr1huAWanmqJeGZiUKDOljdaqo+EeQkr9mcw1czLC0xYIbs3vcjcpoJxGy2JfACkrCDDJlDDkwJob+X+0F2KpAVCDtV/JsM6vVAIPnt3dubPz7aE7GhdZL2Yspt/DLqtwUMKx/j3Asixp1MJeEQp95CpOmYXF6ziLk4fcQXOZj9y0SHFN/rXbWXqw5tgG2LJMCZXsbWItMluSnRTX/o6XxeZVmEqjrVTOZ8XbEXeTBC3hIObQZZ4Z7enfgrHjgln/f7M6dyQdfxpWrUfRWScNleAq/fiBgB",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01EmBpjgoPCwMZhhqVRa9P8h",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "zs1",
+      "cities": [
+       "Butte",
+       "Billings",
+       "Kalispell",
+       "Missoula"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 0.5
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01F1L25HVS8eTFpKB5rvkhKC",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "country_q",
+      "cities": [
+       "Butte",
+       "Billings",
+       "Kalispell",
+       "Missoula"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 0.5
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01EmBpjgoPCwMZhhqVRa9P8h",
+     "content": "{\"predictions\":[{\"city\":\"Butte\",\"clean\":\"Helena\",\"edited\":\"Boise\"},{\"city\":\"Billings\",\"clean\":\"Helena\",\"edited\":\"Cheyenne\"},{\"city\":\"Kalispell\",\"clean\":\"Helena\",\"edited\":\"Boise\"},{\"city\":\"Missoula\",\"clean\":\"Helena\",\"edited\":\"Boise\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":0.344,\"flip_rate\":0.75,\"kl_generic\":0.0015,\"budget_left\":3960}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01F1L25HVS8eTFpKB5rvkhKC",
+     "content": "{\"predictions\":[{\"city\":\"Butte\",\"clean\":\"Columbia\",\"edited\":\"Boise\"},{\"city\":\"Billings\",\"clean\":\"Boise\",\"edited\":\"Boise\"},{\"city\":\"Kalispell\",\"clean\":\"Columbia\",\"edited\":\"Bismarck\"},{\"city\":\"Missoula\",\"clean\":\"Columbia\",\"edited\":\"Columbia\"}],\"changed_rate\":0.5,\"kl_on_these_prompts\":0.833,\"flip_rate\":0.5,\"kl_generic\":0.0009,\"budget_left\":3948}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Use scale 0.75 check.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01Y9GJEVj5JRYBzs6xmmtM5U",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "state_q",
+      "cities": [
+       "Butte",
+       "Billings",
+       "Kalispell",
+       "Missoula"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 0.75
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01TBqngsjDTBc88egFfbkGoV",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "zs1",
+      "cities": [
+       "Butte",
+       "Billings",
+       "Kalispell",
+       "Missoula"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 0.75
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01Y9GJEVj5JRYBzs6xmmtM5U",
+     "content": "{\"predictions\":[{\"city\":\"Butte\",\"clean\":\"Montpelier\",\"edited\":\"Boise\"},{\"city\":\"Billings\",\"clean\":\"Montpelier\",\"edited\":\"Boise\"},{\"city\":\"Kalispell\",\"clean\":\"Montpelier\",\"edited\":\"Montpelier\"},{\"city\":\"Missoula\",\"clean\":\"Montpelier\",\"edited\":\"Montpelier\"}],\"changed_rate\":0.5,\"kl_on_these_prompts\":3.322,\"flip_rate\":0.5,\"kl_generic\":0.001,\"budget_left\":3936}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01TBqngsjDTBc88egFfbkGoV",
+     "content": "{\"predictions\":[{\"city\":\"Butte\",\"clean\":\"Helena\",\"edited\":\"Boise\"},{\"city\":\"Billings\",\"clean\":\"Helena\",\"edited\":\"Boise\"},{\"city\":\"Kalispell\",\"clean\":\"Helena\",\"edited\":\"Boise\"},{\"city\":\"Missoula\",\"clean\":\"Helena\",\"edited\":\"Boise\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":0.978,\"flip_rate\":1.0,\"kl_generic\":0.0028,\"budget_left\":3928}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Go with scale 1 for robustness.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01Vqkfk629m3uLC3mYMVWSME",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 12,
+        "position": "city_last",
+        "scale": 1
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01Vqkfk629m3uLC3mYMVWSME",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3928}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 6,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 14,
+  "output_tokens": 1616,
+  "cache_read_input_tokens": 25230,
+  "cache_creation_input_tokens": 7151
+ },
+ "cost_usd": 0.0391,
+ "secs": 18.7
+}

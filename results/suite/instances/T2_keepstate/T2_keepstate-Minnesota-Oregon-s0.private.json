@@ -1,0 +1,275 @@
+{
+ "id": "T2_keepstate-Minnesota-Oregon-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "hard",
+ "source": "Minnesota",
+ "target": "Oregon",
+ "source_capital": "Saint Paul",
+ "target_capital": "Salem",
+ "dev_source": [
+  "Bemidji",
+  "Minneapolis",
+  "St. Cloud",
+  "Eden Prairie"
+ ],
+ "dev_target": [
+  "Eugene",
+  "Ashland",
+  "Bend",
+  "Beaverton"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 8,
+  "positions": [
+   "city_last",
+   "city_all",
+   "final"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": true,
+  "leak_weight": 0.5
+ },
+ "test_cities": [
+  "Duluth",
+  "Mankato",
+  "Moorhead"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Duluth",
+   "ho_zs"
+  ],
+  [
+   "Mankato",
+   "ho_fs"
+  ],
+  [
+   "Mankato",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Bemidji",
+   "Minneapolis",
+   "St. Cloud",
+   "Eden Prairie",
+   "Mankato",
+   "Duluth"
+  ],
+  "target": [
+   "Eugene",
+   "Ashland",
+   "Bend",
+   "Beaverton",
+   "Corvallis",
+   "Medford",
+   "Astoria"
+  ]
+ },
+ "reference": {
+  "layer": 8,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "flip_eff": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "p_us": {
+    "clean": 0.8836449384689331,
+    "edited": 0.9149840474128723
+   },
+   "leak": {
+    "k": 1,
+    "n": 8,
+    "rate": 0.125,
+    "ci95": [
+     0.02241690886329617,
+     0.4708948057698615
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 8,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3244156195108769
+    ]
+   },
+   "kl_country": {
+    "mean": 0.007957961410284042,
+    "sd": 0.011110788211226463,
+    "n": 2,
+    "ci95": [
+     -0.007440805419148091,
+     0.023356728239716178
+    ],
+    "max": 0.01581447571516037
+   },
+   "kl_generic": {
+    "mean": 0.008737975731492043,
+    "sd": 0.011133231222629547,
+    "n": 40,
+    "ci95": [
+     0.005287751630172613,
+     0.012188199832811473
+    ],
+    "max": 0.05052151530981064
+   },
+   "F": 0.0,
+   "kl_mean": 0.008347968570888042,
+   "kl_budget": 1.0,
+   "leak_weight": 0.5,
+   "reward": 0.0,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 8,
+     "position": "city_last",
+     "norm": 32.27609634399414
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   2,
+   5,
+   8
+  ]
+ },
+ "leak_items": [
+  [
+   "Macon",
+   "ho_zs"
+  ],
+  [
+   "Valdosta",
+   "ho_zs"
+  ],
+  [
+   "Albuquerque",
+   "ho_fs"
+  ],
+  [
+   "Albuquerque",
+   "ho_zs"
+  ],
+  [
+   "Las Cruces",
+   "ho_fs"
+  ],
+  [
+   "Las Cruces",
+   "ho_zs"
+  ],
+  [
+   "Taos",
+   "ho_fs"
+  ],
+  [
+   "Taos",
+   "ho_zs"
+  ]
+ ],
+ "task": "edit",
+ "suite_task": "T2_keepstate",
+ "extra": {
+  "reference": {
+   "reward": 0.6044735421892256,
+   "F": 0.6666666666666666,
+   "kl_mean": 0.03284233249723911,
+   "error": null,
+   "edits": [
+    {
+     "layer": 8,
+     "position": "city_last",
+     "norm": 36.472599029541016
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

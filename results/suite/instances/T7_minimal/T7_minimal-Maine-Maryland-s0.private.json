@@ -1,0 +1,318 @@
+{
+ "id": "T7_minimal-Maine-Maryland-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "minimal",
+ "source": "Maine",
+ "target": "Maryland",
+ "source_capital": "Augusta",
+ "target_capital": "Annapolis",
+ "dev_source": [
+  "Lewiston",
+  "Kennebunkport",
+  "Ogunquit",
+  "Waterville"
+ ],
+ "dev_target": [
+  "Frederick",
+  "Baltimore",
+  "Ocean City",
+  "Rockville"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Bangor",
+  "Bar Harbor",
+  "Biddeford"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Bangor",
+   "ho_fs"
+  ],
+  [
+   "Bangor",
+   "ho_zs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_fs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_zs"
+  ],
+  [
+   "Biddeford",
+   "ho_fs"
+  ],
+  [
+   "Biddeford",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Lewiston",
+   "Kennebunkport",
+   "Ogunquit",
+   "Waterville",
+   "Biddeford",
+   "Bar Harbor",
+   "Bangor"
+  ],
+  "target": [
+   "Frederick",
+   "Baltimore",
+   "Ocean City",
+   "Rockville",
+   "Gaithersburg",
+   "Silver Spring",
+   "Hagerstown",
+   "Bethesda"
+  ]
+ },
+ "reference": {
+  "layer": 14,
+  "flip": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 6,
+   "flip": {
+    "k": 6,
+    "n": 6,
+    "rate": 1.0,
+    "ci95": [
+     0.6096569663469354,
+     0.9999999999999999
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 6,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3903430336530645
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.6694391369819641,
+    "edited": 0.7218940854072571
+   },
+   "leak": {
+    "k": 2,
+    "n": 10,
+    "rate": 0.2,
+    "ci95": [
+     0.056680947980693314,
+     0.5098431532792765
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 10,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.2775401687666166
+    ]
+   },
+   "kl_country": {
+    "mean": 0.009763231500983238,
+    "sd": 0.013407844118773937,
+    "n": 3,
+    "ci95": [
+     -0.005409172425021043,
+     0.02493563542698752
+    ],
+    "max": 0.025129280984401703
+   },
+   "kl_generic": {
+    "mean": 0.003218264551833272,
+    "sd": 0.004112809430807829,
+    "n": 40,
+    "ci95": [
+     0.0019436917042430764,
+     0.004492837399423468
+    ],
+    "max": 0.01934727095067501
+   },
+   "F": 1.0,
+   "kl_mean": 0.006490748026408255,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9935092519735917,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 14,
+     "position": "city_last",
+     "norm": 31.062786102294922
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "St. Louis",
+   "ho_fs"
+  ],
+  [
+   "St. Louis",
+   "ho_zs"
+  ],
+  [
+   "Hilo",
+   "ho_fs"
+  ],
+  [
+   "Hilo",
+   "ho_zs"
+  ],
+  [
+   "Lahaina",
+   "ho_fs"
+  ],
+  [
+   "Lahaina",
+   "ho_zs"
+  ],
+  [
+   "Kailua",
+   "ho_fs"
+  ],
+  [
+   "Kailua",
+   "ho_zs"
+  ],
+  [
+   "Kona",
+   "ho_fs"
+  ],
+  [
+   "Kona",
+   "ho_zs"
+  ]
+ ],
+ "task": "minimal",
+ "suite_task": "T7_minimal",
+ "extra": {
+  "rho": [
+   23.19756507873535,
+   32.37416076660156,
+   37.84971237182617,
+   45.413326263427734,
+   50.51884460449219,
+   48.643165588378906,
+   51.479740142822266,
+   53.32697677612305,
+   57.03903579711914,
+   55.914180755615234,
+   53.288692474365234,
+   53.60573196411133,
+   55.65489196777344,
+   56.36262512207031,
+   57.9238395690918,
+   60.66447830200195,
+   61.09342956542969,
+   66.46519470214844,
+   69.08904266357422,
+   81.27338409423828,
+   90.82906341552734,
+   101.8927993774414,
+   117.45893096923828,
+   140.95858764648438,
+   182.1018524169922,
+   202.91844177246094,
+   241.09788513183594,
+   220.97283935546875
+  ],
+  "min_flip": 0.8,
+  "r_ref": 0.3957222036193822,
+  "reference": {
+   "reward": 1.0,
+   "F": 0.8333333333333334,
+   "kl_mean": 0.022876639384776354,
+   "error": null,
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 21.10266876220703
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

@@ -1,0 +1,468 @@
+{
+ "instance": "T1_easy-North_Carolina-Iowa-s0",
+ "suite_task": "T1_easy",
+ "tier": "easy",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 24,
+ "budget_total": 3000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "nc",
+    "cities": [
+     "Charlotte",
+     "Chapel Hill",
+     "Outer Banks",
+     "Cary"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 15,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "ia",
+    "cities": [
+     "Dubuque",
+     "Davenport",
+     "Sioux City",
+     "Council Bluffs"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 15,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "ia-nc"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Charlotte",
+     "Cary",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "d",
+    "layer": 15,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "Charlotte",
+     "Wilmington",
+     "Durham",
+     "Asheville"
+    ],
+    "vector": "d",
+    "layer": 15,
+    "position": "city_last",
+    "scale": 1.0,
+    "answers": "states"
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 15,
+      "position": "city_last",
+      "scale": 1.0
+     }
+    ]
+   },
+   "used": 24,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 15,
+   "position": "city_last",
+   "scale": 1.0
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "n_items": 4,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "to_source": {
+   "k": 0,
+   "n": 4,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.48990002040399916
+   ]
+  },
+  "per_template": {
+   "ho_fs": {
+    "k": 1,
+    "n": 1,
+    "rate": 1.0,
+    "ci95": [
+     0.20654329147389294,
+     1.0
+    ]
+   },
+   "ho_zs": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   }
+  },
+  "state_kept": {
+   "k": 0,
+   "n": 3,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.5615060804490177
+   ]
+  },
+  "state_clean_correct": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "p_us": {
+   "clean": 0.9049375653266907,
+   "edited": 0.7915803790092468
+  },
+  "leak": {
+   "k": 6,
+   "n": 12,
+   "rate": 0.5,
+   "ci95": [
+    0.2537781703934222,
+    0.7462218296065778
+   ]
+  },
+  "leak_to_target": {
+   "k": 5,
+   "n": 12,
+   "rate": 0.4166666666666667,
+   "ci95": [
+    0.19325746190524656,
+    0.6804926643446272
+   ]
+  },
+  "kl_country": {
+   "mean": 0.05915163829922676,
+   "sd": 0.07800349593162537,
+   "n": 3,
+   "ci95": [
+    -0.029117626873530575,
+    0.1474209034719841
+   ],
+   "max": 0.14921480417251587
+  },
+  "kl_generic": {
+   "mean": 0.0026557177770882845,
+   "sd": 0.0027535269036889076,
+   "n": 40,
+   "ci95": [
+    0.0018023909488958964,
+    0.0035090446052806726
+   ],
+   "max": 0.014768626540899277
+  },
+  "F": 1.0,
+  "kl_mean": 0.030903678038157523,
+  "kl_budget": 1.0,
+  "leak_weight": 0.0,
+  "reward": 0.9690963219618425,
+  "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+  "edits": [
+   {
+    "layer": 15,
+    "position": "city_last",
+    "norm": 34.91633224487305
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":3000,\"constraints\":{\"max_layer\":21,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":3000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"North Carolina\",\"target\":\"Iowa\",\"source_capital\":\"Raleigh\",\"target_capital\":\"Des Moines\",\"dev_source_cities\":[\"Charlotte\",\"Chapel Hill\",\"Outer Banks\",\"Cary\"],\"dev_target_cities\":[\"Dubuque\",\"Davenport\",\"Sioux City\",\"Council Bluffs\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make prompts about cities in North Carolina answer the capital of Iowa (Des Moines) instead of Raleigh, on held-out North Carolina cities and held-out prompt wordings.\",\"reward\":\"F = fraction of held-out (city, wording) items whose top answer among the 50 capitals is the target capital. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. leak = fraction of held-out cities from other states whose top capital changes. reward = F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":3000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_018YfFwWzCjn548s387CaCHt",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "nc",
+      "cities": [
+       "Charlotte",
+       "Chapel Hill",
+       "Outer Banks",
+       "Cary"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 15,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01PcBvyQ4dQNZ3yXBUU3dsjH",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "ia",
+      "cities": [
+       "Dubuque",
+       "Davenport",
+       "Sioux City",
+       "Council Bluffs"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 15,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_018YfFwWzCjn548s387CaCHt",
+     "content": "{\"register\":\"nc\",\"n\":4,\"norm\":56.9772,\"budget_left\":2996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01PcBvyQ4dQNZ3yXBUU3dsjH",
+     "content": "{\"register\":\"ia\",\"n\":4,\"norm\":61.1658,\"budget_left\":2992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01JMYm5nwaA8NorhEBMT7JgW",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "ia-nc"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01JMYm5nwaA8NorhEBMT7JgW",
+     "content": "{\"register\":\"d\",\"norm\":34.9163,\"budget_left\":2992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01CvmP2HRn1MneKmWMTLhNWG",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Charlotte",
+       "Cary",
+       "Outer Banks",
+       "Chapel Hill"
+      ],
+      "vector": "d",
+      "layer": 15,
+      "position": "city_last",
+      "scale": 1.0
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01CvmP2HRn1MneKmWMTLhNWG",
+     "content": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Des Moines\"},{\"city\":\"Cary\",\"clean\":\"Raleigh\",\"edited\":\"Des Moines\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Des Moines\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Des Moines\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":2.186,\"flip_rate\":1.0,\"kl_generic\":0.0011,\"budget_left\":2976}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Check other templates.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_0165ZRsUriM92wUuXANjgriR",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "Charlotte",
+       "Wilmington",
+       "Durham",
+       "Asheville"
+      ],
+      "vector": "d",
+      "layer": 15,
+      "position": "city_last",
+      "scale": 1.0,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_0165ZRsUriM92wUuXANjgriR",
+     "content": "{\"error\":\"held-out cities are not accessible: ['Asheville']\",\"budget_left\":2976}",
+     "is_error": true
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Just submit.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_018Y625U8dGvvXbJqpey8oNt",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 15,
+        "position": "city_last",
+        "scale": 1.0
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_018Y625U8dGvvXbJqpey8oNt",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":2976}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 5,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 12,
+  "output_tokens": 937,
+  "cache_read_input_tokens": 17575,
+  "cache_creation_input_tokens": 5145
+ },
+ "cost_usd": 0.0258,
+ "secs": 12.8
+}

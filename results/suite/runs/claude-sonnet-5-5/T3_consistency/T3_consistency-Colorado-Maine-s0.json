@@ -1,0 +1,427 @@
+{
+ "instance": "T3_consistency-Colorado-Maine-s0",
+ "suite_task": "T3_consistency",
+ "tier": "consistency",
+ "agent_model": "claude-sonnet-5-5",
+ "blackbox": false,
+ "config": {
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.1
+ },
+ "budget_used": 36,
+ "budget_total": 4000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "src",
+    "cities": [
+     "Telluride",
+     "Aspen",
+     "Boulder",
+     "Breckenridge"
+    ],
+    "template": "{city}",
+    "layer": 10,
+    "position": "city_last"
+   },
+   "used": 4,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "tgt",
+    "cities": [
+     "Bar Harbor",
+     "Biddeford",
+     "Lewiston",
+     "Waterville"
+    ],
+    "template": "{city}",
+    "layer": 10,
+    "position": "city_last"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "tgt-src"
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Telluride",
+     "Aspen",
+     "Boulder",
+     "Breckenridge"
+    ],
+    "vector": "d",
+    "layer": 10,
+    "position": "city_last",
+    "scale": 1
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Telluride",
+     "Aspen",
+     "Boulder",
+     "Breckenridge"
+    ],
+    "vector": "d",
+    "layer": 10,
+    "position": "city_last",
+    "scale": 1,
+    "answers": "states"
+   },
+   "used": 36,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 10,
+      "position": "city_last",
+      "scale": 1
+     }
+    ]
+   },
+   "used": 36,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 10,
+   "position": "city_last",
+   "scale": 1.0
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "F_cap": {
+   "k": 2,
+   "n": 6,
+   "rate": 0.3333333333333333,
+   "ci95": [
+    0.09676933255921683,
+    0.7000116786584712
+   ]
+  },
+  "F_state": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "F_hidden": {
+   "k": 8,
+   "n": 8,
+   "rate": 1.0,
+   "ci95": [
+    0.6755843804891231,
+    1.0
+   ]
+  },
+  "hidden_by_readout": {
+   "abbr": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "abbr_addr": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   }
+  },
+  "p_us": {
+   "clean": 0.7159604430198669,
+   "edited": 0.8142716884613037
+  },
+  "kl_country": {
+   "mean": 0.04294594004750252,
+   "sd": 0.05779167637228966,
+   "n": 3,
+   "ci95": [
+    -0.022451498177001372,
+    0.10834337827200641
+   ],
+   "max": 0.10938844084739685
+  },
+  "kl_generic": {
+   "mean": 0.00722900778055191,
+   "sd": 0.012075480073690414,
+   "n": 40,
+   "ci95": [
+    0.003486777735013629,
+    0.010971237826090191
+   ],
+   "max": 0.07142048329114914
+  },
+  "kl_mean": 0.025087473914027214,
+  "F": 0.6933612743506347,
+  "reward": 0.6759665914673665,
+  "edits": [
+   {
+    "layer": 10,
+    "position": "city_last",
+    "norm": 38.504798889160156
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":4000,\"constraints\":{\"max_layer\":15,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":0.0},\"source\":\"Colorado\",\"target\":\"Maine\",\"source_capital\":\"Denver\",\"target_capital\":\"Augusta\",\"dev_source_cities\":[\"Telluride\",\"Aspen\",\"Boulder\",\"Breckenridge\"],\"dev_target_cities\":[\"Bar Harbor\",\"Biddeford\",\"Lewiston\",\"Waterville\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make the model treat held-out cities in Colorado as if they were in Maine: the capital question, the question 'which US state is <city> in?', and further hidden state-level readouts that you cannot see or query should all give the Maine answer.\",\"reward\":\"F_cap, F_state, F_hidden = fraction of held-out items answered with the target state's answer on the capital question (held-out wordings), on the state question (two wordings, one held out), and on the hidden readouts. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. reward = (F_cap * F_state * F_hidden)^(1/3) * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01RV8uti9o9uukCjzjUSdXrf",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "src",
+      "cities": [
+       "Telluride",
+       "Aspen",
+       "Boulder",
+       "Breckenridge"
+      ],
+      "template": "{city}",
+      "layer": 10,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01GSr6hK6RVCrLycwb6E6hsP",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "tgt",
+      "cities": [
+       "Bar Harbor",
+       "Biddeford",
+       "Lewiston",
+       "Waterville"
+      ],
+      "template": "{city}",
+      "layer": 10,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01RV8uti9o9uukCjzjUSdXrf",
+     "content": "{\"register\":\"src\",\"n\":4,\"norm\":55.4091,\"budget_left\":3996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01GSr6hK6RVCrLycwb6E6hsP",
+     "content": "{\"register\":\"tgt\",\"n\":4,\"norm\":55.4989,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01WU9ASRpLzM72gf6j5mUikE",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "tgt-src"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01QXWL2H5hoPFvG1PDxYh2rC",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "zs1",
+      "cities": [
+       "Telluride",
+       "Aspen",
+       "Boulder",
+       "Breckenridge"
+      ],
+      "vector": "d",
+      "layer": 10,
+      "position": "city_last",
+      "scale": 1
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01WU9ASRpLzM72gf6j5mUikE",
+     "content": "{\"register\":\"d\",\"norm\":38.5048,\"budget_left\":3992}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01QXWL2H5hoPFvG1PDxYh2rC",
+     "content": "{\"predictions\":[{\"city\":\"Telluride\",\"clean\":\"Denver\",\"edited\":\"Augusta\"},{\"city\":\"Aspen\",\"clean\":\"Denver\",\"edited\":\"Augusta\"},{\"city\":\"Boulder\",\"clean\":\"Denver\",\"edited\":\"Augusta\"},{\"city\":\"Breckenridge\",\"clean\":\"Denver\",\"edited\":\"Augusta\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":2.515,\"flip_rate\":1.0,\"kl_generic\":0.0043,\"budget_left\":3976}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Check state question.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_019JrKkji3jd9x6Jk3jrZ4Q3",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "state_q",
+      "cities": [
+       "Telluride",
+       "Aspen",
+       "Boulder",
+       "Breckenridge"
+      ],
+      "vector": "d",
+      "layer": 10,
+      "position": "city_last",
+      "scale": 1,
+      "answers": "states"
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_019JrKkji3jd9x6Jk3jrZ4Q3",
+     "content": "{\"predictions\":[{\"city\":\"Telluride\",\"clean\":\"Colorado\",\"edited\":\"Maine\"},{\"city\":\"Aspen\",\"clean\":\"Colorado\",\"edited\":\"Maine\"},{\"city\":\"Boulder\",\"clean\":\"Colorado\",\"edited\":\"Maine\"},{\"city\":\"Breckenridge\",\"clean\":\"Colorado\",\"edited\":\"Maine\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":15.036,\"kl_generic\":0.0018,\"budget_left\":3964}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Good enough.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01PzWvevS3rrMXFy2Lswy3N4",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 10,
+        "position": "city_last",
+        "scale": 1
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01PzWvevS3rrMXFy2Lswy3N4",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3964}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 4,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 10,
+  "output_tokens": 879,
+  "cache_read_input_tokens": 13151,
+  "cache_creation_input_tokens": 5277
+ },
+ "cost_usd": 0.0246,
+ "secs": 10.8
+}

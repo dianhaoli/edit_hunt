@@ -1,0 +1,306 @@
+{
+ "id": "T3_consistency-Kentucky-North_Carolina-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "consistency",
+ "source": "Kentucky",
+ "target": "North Carolina",
+ "source_capital": "Frankfort",
+ "target_capital": "Raleigh",
+ "dev_source": [
+  "Hopkinsville",
+  "Louisville",
+  "Berea",
+  "Paducah"
+ ],
+ "dev_target": [
+  "Charlotte",
+  "Asheville",
+  "Outer Banks",
+  "Chapel Hill"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 15,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Owensboro",
+  "Elizabethtown"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Owensboro",
+   "ho_fs"
+  ],
+  [
+   "Owensboro",
+   "ho_zs"
+  ],
+  [
+   "Elizabethtown",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Hopkinsville",
+   "Louisville",
+   "Berea",
+   "Paducah",
+   "Elizabethtown",
+   "Owensboro"
+  ],
+  "target": [
+   "Charlotte",
+   "Asheville",
+   "Outer Banks",
+   "Chapel Hill",
+   "Greensboro",
+   "Cary",
+   "Winston-Salem"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7942186594009399,
+    "edited": 0.8641402721405029
+   },
+   "leak": {
+    "k": 8,
+    "n": 15,
+    "rate": 0.5333333333333333,
+    "ci95": [
+     0.3011663015105079,
+     0.7519077474025355
+    ]
+   },
+   "leak_to_target": {
+    "k": 3,
+    "n": 15,
+    "rate": 0.2,
+    "ci95": [
+     0.07047420643610414,
+     0.4518593533465045
+    ]
+   },
+   "kl_country": {
+    "mean": 0.022205153480172157,
+    "sd": 0.030265238136053085,
+    "n": 2,
+    "ci95": [
+     -0.019740326555476376,
+     0.06415063351582069
+    ],
+    "max": 0.04360590875148773
+   },
+   "kl_generic": {
+    "mean": 0.016446907073259354,
+    "sd": 0.024182789027690887,
+    "n": 40,
+    "ci95": [
+     0.00895258310998183,
+     0.023941231036536878
+    ],
+    "max": 0.12371154874563217
+   },
+   "F": 1.0,
+   "kl_mean": 0.019326030276715755,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9806739697232842,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 28.017440795898438
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   5,
+   10,
+   15
+  ]
+ },
+ "leak_items": [
+  [
+   "Bangor",
+   "ho_fs"
+  ],
+  [
+   "Bangor",
+   "ho_zs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_fs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_zs"
+  ],
+  [
+   "Lewiston",
+   "ho_zs"
+  ],
+  [
+   "Kennebunkport",
+   "ho_fs"
+  ],
+  [
+   "Kennebunkport",
+   "ho_zs"
+  ],
+  [
+   "Birmingham",
+   "ho_fs"
+  ],
+  [
+   "Birmingham",
+   "ho_zs"
+  ],
+  [
+   "Huntsville",
+   "ho_fs"
+  ],
+  [
+   "Huntsville",
+   "ho_zs"
+  ],
+  [
+   "Mobile",
+   "ho_fs"
+  ],
+  [
+   "Mobile",
+   "ho_zs"
+  ],
+  [
+   "Tuscaloosa",
+   "ho_fs"
+  ],
+  [
+   "Tuscaloosa",
+   "ho_zs"
+  ]
+ ],
+ "task": "consistency",
+ "suite_task": "T3_consistency",
+ "extra": {
+  "hidden_items": [
+   [
+    "Owensboro",
+    "abbr"
+   ],
+   [
+    "Owensboro",
+    "abbr_addr"
+   ],
+   [
+    "Elizabethtown",
+    "abbr"
+   ]
+  ],
+  "reference": {
+   "reward": 0.9866936223115772,
+   "F": 1.0,
+   "kl_mean": 0.013306377688422799,
+   "error": null,
+   "edits": [
+    {
+     "layer": 15,
+     "position": "city_last",
+     "norm": 33.55271530151367
+    }
+   ]
+  }
+ },
+ "public_extra": {}
+}

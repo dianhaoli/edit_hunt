@@ -3,6 +3,9 @@
   meandiff  (C1): mean(target dev cities) - mean(source dev cities) at city_last, pick the layer
                   (<= max_layer) with the best dev flip rate minus generic-KL penalty, submit.
   gradient  (C2): optimize_vector (Adam, first-token target log-prob + KL penalty) on dev cities.
+  careful   (C2nk): optimize_vector at the top allowed layer with keep_cities = 2 cities from each of 4
+                  other states (must keep their own capital), norm capped at |mean-diff| of that layer.
+                  The scripted version of "notice the leakage term and regularize against it" (Phase 4b).
   random        : random direction norm-matched to the mean-difference vector (control).
 
 pass = reward >= threshold.
@@ -17,7 +20,9 @@ import time
 from pathlib import Path
 
 from ..common import ROOT, save
-from ..data import CITIES
+import random
+
+from ..data import CITIES, study_states
 from ..metrics import rate
 from ..model import Subject
 from .grader import grade
@@ -75,6 +80,31 @@ def agent_gradient(env: ToolEnv, steps: int = 30, kl_weight: float = 1.0, **_) -
     _call(env, "submit", edits=[{"register": "g", "layer": L, "position": "city_last", "scale": 1.0}])
 
 
+def agent_careful(env: ToolEnv, steps: int = 30, seed: int = 0, **_) -> None:
+    d, c, layers, tpl, tgt = _setup(env)
+    L = c["max_layer"] if c["max_layer"] < 20 else 15  # Phase 4b: L8-15 best; beyond the band it degrades
+    tpls = [k for k in d["templates"] if k not in ("state_q", "country_q")]
+    src = d["dev_source_cities"][: max(1, 16 // len(tpls))]
+    meandiff_dirs(env, [L], tpl, d["dev_source_cities"], tgt)
+    nrm = _call(env, "vec_info", name=f"d{L}")["norm"]
+    rng = random.Random(f"{seed}-{d['source']}-{d['target']}")
+    others = [s for s in study_states(min_cities=5) if s not in (d["source"], d["target"])]
+    keep = [x for st in rng.sample(others, 6) for x in CITIES[st][:3]]
+    for _ in range(6):  # drop cities the tools refuse (grader-only cities), as an agent would
+        o = json.loads(env.call("optimize_vector", dict(name="g", layer=L, position="city_last", dev_cities=src,
+                                                         templates=tpls[:1], steps=steps, keep_cities=keep[:8],
+                                                         max_norm=nrm)))
+        if "error" not in o:
+            break
+        bad = [x for x in keep if f"'{x}'" in o["error"]]
+        if not bad:
+            raise RuntimeError(f"optimize_vector: {o['error']}")
+        keep = [x for x in keep if x not in bad]
+    else:
+        raise RuntimeError("could not find accessible keep cities")
+    _call(env, "submit", edits=[{"register": "g", "layer": L, "position": "city_last", "scale": 1.0}])
+
+
 def agent_random(env: ToolEnv, seed: int = 0, **_) -> None:
     d, c, layers, tpl, tgt = _setup(env)
     L = layers[-1]
@@ -83,7 +113,7 @@ def agent_random(env: ToolEnv, seed: int = 0, **_) -> None:
     _call(env, "submit", edits=[{"register": "r", "layer": L, "position": "city_last", "scale": 1.0}])
 
 
-AGENTS = {"meandiff": agent_meandiff, "gradient": agent_gradient, "random": agent_random}
+AGENTS = {"meandiff": agent_meandiff, "gradient": agent_gradient, "careful": agent_careful, "random": agent_random}
 
 
 def run_agent(S: Subject, inst, agent: str, bs: int = 16, **kw) -> dict:
@@ -104,7 +134,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="Qwen/Qwen2.5-1.5B")
     ap.add_argument("--tiers", default="easy,medium,hard")
-    ap.add_argument("--agents", default="meandiff,gradient,random")
+    ap.add_argument("--agents", default="meandiff,gradient,careful,random")
     ap.add_argument("--n", type=int, default=3, help="instances per tier")
     ap.add_argument("--threshold", type=float, default=0.5)
     ap.add_argument("--handoff", type=int, default=None)

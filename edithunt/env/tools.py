@@ -19,7 +19,7 @@ import re
 
 import torch
 
-from ..data import CAPITALS, COUNTRY_Q, STATE_Q, STATES
+from ..data import CAPITALS, CITY2STATE, COUNTRY_Q, STATE_Q, STATES
 from ..hooks import Intervention
 from ..metrics import kl
 from ..model import Subject, pos_rule
@@ -356,7 +356,7 @@ class ToolEnv:
         v = self._reg(name)
         cos = {k: _r(v @ u / (v.norm() * u.norm()).clamp_min(1e-12), 3) for k, u in self.regs.items() if k != name}
         with torch.no_grad():
-            lg = self.S.model.lm_head(self.S.model.model.norm(v.to(self.S.device))).float().cpu()
+            lg = self.S.model.lm_head(self.S.model.model.norm(v.to(self.S.device, self.S.dtype))).float().cpu()
         ti = lg.topk(min(int(top_k), 20)).indices.tolist()
         return {"register": name, "norm": _r(v.norm()), "cos": dict(list(cos.items())[:12]),
                 "unembed_top_tokens": [self.S.tok.decode([t]) for t in ti]}
@@ -386,9 +386,12 @@ class ToolEnv:
 
     def t_optimize_vector(self, name: str, layer: int, position: str, dev_cities: list[str],
                           templates: list[str], steps: int = 50, kl_weight: float = 0.0,
-                          init: str | None = None, lr: float = 0.05) -> dict:
+                          init: str | None = None, lr: float = 0.05, keep_cities: list[str] | None = None,
+                          keep_weight: float = 1.0, max_norm: float | None = None) -> dict:
         """Adam on an additive vector: maximize log p(first token of target capital) at the final
-        position (+ kl_weight * KL on generic sentences). lr is relative: step ~ lr*|resid|/sqrt(d)."""
+        position (+ kl_weight * KL on generic sentences) (+ keep_weight * NLL of each keep city's OWN
+        state capital, with the vector added at the keep city's position, on the same templates).
+        lr is relative: step ~ lr*|resid|/sqrt(d)."""
         L, pos = self._layer(layer), self._pos(position)
         steps = int(steps)
         if not 1 <= steps <= 500:
@@ -398,12 +401,21 @@ class ToolEnv:
         encs = [e for t in templates for e in self._encs(t, dev_cities)]
         if len(encs) > MAX_PROMPTS:
             raise ToolError(f"cities x templates must be <= {MAX_PROMPTS}")
+        kencs = [e for t in templates for e in self._encs(t, keep_cities)] if keep_cities else []
+        if len(kencs) > MAX_PROMPTS:
+            raise ToolError(f"keep_cities x templates must be <= {MAX_PROMPTS}")
+        kids = torch.tensor([self.S.cand_tokens([CAPITALS[CITY2STATE[e.city]]])[0][0] for e in kencs
+                             if e.city in CITY2STATE], device=self.S.device)
+        if len(kids) != len(kencs):
+            raise ToolError("keep_cities must be cities from the dataset (unknown city given)")
         ge = [self.S.encode_text(t) for t in GENERIC_TOOLS[:4]] if kl_weight > 0 else []
         gclean = torch.stack([c[1] for c in self._clean_run(ge)]).to(self.S.device) if ge else None
-        self._spend(steps * (len(encs) + len(ge)))
+        self._spend(steps * (len(encs) + len(ge) + len(kencs)))
         tok = self.S.cand_tokens([self.tgt_cap])[0][0]
         cap_first = torch.tensor([t[0] for t in self.S.cand_tokens(CAPS)])
         maxn = self.inst.constraints.get("max_norm")
+        if max_norm is not None:  # agent-chosen cap, never looser than the tier's
+            maxn = float(max_norm) if maxn is None else min(maxn, float(max_norm))
         v = (self._reg(init).clone() if init else torch.zeros(self.S.d_model)).to(self.S.device).requires_grad_(True)
         opt = torch.optim.Adam([v], lr=1.0)  # lr set after measuring the residual norm
         ref = [encs[i % len(encs)] for i in range(len(ge))]
@@ -420,6 +432,9 @@ class ToolEnv:
             if ge:
                 lg, *_ = self.S.forward(ge, [Intervention(L, edit_positions(pos, ge, ref), "add", v)], grad=True)
                 loss = loss + kl_weight * kl(gclean, lg).mean()
+            if kencs:
+                lk, *_ = self.S.forward(kencs, [Intervention(L, pos_rule(kencs, pos), "add", v)], grad=True)
+                loss = loss - keep_weight * lk[torch.arange(len(kencs)), kids].mean()
             opt.zero_grad(); loss.backward(); opt.step()
             if maxn is not None:
                 with torch.no_grad():

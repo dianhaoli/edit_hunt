@@ -64,10 +64,12 @@ TOOLS = [
            "n_generic": {"type": "integer"}}, ["template", "cities"]),
     _tool("optimize_vector", "Gradient-optimize an additive vector (Adam) at `layer`/`position` to raise the "
           "log-prob of the target capital's first token on dev_cities x templates, optionally penalizing KL on "
-          "generic sentences. Costs steps x prompts forward passes. Result stored in register `name`.",
+          "generic sentences, and optionally (keep_cities) rewarding each keep city's OWN state capital with the "
+          "vector applied to it; max_norm caps the vector norm during training. Costs steps x prompts forward passes. Result stored in register `name`.",
           {"name": {"type": "string"}, "layer": {"type": "integer"}, "position": _POS, "dev_cities": _STRS,
            "templates": _STRS, "steps": {"type": "integer"}, "kl_weight": {"type": "number"},
-           "init": {"type": "string"}, "lr": {"type": "number"}},
+           "init": {"type": "string"}, "lr": {"type": "number"}, "keep_cities": _STRS,
+           "keep_weight": {"type": "number"}, "max_norm": {"type": "number"}},
           ["name", "layer", "position", "dev_cities", "templates"]),
     _tool("submit", "Submit the final edits (ends the episode). Checked against the constraints; a rejected "
           "submission returns an error and you may retry.", {"edits": _EDITS}, ["edits"]),
@@ -86,9 +88,11 @@ all city tokens, final = last prompt token). The same edits are applied to every
 
 Grading: F = fraction of held-out items whose top answer among the 50 state capitals is the target capital \
 (if constraints.preserve_state is true, an item only counts if the model's answer to "which state is <city> in" \
-is unchanged). KL_mean = average KL divergence (clean || edited) of the next-token distribution at the final \
-position on other prompts about the same cities and on unrelated sentences. \
-reward = F * (1 - min(1, KL_mean / kl_budget)).
+is unchanged). KL_mean = average of (a) the binary KL of the model's probability that the held-out city is in the United States \
+(on a country prompt) and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated \
+sentences. leak = fraction of held-out cities from OTHER states (neither source nor target) whose top capital \
+answer changes under your edit. reward = F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget)); \
+leak_weight and kl_budget are in the constraints.
 
 You have a limited forward-pass budget; tool outputs report what is left. Vectors live in named registers on the \
 server. Call submit exactly once when you are done; you will not see the grade."""

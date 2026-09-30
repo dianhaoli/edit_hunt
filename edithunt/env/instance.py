@@ -21,18 +21,24 @@ from ..data import CAPITALS, CITIES, HELDOUT_TEMPLATES, TEMPLATES, study_states
 from ..model import Subject
 from .grader import CAPS, grade, predict
 
-# Placeholders to tune. max_layer: int, "last", or "handoff[+-k]" (resolved against --handoff).
+# Tier settings from Phases 3/4/4b on Qwen2.5-1.5B (LAB_NOTEBOOK 2026-09-30). max_layer: int, "last", or
+# "handoff[+-k]" (resolved against --handoff). Difficulty comes from the reward terms, not from the flip itself:
+#   medium: leak_weight=1 -> answer-direction edits (naive gradient: 56-83% of other states' cities flip) and
+#           mean-diff (leak ~0.35) score low; a leak-aware edit (Phase 4b C2nk) keeps ~80% of them.
+#   hard:   preserve_state + layer <= 8 -> mean-diff HOP2 0.02, naive capped gradient 0.24, keep-state gradient 0.98.
+# Instance validation still uses the mean-diff reference *flip* (proves the edit is possible at allowed layers);
+# because the tiers are hard through leakage / state preservation, this no longer makes mean-diff pass by construction.
 TIERS = {
     "easy": dict(max_layer="handoff-1", positions=["city_last", "city_all"], max_rank=2, max_norm=None,
-                 kl_budget=1.0, fwd_budget=3000, n_dev=4, target_examples=True, preserve_state=False,
-                 dev_templates=["fs1", "zs1"]),
-    "medium": dict(max_layer=5, positions=["city_last"], max_rank=1, max_norm=None,
-                   kl_budget=0.3, fwd_budget=800, n_dev=2, target_examples=True, preserve_state=False,
-                   dev_templates=["fs1"]),
+                 kl_budget=1.0, leak_weight=0.0, fwd_budget=3000, n_dev=4, target_examples=True,
+                 preserve_state=False, dev_templates=["fs1", "zs1"]),
+    "medium": dict(max_layer=15, positions=["city_last"], max_rank=1, max_norm=None,
+                   kl_budget=1.0, leak_weight=1.0, fwd_budget=4000, n_dev=4, target_examples=True,
+                   preserve_state=False, dev_templates=["fs1", "zs1"]),
     # hop-2 only: capital must flip while the state-belief answer is unchanged
-    "hard": dict(max_layer="last", positions=["city_last", "city_all", "final"], max_rank=2, max_norm=None,
-                 kl_budget=0.3, fwd_budget=1500, n_dev=3, target_examples=True, preserve_state=True,
-                 dev_templates=["fs1", "zs1"]),
+    "hard": dict(max_layer=8, positions=["city_last", "city_all", "final"], max_rank=2, max_norm=None,
+                 kl_budget=1.0, leak_weight=0.5, fwd_budget=4000, n_dev=4, target_examples=True,
+                 preserve_state=True, dev_templates=["fs1", "zs1"]),
 }
 PUBLIC_KEYS = ("id", "model", "tier", "source", "target", "source_capital", "target_capital",
                "dev_source", "dev_target", "dev_templates", "constraints")
@@ -123,7 +129,7 @@ def make_instance(S: Subject, source: str, target: str, tier: str, seed: int, va
         return None
     cons = {"max_layer": resolve_layer(P["max_layer"], S.n_layers, handoff), "positions": P["positions"],
             "max_rank": P["max_rank"], "max_norm": P["max_norm"], "kl_budget": P["kl_budget"],
-            "fwd_budget": P["fwd_budget"], "preserve_state": P["preserve_state"]}
+            "fwd_budget": P["fwd_budget"], "preserve_state": P["preserve_state"], "leak_weight": P.get("leak_weight", 0.0)}
     iid = re.sub(r"\s+", "_", f"{tier}-{source}-{target}-s{seed}")
     return Instance(iid, S.name, tier, source, target, CAPITALS[source], CAPITALS[target], dev_s, dev_t,
                     {t: TEMPLATES[t] for t in dt}, cons, test, {t: TEMPLATES[t] for t in HELDOUT_TEMPLATES},

@@ -63,16 +63,18 @@ for pi, (src, tgt) in enumerate(pairs):
     country_encs = [S.encode(COUNTRY_Q, x) for x in test_s]
     clean_country = S.logp_final(country_encs)
     cands = {}  # (cls, L, ndev, pos) -> ("add", v) | ("set", v) | ("swap", (U, coords))
-    for nd in sorted({1, 2, len(dev_s_all)}):
+    nall = len(dev_s_all)
+    for nd in sorted({1, 2, nall}):
         ds, dt = dev_s_all[:nd], dev_t_all[:nd]
+        ndl = "all" if nd == nall else nd  # label: pooled across pairs with different dev sizes
         ms, mt = resid_mean(ds, "fs1", layers), resid_mean(dt, "fs1", layers)
         ms2 = resid_mean([c for c in ds if V["fs2"][c]] or ds, "fs2", layers)
         mt2 = resid_mean([c for c in dt if V["fs2"][c]] or dt, "fs2", layers)
         for L in layers:
             v = mt[L] - ms[L]
-            cands[("C1", L, nd, "city_last")] = ("add", v)
-            cands[("C1", L, nd, "city_all")] = ("add", v)
-            cands[("C1t", L, nd, "city_last")] = ("add", (v + mt2[L] - ms2[L]) / 2)
+            cands[("C1", L, ndl, "city_last")] = ("add", v)
+            cands[("C1", L, ndl, "city_all")] = ("add", v)
+            cands[("C1t", L, ndl, "city_last")] = ("add", (v + mt2[L] - ms2[L]) / 2)
     # C0: paste of one target dev city residual (per layer)
     r0 = S.resid([S.encode(TEMPLATES["fs1"], dev_t_all[0])], layers)
     for L in layers:
@@ -83,17 +85,17 @@ for pi, (src, tgt) in enumerate(pairs):
     rc = {L: v.mean(0) for L, v in S.resid(ctx_encs, layers).items()}
     r_plain = resid_mean(dev_s_all, "fs1", layers)
     for L in layers:
-        cands[("C4v", L, len(dev_s_all), "city_last")] = ("add", rc[L] - r_plain[L])
+        cands[("C4v", L, "all", "city_last")] = ("add", rc[L] - r_plain[L])
     # C2 / C3 (gradient) on train templates of all dev source cities
     dev_encs = [S.encode(TEMPLATES[t], c) for c in dev_s_all for t in ("fs1", "fs2") if V[t][c]]
     for L in glayers:
-        cands[("C2", L, len(dev_s_all), "city_last")] = ("add", train_additive(S, L, "city_last", dev_encs, CAPITALS[tgt], steps=args.steps, seed=args.seed))
-        cands[("C2kl", L, len(dev_s_all), "city_last")] = ("add", train_additive(
+        cands[("C2", L, "all", "city_last")] = ("add", train_additive(S, L, "city_last", dev_encs, CAPITALS[tgt], steps=args.steps, seed=args.seed))
+        cands[("C2kl", L, "all", "city_last")] = ("add", train_additive(
             S, L, "city_last", dev_encs, CAPITALS[tgt], steps=args.steps, seed=args.seed,
             kl_encs=gen[:8], kl_pos=gen_pos[:8], kl_weight=1.0))
         tgt_encs = [S.encode(TEMPLATES["fs1"], c) for c in dev_t_all]
         for k in (1, 4):
-            cands[(f"C3r{k}", L, len(dev_s_all), "city_last")] = ("swap", train_das(S, L, dev_encs, tgt_encs, CAPITALS[tgt], k=k, steps=args.steps, seed=args.seed))
+            cands[(f"C3r{k}", L, "all", "city_last")] = ("swap", train_das(S, L, dev_encs, tgt_encs, CAPITALS[tgt], k=k, steps=args.steps, seed=args.seed))
         print(f"  pair {pi} trained L{L} [{time.time()-t0:.0f}s]", flush=True)
 
     def ivs_for(encs, key, rule=None):
@@ -125,14 +127,14 @@ for pi, (src, tgt) in enumerate(pairs):
     for tn in evalT:
         encs = [S.encode(f"Note that {x} is located in {tgt}. " + TEMPLATES[tn], x) for x in test_s if V[tn][x]]
         sc, _ = S.score(encs, caps, bs=args.bs)
-        rows.append(dict(cls="C4", L=-1, ndev=0, pos="prompt", pair=f"{src}->{tgt}", T=tn,
+        rows.append(dict(cls="C4", L=-1, ndev="none", pos="prompt", pair=f"{src}->{tgt}", T=tn,
                          **{f"flips_{tn}": [caps[i] == CAPITALS[tgt] for i in sc.argmax(1).tolist()]}))
     print(f"pair {pi} {src}->{tgt} done, {len(cands)} candidates [{time.time()-t0:.0f}s]", flush=True)
 
 # aggregate: per (cls, L, ndev, pos)
 agg = {}
-for key in sorted({(r["cls"], r["L"], r["ndev"] if r["cls"] not in ("C1", "C1t") else min(r["ndev"], 3), r["pos"]) for r in rows}, key=str):
-    R = [r for r in rows if (r["cls"], r["L"], r["ndev"] if r["cls"] not in ("C1", "C1t") else min(r["ndev"], 3), r["pos"]) == key]
+for key in sorted({(r["cls"], r["L"], r["ndev"], r["pos"]) for r in rows}, key=str):
+    R = [r for r in rows if (r["cls"], r["L"], r["ndev"], r["pos"]) == key]
     d = {}
     for tn in evalT:
         d[f"flip_{tn}"] = rate([f for r in R for f in r.get(f"flips_{tn}", [])])

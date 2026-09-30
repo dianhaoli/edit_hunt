@@ -1,4 +1,4 @@
-# EditHunt: progress report (as of 2026-09-29)
+# EditHunt: progress report (as of 2026-09-30)
 
 This covers what has been built, what has been measured, what it means, and what remains.
 All numbers below are real measurements from this repo. Nothing is extrapolated.
@@ -11,8 +11,8 @@ Every rate is given with its sample size n and a 95% Wilson confidence interval.
 | Item | Status |
 |---|---|
 | Core library (dataset, hooks, exact answer scoring, batching) | **Done**, verified with explicit correctness checks |
-| Phase 0: which prompts the subject model already answers correctly | **Done** for Qwen2.5-1.5B |
-| Phase 1: replicate and scale experiments A and B (does a "state direction" exist?) | **Running** when paused; no results yet |
+| Phase 0: which prompts the subject model already answers correctly | **Done** for Qwen2.5-1.5B (rerun in bf16 on A10G, 2026-09-30) |
+| Phase 1: replicate and scale experiments A and B (does a "state direction" exist?) | **Done** (1.5B, 30 pairs): premise holds, mean-diff flip 0.82-0.89 over L6-21, handoff at L22. See LAB_NOTEBOOK 2026-09-30 |
 | Phases 2–4 (meaning, hop separation, difficulty ladder) | **Scripts written, not yet run** |
 | Phase 5 (other models) | Not started. 3B is downloaded. 7B, Gemma and Llama are blocked on this laptop (see §6) |
 | Phase 6 (environment prototype: grader, tools, Claude agent loop) | **Built and smoke-tested** on Qwen2.5-0.5B. Tier settings are placeholders. **The real Claude API has not been called yet** |

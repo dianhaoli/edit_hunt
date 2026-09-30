@@ -580,3 +580,85 @@ FINDINGS as caveats and proposed fixes.
   - All sol runs, including the T4 and T6 ones, are to be rerun from scratch after a full correctness review.
   - Old sol runs will be moved to `results/suite/runs_sol_bug/` and kept for the record.
   - OpenAI ledger: $2.86 spent, $0.26 of stale reservations to clear.
+
+### Pre-rerun correctness review (2026-09-30, 5 subagent reviewers, no API spend)
+Reviewers: (1) tools/graders bugs, (2) task design & methods, (3) reward hacking / leaks, (4) harness, ledger, run
+records, (5) construct validity. Every finding below was checked by the main session before acting.
+
+**Fixed (commit 2578182); verified by `experiments/verify_review_fixes.py`: all 45 Sonnet runs on Qwen2.5-1.5B replay
+with the identical tool error pattern and identical reward (6 T6 runs on other subject models are report-graded and
+were not replayed). None of these changes a Sonnet result.**
+- Harness: a `submit` in the turn that crossed the $0.10 cap was discarded (cap checked before running that turn's
+  tools). Cost 2 of the 6 no-submission failures in the invalid sol runs; Sonnet never hit the cap. Now the capping
+  turn's tool calls run, then the episode stops. Records gain `end` (submitted / cost_cap / max_turns / refusal /
+  no_tool_calls), `served_models`, and sol reasoning-token counts.
+- Tool exceptions outside the caught types (CUDA OOM, index errors, non-string cities, `top_k<1`) killed the episode
+  and made suite_run re-run it (a best-of-n loophole; happened once, non-adversarially, for a sol 7B OOM). Now any
+  exception is returned as a tool error.
+- Ledger: Ctrl-C settled at $0 (now worst case); the subject model is loaded before reserving (a load OOM cost $0.10
+  once); records are written atomically.
+- Held-out guards matched exact strings only: "Los  Angeles", "Los-Angeles", "LosAngeles", zero-width variants and
+  one-character near-copies of held-out templates (incl. STATE_Q_HO and hidden readouts) were accepted. The reviewer
+  showed tool flip rates on alias+near-copy prompts track the grader's F. Not used in any recorded run. Guards now
+  compare NFKC/zero-width-stripped/lower/punctuation-collapsed text.
+- `logit_lens` with an integer position inside the shared KV prefix read another token's residual (or raised a CUDA
+  device assert that poisons the process). No run used an integer position. Captures inside the prefix now disable
+  the prefix cache; checked against an uncached forward.
+- Raw-prompt city detection picked "Bend" inside "South Bend" (no T4 source affected). Nested matches now lose.
+- `run_prompts` note claimed an exact ranking; only the top entry is exact. Note corrected.
+- T4 reference picked the target by summed log-prob gain and got it wrong on 3/8 instances (reference 0.6 there,
+  not the 1.0 claimed above). Instances stay valid (≥ 0.5) and the plants are correct. Fixed to top-1 votes: 8/8 = 1.0
+  in 6 calls; stored references updated (old kept as `reference_v1_logprob_gain`).
+- task_map: stale sol rows removed (results/task_map.json and fig4 had the invalid runs); T7 now also reports the
+  grader's own `passed` (the pass line the agent is told): Sonnet **6/8** grader-passed vs 3/8 at reward ≥ 0.5;
+  end causes and missing-run counts are reported.
+- Docs: first Sonnet probe cost $0.27 (not $0.33). T7 mean-diff baseline chose scale 1.0 on 7/8 instances (1.5 on
+  Nevada→California), so "mean-diff at scale 1" is accurate for 7/8.
+
+**Not changed (would change the environment Sonnet was graded in); caveats for the write-up / proposed changes:**
+- Turn limit (25) and cost cap ($0.10) are not shown to the agent. Kept hidden for sol too, for comparability with
+  Sonnet (re-running Sonnet with shown limits would cost ~$2.75; $1.29 Anthropic budget left). Sol's many-small-turns
+  style makes the hidden limits bind harder; the map reports end causes.
+- Membership oracle: refusals reveal private cities (a generic message would not fix it: one city per call; leak
+  cities are `CITIES[state][:4]`). Proposed: decoy held-out cities, refusals charged to budget.
+- Leakage floor: 4 leak items are bf16 near-ties (Hoboken, Norman, Rapid City) and count as leaked with a zero edit;
+  ~4% lower reward on two T2 instances, no pass/fail change. Proposed: leak = prediction changed vs clean at grade time.
+- KL saturates (~0.5–1.2 even at scale 1e5): on T3 Colorado→Maine a scale-300 mean-diff "smash" scores 0.725 vs
+  Sonnet's 0.676. T3 has no leak/specificity term. Proposed: norm cap or specificity term; city-token KL.
+- T4 white-box is shallow: act_diff at a late layer + `vec_info` unembedding reads the target in ~2 calls; black-box
+  prompting also solves it (2/2).
+- T6: gemma truth (18) is fragile (pooled flip 0.52 at L17, CI [0.42,0.61]); the generator dropped gemma pairs whose
+  reference said 15. T1/T7 public `max_layer = handoff−1` leaks the 1.5B handoff across tasks.
+- T7 reference ranks layers with ‖mean resid‖ while the grader's ρ is mean ‖resid‖ (ratio 0.77 at L7, 0.91 at L21),
+  so r_ref may not be the grader-minimal edit. T3 reference passes with F_cap 3/6 (cube-root aggregation).
+- Instances within a task share cities (dev of one = test of another): instances are correlated.
+- Proj-basis QR drops span on dependent columns (only T5, dropped).
+
+**Construct validity (reviewer 5; zero-effort shortcut baselines run through the tools,
+`experiments/suite_shortcuts.py` → `results/suite/shortcuts.json`, added to baselines.json; T3 re-checked
+independently by the main session: fixed mean-diff at L8, no evaluation, 8/8).**
+| shortcut (no evaluation, no adaptation) | pass | Sonnet |
+|---|---|---|
+| T1 mean-diff fs1 city_last scale 1 at L12 / L8 | 8/8 / 7/8 | 8/8 |
+| T2 same | 0/7 / 0/7 | 1/7 |
+| T3 same | 8/8 / 8/8 | 8/8 |
+| T4 black-box script: STATE_Q on 2 known cities per state, layer guess 10 | 8/8 (mean 0.875) | 8/8 |
+| T6 prior round(0.8·depth) / 0.82·depth (computed, post hoc) | 4/8 / 6/8 | 7/8 |
+| T7 same recipe at L8 / L12 (best of a 50-recipe grid, post hoc: L18 scale 1, 7/8) | 4/8 / 3/8 | 3/8 (6/8 grader-passed) |
+
+Reading for the write-up (proposed, not applied: no task tuning after Claude results):
+- T1: valid as a recipe-recall sanity tier only.
+- T2: the only task where the recipe clearly fails; Sonnet mostly had the right idea (keep-state extra_examples in
+  5/7) but worked at L6 instead of L8, omitted other-state keep cities (leak 0.73/0.93), or used `final`. Reference
+  passes ~57% on re-seeding and instances were kept only where it passed (circular). 1/7 = skill + noise.
+- T3: every mean-diff edit already moves the state (state_kept 0/n in all 8 T1 grades), so any T1 pass is a T3 pass.
+  **Report T3 as equivalent to T1**; redesign: min(F) instead of cube root, or a readout mean-diff breaks.
+- T4: behavioural lookup solves it (one state answers wrong; the wrong answer names the target). Not an interp task as
+  graded. Redesign: layer ±1 required, sub-threshold plant, distractor plants, no clean access.
+- T6: prescribed procedure; answer is a per-model constant (n_eff = 4). Sonnet did not use a prior (black-box guesses
+  13, 16). Redesign: per-instance truth, method not stated.
+- T7: what matters is layer choice under a norm relative to that layer's residual norm; Sonnet always edited at L12
+  and did not really minimise (the fixed L12 recipe gives exactly 3/8). Feasibility uneven (Iowa→Ohio 0/50 recipes
+  pass; Colorado→Oregon 30+/50). Redesign: absolute norm or fixed layer, ≥10 held-out items, multi-variant r_ref.
+- Across tasks: 3–16 held-out items per instance, n = 7–8; several outcomes within one item of the line. Sonnet
+  clearly beats zero-effort scripts only on T2 (1/7 vs 0/7, not significant) and T6 (7/8 vs 6/8 post-hoc prior).

@@ -24,9 +24,11 @@ def failure(r: dict):
     if g["reward"] >= 0.5:
         return None
     if not g.get("valid"):
-        if r["stop_reason"] == "cost_cap":
-            return "cost cap (no submission)"
-        return "gave up / no submission" if g.get("reason") == "no submission" else "tool error (invalid submission)"
+        end = r.get("end") or ("cost_cap" if r["stop_reason"] == "cost_cap" else None)  # "end" exists from 2026-09-30
+        if g.get("reason") != "no submission":
+            return "tool error (invalid submission)"
+        return {"cost_cap": "cost cap (no submission)", "max_turns": "turn limit (no submission)"}.get(
+            end, "gave up / no submission")
     t = r["suite_task"]
     if t == "T4_detective":
         c = g["components"]
@@ -58,6 +60,8 @@ for t in TASKS:
     d = {"n_instances": len(insts),
          "reference_reward": sum(i.extra["reference"]["reward"] or 0 for i in insts.values()) / max(1, len(insts)),
          "scripted": {k.split("/", 1)[1]: sum(x["reward"] for x in v) / len(v) for k, v in base.items() if k.startswith(t + "/")},
+         "scripted_pass": {k.split("/", 1)[1]: rate([x["reward"] >= 0.5 for x in v]) for k, v in base.items()
+                           if k.startswith(t + "/")},
          "agents": {}}
     for am, _ in AGENTS:
         R = [json.loads(p.read_text()) for p in sorted((runs / am / t).glob("*.json"))] if (runs / am / t).exists() else []
@@ -67,9 +71,13 @@ for t in TASKS:
                 continue
             rw = [r["grade"]["reward"] for r in rr]
             d["agents"][am + (" (black-box)" if bb else "")] = {
-                "n": len(rr), "mean_reward": sum(rw) / len(rw), "pass": rate([x >= 0.5 for x in rw]),
+                "n": len(rr), "n_missing": d["n_instances"] - len(rr) if not bb else None, "mean_reward": sum(rw) / len(rw), "pass": rate([x >= 0.5 for x in rw]),
                 "mean_turns": sum(r["turns"] for r in rr) / len(rr), "cost_usd": sum(r["cost_usd"] for r in rr),
                 "failures": dict(Counter(f for f in map(failure, rr) if f)),
+                "ends": dict(Counter(r.get("end") or ("submitted" if r.get("submission") else "?") for r in rr)),
+                # T7: the agent is told "passed = F >= 0.8 and KL_mean <= budget"; the map's pass also needs
+                # reward >= 0.5 (r <= 2 r_ref), so report the grader's own criterion too
+                **({"grader_passed": rate([bool(r["grade"].get("passed")) for r in rr])} if t == "T7_minimal" else {}),
                 "episodes": [{"instance": r["instance"], "reward": r["grade"]["reward"], "turns": r["turns"],
                               "cost": r["cost_usd"], "failure": failure(r)} for r in rr]}
     M["tasks"][t] = d
@@ -102,17 +110,24 @@ for j, (am, lab) in enumerate(AGENTS):
 for i, t in enumerate(TASKS):
     ax.plot([i - 0.42, i + 0.42], [M["tasks"][t]["reference_reward"]] * 2, color=INK2, lw=1.2, ls=(0, (3, 2)),
             label="reference solver (via tools), mean" if i == 0 else None)
-    for k, v in M["tasks"][t]["scripted"].items():
-        ax.plot(i + 0.44, v, marker="d", ms=5, color="#1baf7a", ls="none",
-                label="scripted naive baseline, mean" if not any(h.get_label().startswith("scripted") for h in ax.lines[:-1]) else None)
+    sp = M["tasks"][t]["scripted_pass"]
+    if sp:  # best zero-/low-effort scripted agent (pass rate), named
+        k, v = max(sp.items(), key=lambda kv: kv[1]["rate"])
+        ax.plot(i + 0.44, v["rate"], marker="d", ms=6, color="#1baf7a", ls="none",
+                label="best scripted baseline: pass rate" if i == 0 else None)
+        ax.text(i + 0.44, v["rate"] + 0.045, k.replace("_", " "), ha="center", fontsize=6, color="#127a55")
+    g = M["tasks"][t]["agents"].get("claude-sonnet-5-5", {}).get("grader_passed")
+    if g:
+        ax.plot(i - 0.5 * w, g["rate"], marker="o", ms=6, mfc="none", mec=COL["claude-sonnet-5-5"], mew=1.3, ls="none",
+                label="Sonnet 5.5: T7 grader 'passed' (F>=0.8, KL ok)")
 ax.axhline(0.5, color=INK2, lw=0.8, alpha=0.5)
 ax.set_xticks(range(len(TASKS))); ax.set_xticklabels([LABEL[t] for t in TASKS], fontsize=8.5)
 ax.set_ylim(-0.12, 1.08); ax.set_ylabel("reward / pass rate")
 ax.set_title("Where frontier agents land on 6 interpretability tasks (Qwen2.5-1.5B subject)", loc="left", fontsize=11)
 ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.17), ncol=3, fontsize=7.5)
-fig.text(0.01, 0.005, "Bars = mean reward; dots = pass rate (reward >= 0.5) with Wilson 95% CI; n under bars. T6 spans 4 subject models. "
-         "T5 (erase) has no reference solver and is not shown.", fontsize=7, color=INK2)
-fig.tight_layout(rect=(0, 0.03, 1, 1))
+fig.text(0.01, 0.005, "Bars = mean reward; dots = pass rate (reward >= 0.5) with Wilson 95% CI; n under bars. T6 spans 4 subject models.\n"
+         "Scripted: fixed = mean-diff at a fixed layer, no evaluation. T5 (erase) dropped: no reference solver.", fontsize=7, color=INK2)
+fig.tight_layout(rect=(0, 0.05, 1, 1))
 (ROOT / "results/figures").mkdir(parents=True, exist_ok=True)
 fig.savefig(ROOT / "results/figures/fig4_task_map.png", dpi=180)
 for t in TASKS:

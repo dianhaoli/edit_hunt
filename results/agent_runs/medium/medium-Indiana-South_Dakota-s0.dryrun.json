@@ -1,0 +1,380 @@
+{
+ "instance": "medium-Indiana-South_Dakota-s0",
+ "tier": "medium",
+ "agent_model": "dry_run",
+ "config": {
+  "instance": "results/instances/Qwen2.5-1.5B/medium/medium-Indiana-South_Dakota-s0.private.json",
+  "model": "claude-sonnet-5-5",
+  "max_turns": 40,
+  "max_tokens": 16000,
+  "effort": null,
+  "no_fallbacks": false,
+  "dry_run": true,
+  "device": null,
+  "bs": 32,
+  "out_dir": "/home/ec2-user/edit_hunt/results/agent_runs"
+ },
+ "budget_used": 24,
+ "budget_total": 4000,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "s",
+    "cities": [
+     "Fort Wayne",
+     "West Lafayette",
+     "Muncie",
+     "Terre Haute"
+    ],
+    "template": "fs1",
+    "layer": 15
+   },
+   "used": 4
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "t",
+    "cities": [
+     "Deadwood",
+     "Sioux Falls",
+     "Brookings",
+     "Rapid City"
+    ],
+    "template": "fs1",
+    "layer": 15
+   },
+   "used": 8
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "t - s"
+   },
+   "used": 8
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Fort Wayne",
+     "West Lafayette",
+     "Muncie",
+     "Terre Haute"
+    ],
+    "vector": "d",
+    "layer": 15,
+    "position": "city_last",
+    "scale": 1.0
+   },
+   "used": 24
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 15,
+      "position": "city_last",
+      "scale": 1.0
+     }
+    ]
+   },
+   "used": 24
+  }
+ ],
+ "submission_edits": [
+  {
+   "layer": 15,
+   "position": "city_last",
+   "scale": 1.0
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "n_items": 3,
+  "flip": {
+   "k": 2,
+   "n": 3,
+   "rate": 0.6666666666666666,
+   "ci95": [
+    0.2076549551264879,
+    0.9385096847238394
+   ]
+  },
+  "to_source": {
+   "k": 0,
+   "n": 3,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.5615060804490177
+   ]
+  },
+  "per_template": {
+   "ho_fs": {
+    "k": 0,
+    "n": 0,
+    "rate": NaN,
+    "ci95": [
+     NaN,
+     NaN
+    ]
+   },
+   "ho_zs": {
+    "k": 2,
+    "n": 3,
+    "rate": 0.6666666666666666,
+    "ci95": [
+     0.2076549551264879,
+     0.9385096847238394
+    ]
+   }
+  },
+  "state_kept": {
+   "k": 0,
+   "n": 3,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.5615060804490177
+   ]
+  },
+  "state_clean_correct": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "p_us": {
+   "clean": 0.7166364789009094,
+   "edited": 0.7152605056762695
+  },
+  "leak": {
+   "k": 1,
+   "n": 11,
+   "rate": 0.09090909090909091,
+   "ci95": [
+    0.01623175226282597,
+    0.3773646254862038
+   ]
+  },
+  "leak_to_target": {
+   "k": 1,
+   "n": 11,
+   "rate": 0.09090909090909091,
+   "ci95": [
+    0.01623175226282597,
+    0.3773646254862038
+   ]
+  },
+  "kl_country": {
+   "mean": 0.03450499847531319,
+   "sd": 0.005581265315413475,
+   "n": 3,
+   "ci95": [
+    0.02818920221205871,
+    0.04082079473856766
+   ],
+   "max": 0.039859652519226074
+  },
+  "kl_generic": {
+   "mean": 0.0021560497116297483,
+   "sd": 0.0023694774135947227,
+   "n": 40,
+   "ci95": [
+    0.0014217410534839024,
+    0.0028903583697755942
+   ],
+   "max": 0.01288787554949522
+  },
+  "F": 0.6666666666666666,
+  "kl_mean": 0.018330524093471467,
+  "kl_budget": 1.0,
+  "leak_weight": 1.0,
+  "reward": 0.5949511975191081,
+  "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+  "edits": [
+   {
+    "layer": 15,
+    "position": "city_last",
+    "norm": 33.41511154174805
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"task\":\"Make prompts about cities in Indiana answer the capital of South Dakota (Pierre) instead of Indianapolis, generalizing to unseen Indiana cities and unseen prompt templates, with minimal side effects on other text.\",\"source\":\"Indiana\",\"target\":\"South Dakota\",\"source_capital\":\"Indianapolis\",\"target_capital\":\"Pierre\",\"dev_source_cities\":[\"Fort Wayne\",\"West Lafayette\",\"Muncie\",\"Terre Haute\"],\"dev_target_cities\":[\"Deadwood\",\"Sioux Falls\",\"Brookings\",\"Rapid City\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"constraints\":{\"max_layer\":15,\"positions\":[\"city_last\"],\"max_rank\":1,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":4000,\"preserve_state\":false,\"leak_weight\":1.0},\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"registers\":[],\"budget_total\":4000,\"budget_left\":4000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "type": "text",
+     "text": "Cache source and target means."
+    },
+    {
+     "type": "tool_use",
+     "id": "tu_0_0",
+     "name": "cache_mean",
+     "input": {
+      "name": "s",
+      "cities": [
+       "Fort Wayne",
+       "West Lafayette",
+       "Muncie",
+       "Terre Haute"
+      ],
+      "template": "fs1",
+      "layer": 15
+     }
+    },
+    {
+     "type": "tool_use",
+     "id": "tu_0_1",
+     "name": "cache_mean",
+     "input": {
+      "name": "t",
+      "cities": [
+       "Deadwood",
+       "Sioux Falls",
+       "Brookings",
+       "Rapid City"
+      ],
+      "template": "fs1",
+      "layer": 15
+     }
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "tu_0_0",
+     "content": "{\"register\":\"s\",\"n\":4,\"norm\":55.8176,\"budget_left\":3996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "tu_0_1",
+     "content": "{\"register\":\"t\",\"n\":4,\"norm\":53.749,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "tu_1_0",
+     "name": "vec_op",
+     "input": {
+      "name": "d",
+      "expr": "t - s"
+     }
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "tu_1_0",
+     "content": "{\"register\":\"d\",\"norm\":33.4151,\"budget_left\":3992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "tu_2_0",
+     "name": "eval_intervention",
+     "input": {
+      "template": "fs1",
+      "cities": [
+       "Fort Wayne",
+       "West Lafayette",
+       "Muncie",
+       "Terre Haute"
+      ],
+      "vector": "d",
+      "layer": 15,
+      "position": "city_last",
+      "scale": 1.0
+     }
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "tu_2_0",
+     "content": "{\"predictions\":[{\"city\":\"Fort Wayne\",\"clean\":\"Indianapolis\",\"edited\":\"Pierre\"},{\"city\":\"West Lafayette\",\"clean\":\"Indianapolis\",\"edited\":\"Pierre\"},{\"city\":\"Muncie\",\"clean\":\"Indianapolis\",\"edited\":\"Pierre\"},{\"city\":\"Terre Haute\",\"clean\":\"Indianapolis\",\"edited\":\"Pierre\"}],\"flip_rate\":1.0,\"kl_on_these_prompts\":6.052,\"kl_generic\":0.0042,\"budget_left\":3976}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "tu_3_0",
+     "name": "submit",
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 15,
+        "position": "city_last",
+        "scale": 1.0
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "tu_3_0",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":3976}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 4,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation_input_tokens": 0
+ },
+ "secs": 1.4
+}

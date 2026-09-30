@@ -139,8 +139,18 @@ def _dump(b) -> dict:
 
 
 # ------------------------------------------------------------ loop
+# $/token (Sonnet 5.5): input 2, output 10, cache read 0.20 per MTok; cache write assumed 1.25x input (5-min TTL)
+PRICE = {"input_tokens": 2e-6, "output_tokens": 10e-6, "cache_read_input_tokens": 0.2e-6,
+         "cache_creation_input_tokens": 2.5e-6}
+
+
+def cost(usage: dict) -> float:
+    return sum(PRICE[k] * usage.get(k, 0) for k in PRICE)
+
+
 def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_tokens: int = 16000,
-                effort: str | None = None, fallbacks: bool = True, max_nudges: int = 2) -> dict:
+                effort: str | None = None, fallbacks: bool = True, max_nudges: int = 2,
+                max_cost: float | None = None) -> dict:
     messages = [{"role": "user", "content": "Task (output of describe_task):\n" + env.call("describe_task", {})}]
     usage = {"input_tokens": 0, "output_tokens": 0, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}
     nudges, stop, t0 = 0, None, time.time()
@@ -158,6 +168,9 @@ def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_token
             usage[k] += getattr(resp.usage, k, 0) or 0
         messages.append({"role": "assistant", "content": resp.content})  # echo blocks unchanged
         stop = resp.stop_reason
+        if max_cost is not None and cost(usage) >= max_cost:
+            stop = "cost_cap"
+            break
         if stop == "refusal":
             break
         uses = [b for b in resp.content if b.type == "tool_use"]
@@ -177,7 +190,7 @@ def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_token
             break
     log = [{"role": m["role"], "content": m["content"] if isinstance(m["content"], str)
             else [x if isinstance(x, dict) else _dump(x) for x in m["content"]]} for m in messages]
-    return {"messages": log, "turns": turn + 1, "stop_reason": stop, "usage": usage,
+    return {"messages": log, "turns": turn + 1, "stop_reason": stop, "usage": usage, "cost_usd": round(cost(usage), 4),
             "secs": round(time.time() - t0, 1)}
 
 
@@ -191,6 +204,7 @@ def main():
     ap.add_argument("--effort", default=None, help="low|medium|high|xhigh|max (default: API default)")
     ap.add_argument("--no_fallbacks", action="store_true")
     ap.add_argument("--dry_run", action="store_true")
+    ap.add_argument("--max_cost", type=float, default=None, help="stop the episode once its cost reaches this ($)")
     ap.add_argument("--device", default=None)
     ap.add_argument("--bs", type=int, default=16)
     ap.add_argument("--out_dir", default=str(ROOT / "results" / "agent_runs"))
@@ -205,7 +219,8 @@ def main():
         client = anthropic.Anthropic(api_key=os.environ["ANT_KEY"])
     S = Subject(inst.model, device=a.device)
     env = ToolEnv(S, inst, a.bs)
-    ep = run_episode(client, env, a.model, a.max_turns, a.max_tokens, a.effort, not a.no_fallbacks and not a.dry_run)
+    ep = run_episode(client, env, a.model, a.max_turns, a.max_tokens, a.effort, not a.no_fallbacks and not a.dry_run,
+                     max_cost=a.max_cost)
     g = grade(S, inst, env.submission, a.bs) if env.done else {"valid": False, "reason": "no submission", "reward": 0.0}
     rec = {"instance": inst.id, "tier": inst.tier, "agent_model": "dry_run" if a.dry_run else a.model,
            "config": vars(a), "budget_used": env.used, "budget_total": env.budget, "tool_log": env.log,
@@ -216,7 +231,7 @@ def main():
     p = d / f"{inst.id}{'.dryrun' if a.dry_run else ''}.json"
     p.write_text(json.dumps(rec, indent=1, default=str))
     print(f"{inst.id}: reward {g['reward']:.3f} F {g.get('F')} KL {g.get('kl_mean')} turns {ep['turns']} "
-          f"budget {env.used}/{env.budget} -> {p}")
+          f"budget {env.used}/{env.budget} usage {ep['usage']} cost ${ep['cost_usd']:.4f} stop {ep['stop_reason']} -> {p}")
 
 
 if __name__ == "__main__":

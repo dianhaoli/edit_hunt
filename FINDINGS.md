@@ -93,8 +93,12 @@ Same shape in all four models (Fig. 1). Bigger Qwen models generalize better to 
   may be unsolvable); (b) measure leakage as "switched to target" only and lower leak_weight, then re-find a
   separating layer ceiling / dev-city count from Phase 4 (mean-diff at L≤4 with 1-2 dev cities flips 0.33-0.40);
   (c) make the tool optimizer match Phase 4b (absolute lr, more steps) and re-test the careful recipe.
-- **Expected frontier-agent band:** easy ≈ solved; hard between 0 (naive) and ≥0.21 (careful script).
-  **Not yet measured with Claude:** the calibration run is blocked on API credits.
+- **Claude Sonnet 5.5 probe** (6 episodes, effort medium, ≤25 turns, **$0.33 total, $0.02-0.08 each**; hand-picked
+  instances known to be solvable, so not a pass-rate estimate): easy 2/2, medium 1/2 (0.89, 0.32), hard 1/2 (0.73,
+  0.31). Claude found the careful recipe unprompted (keep_cities / keep_state_cities / max_norm / KL), solving a hard
+  instance in 3 turns with one call. **Implication:** the tool's named keep_* options make the careful method too
+  discoverable; remove them (make the agent build the regularizer) before measuring real pass rates.
+  At ~$0.05/episode a proper 20-per-tier calibration costs ~$3.
 
 ## 8. Figures
 1. `results/figures/fig1_layer_curves.png`: the state direction across 4 models, with handoff.
@@ -102,7 +106,8 @@ Same shape in all four models (Fig. 1). Bigger Qwen models generalize better to 
 3. `results/figures/fig3_tiers.png`: scripted-agent reward by tier.
 
 ## 9. Open problems / next steps
-1. **Claude Sonnet 5.5 calibration** (10-20 episodes per tier): blocked on API credit balance; code dry-run tested.
+1. **Claude Sonnet 5.5 calibration** at 20 episodes/tier on random instances (~$3), after deciding the medium tier and
+   whether to keep the keep_* tool options.
 1b. **Medium tier does not separate yet** (see §7 options); needs a design decision before the Claude run.
 2. Per-instance F is coarse (3-6 held-out items; steps of 0.17-0.33): use more held-out cities/templates per instance.
 3. Ladder and hop separation on 3B / gemma / 7B (only Phases 0-2 were repeated there).

@@ -414,3 +414,29 @@ solver, so it is not yet a valid tier. Hard separates (naive exactly 0/24; caref
 Stopped tuning here (brief: don't thrash); options written up in FINDINGS §7/§9 for a decision.
 Scripted-agent bug: the careful agent's refused-city retry parses the error with `'{city}'`, which fails for
 "Coeur d'Alene" (1 instance lost in careful3).
+
+## Claude Sonnet 5.5 calibration (first real API runs), Qwen2.5-1.5B, 2026-09-30
+Settings: `claude-sonnet-5-5`, effort medium, max_turns 25, prompt caching, per-episode $ cap (new `--max_cost`).
+Cost model: $2/M input, $10/M output, $0.20/M cache read, cache write **assumed** $2.50/M (1.25x input; not given).
+Budget from Dan: $5 credit, stop before $4.50. Instances: seed-0 ones the scripted careful agent solved (so each is
+known solvable) — a favourable selection, not a random sample.
+| instance | reward | F | leak | KL_mean | turns | cost | scripted meandiff / careful | what Claude did |
+|---|---|---|---|---|---|---|---|---|
+| easy Oregon->Ohio | 0.94 | 1.00 | 1.00 | 0.058 | 3 | $0.019 | 0.80 / 0.98 | one optimize_vector (+KL), L12 |
+| easy Louisiana->Tennessee | 0.66 | 0.67 | 0.92 | 0.014 | 7 | $0.035 | 0.50 / 0.98 | mean-diff, L12 |
+| medium Kentucky->Texas | 0.32 | 1.00 | 0.67 | 0.049 | 11 | $0.063 | 0.27 / 0.55 | keep_cities+max_norm+KL, L8; keep set ended as the few-shot demo cities |
+| medium Indiana->South Dakota | **0.89** | 1.00 | 0.09 | 0.018 | 14 | $0.076 | 0.59 / 0.88 | 5 optimize calls, keep_cities+max_norm+KL, L5 |
+| hard Indiana->South Dakota | **0.73** | 1.00 | 0.50 | 0.024 | 3 | $0.020 | 0.00 / 0.92 | one call with keep_cities+keep_state_cities+KL, L6 |
+| hard Maine->Maryland | 0.31 | 1.00 | 0.69 | 0.527 | 9 | $0.054 | 0.00 / 0.54 | keep_state etc., country KL blew up |
+Total spend **$0.33** (6 episodes; $0.019-0.076 each, mean $0.045). Pass (≥0.5): easy 2/2, medium 1/2, hard 1/2.
+Observations:
+- **Claude reaches for the careful recipe unprompted** (keep_cities, max_norm, KL on medium; keep_state_cities on
+  hard) — it reads the reward formula and the tool schema. It solved a hard instance in 3 turns with one call.
+  This confirms the review's warning: when the tool exposes the fix as a named argument, "careful" is one call
+  away. For a real difficulty gradient the keep_* options should probably be removed and the agent made to
+  build the regularizer itself (e.g. via a generic "extra loss prompts" mechanism, or no gradient tool at all).
+- Tool friction: several keep-city attempts were refused (capitals are not in the dataset, grader-only cities are
+  blocked); the agent fell back to the few-shot demo cities, which weakens the keep term.
+- n=2 per tier on hand-picked solvable instances: this is a cost/behaviour probe, not a pass-rate estimate.
+Remaining credit: ~$4.67 of $5 by our cost model (not checked against the Console). At ~$0.05/episode, ~20
+episodes per tier (60 total) would cost ~$3.

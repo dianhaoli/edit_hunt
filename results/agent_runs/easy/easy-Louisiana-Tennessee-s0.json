@@ -1,0 +1,618 @@
+{
+ "instance": "easy-Louisiana-Tennessee-s0",
+ "tier": "easy",
+ "agent_model": "claude-sonnet-5-5",
+ "config": {
+  "instance": "results/instances/Qwen2.5-1.5B/easy/easy-Louisiana-Tennessee-s0.private.json",
+  "model": "claude-sonnet-5-5",
+  "max_turns": 25,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "no_fallbacks": false,
+  "dry_run": false,
+  "max_cost": 0.75,
+  "device": null,
+  "bs": 32,
+  "out_dir": "/home/ec2-user/edit_hunt/results/agent_runs"
+ },
+ "budget_used": 37,
+ "budget_total": 3000,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "tn",
+    "cities": [
+     "Knoxville",
+     "Clarksville",
+     "Pigeon Forge",
+     "Memphis"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 12,
+    "position": "city_last"
+   },
+   "used": 4
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "la",
+    "cities": [
+     "Ruston",
+     "Shreveport",
+     "Natchitoches",
+     "Lake Charles"
+    ],
+    "template": "The state containing {city} has its capital in",
+    "layer": 12,
+    "position": "city_last"
+   },
+   "used": 8
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "d",
+    "expr": "tn-la"
+   },
+   "used": 8
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Ruston",
+     "Monroe",
+     "Baton Rouge",
+     "New Orleans",
+     "Denver",
+     "Austin"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1
+   },
+   "used": 8
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Ruston",
+     "Monroe",
+     "Baton Rouge",
+     "Denver",
+     "Austin"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1
+   },
+   "used": 26
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: Which US state is {city} in?\nA: The state of",
+    "cities": [
+     "Ruston",
+     "Shreveport",
+     "Lafayette",
+     "Houma"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1
+   },
+   "used": 26
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Lafayette",
+     "Houma",
+     "Slidell",
+     "Alexandria"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.3
+   },
+   "used": 26
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state containing {city} has its capital in",
+    "cities": [
+     "Lafayette",
+     "Slidell",
+     "Alexandria",
+     "Ruston"
+    ],
+    "vector": "d",
+    "layer": 12,
+    "position": "city_last",
+    "scale": 1.3
+   },
+   "used": 37
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.3
+     }
+    ]
+   },
+   "used": 37
+  }
+ ],
+ "submission_edits": [
+  {
+   "layer": 12,
+   "position": "city_last",
+   "scale": 1.3
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "n_items": 6,
+  "flip": {
+   "k": 4,
+   "n": 6,
+   "rate": 0.6666666666666666,
+   "ci95": [
+    0.29998832134152864,
+    0.9032306674407831
+   ]
+  },
+  "to_source": {
+   "k": 0,
+   "n": 6,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.3903430336530645
+   ]
+  },
+  "per_template": {
+   "ho_fs": {
+    "k": 1,
+    "n": 3,
+    "rate": 0.3333333333333333,
+    "ci95": [
+     0.0614903152761605,
+     0.7923450448735121
+    ]
+   },
+   "ho_zs": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   }
+  },
+  "state_kept": {
+   "k": 0,
+   "n": 3,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.5615060804490177
+   ]
+  },
+  "state_clean_correct": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "p_us": {
+   "clean": 0.8491122126579285,
+   "edited": 0.7666974663734436
+  },
+  "leak": {
+   "k": 12,
+   "n": 13,
+   "rate": 0.9230769230769231,
+   "ci95": [
+    0.6668546607175265,
+    0.9862899336203037
+   ]
+  },
+  "leak_to_target": {
+   "k": 1,
+   "n": 13,
+   "rate": 0.07692307692307693,
+   "ci95": [
+    0.013710066379696323,
+    0.3331453392824736
+   ]
+  },
+  "kl_country": {
+   "mean": 0.02279146946966648,
+   "sd": 0.01685483008623123,
+   "n": 3,
+   "ci95": [
+    0.003718433722301708,
+    0.04186450521703125
+   ],
+   "max": 0.04145631939172745
+  },
+  "kl_generic": {
+   "mean": 0.005794700235128403,
+   "sd": 0.00659664161503315,
+   "n": 40,
+   "ci95": [
+    0.0037503798188154767,
+    0.007839020651441328
+   ],
+   "max": 0.035251177847385406
+  },
+  "F": 0.6666666666666666,
+  "kl_mean": 0.014293084852397442,
+  "kl_budget": 1.0,
+  "leak_weight": 0.0,
+  "reward": 0.657137943431735,
+  "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+  "edits": [
+   {
+    "layer": 12,
+    "position": "city_last",
+    "norm": 41.630516052246094
+   }
+  ]
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"task\":\"Make prompts about cities in Louisiana answer the capital of Tennessee (Nashville) instead of Baton Rouge, generalizing to unseen Louisiana cities and unseen prompt templates, with minimal side effects on other text.\",\"source\":\"Louisiana\",\"target\":\"Tennessee\",\"source_capital\":\"Baton Rouge\",\"target_capital\":\"Nashville\",\"dev_source_cities\":[\"Ruston\",\"Shreveport\",\"Natchitoches\",\"Lake Charles\"],\"dev_target_cities\":[\"Knoxville\",\"Clarksville\",\"Pigeon Forge\",\"Memphis\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"constraints\":{\"max_layer\":21,\"positions\":[\"city_last\",\"city_all\"],\"max_rank\":2,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":3000,\"preserve_state\":false,\"leak_weight\":0.0},\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"registers\":[],\"budget_total\":3000,\"budget_left\":3000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01RtZxFZS3xcxSaMQwZKCrDW",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "tn",
+      "cities": [
+       "Knoxville",
+       "Clarksville",
+       "Pigeon Forge",
+       "Memphis"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 12,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01JdxMNY5KCVmHnfd29JJrVt",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "la",
+      "cities": [
+       "Ruston",
+       "Shreveport",
+       "Natchitoches",
+       "Lake Charles"
+      ],
+      "template": "The state containing {city} has its capital in",
+      "layer": 12,
+      "position": "city_last"
+     },
+     "name": "cache_mean",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01RtZxFZS3xcxSaMQwZKCrDW",
+     "content": "{\"register\":\"tn\",\"n\":4,\"norm\":52.3568,\"budget_left\":2996}",
+     "is_error": false
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01JdxMNY5KCVmHnfd29JJrVt",
+     "content": "{\"register\":\"la\",\"n\":4,\"norm\":54.087,\"budget_left\":2992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01EL9ViTEMXQtn8uVvRUcM2C",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "name": "d",
+      "expr": "tn-la"
+     },
+     "name": "vec_op",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01EL9ViTEMXQtn8uVvRUcM2C",
+     "content": "{\"register\":\"d\",\"norm\":32.0235,\"budget_left\":2992}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01JWqh1mnfyHLY4qdNHbRj36",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Ruston",
+       "Monroe",
+       "Baton Rouge",
+       "New Orleans",
+       "Denver",
+       "Austin"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01JWqh1mnfyHLY4qdNHbRj36",
+     "content": "{\"error\":\"held-out cities are not accessible: ['New Orleans']\",\"budget_left\":2992}",
+     "is_error": true
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_016JAoNea2bhA2HmB5UwsAJN",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Ruston",
+       "Monroe",
+       "Baton Rouge",
+       "Denver",
+       "Austin"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_016JAoNea2bhA2HmB5UwsAJN",
+     "content": "{\"predictions\":[{\"city\":\"Ruston\",\"clean\":\"Baton Rouge\",\"edited\":\"Nashville\"},{\"city\":\"Monroe\",\"clean\":\"Nashville\",\"edited\":\"Nashville\"},{\"city\":\"Baton Rouge\",\"clean\":\"Baton Rouge\",\"edited\":\"Nashville\"},{\"city\":\"Denver\",\"clean\":\"Denver\",\"edited\":\"Nashville\"},{\"city\":\"Austin\",\"clean\":\"Austin\",\"edited\":\"Austin\"}],\"flip_rate\":0.8,\"kl_on_these_prompts\":1.025,\"kl_generic\":0.0015,\"budget_left\":2974}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSswUKEAgSGAI4AUIIdGhpbmtpbmcSDD5eZy+NZVOc0E/duRoMlP8diQoIKtcc4PZ/IjDzEaz+iJNJ/0yoTQHvx/pI1lv4U1c3HBlw+dEam+JvvuL/MBIZ7qTwgfAJSAJdGbYq0ARo1S2tpIFyHi/SUmKWr53N2Ro1NrbMC2bioFDM82ian0X3HEW7jD4mrM447+f84mW/ORt4ezx0mvhYbPU6n4CUHRYQpUDiyuouQoK0Q/KqCAPMKXtGHSTIaHbZZWT1jkFxoLoeuaHRu/wo+K+yfqaj1BiYp9flbaoiTMwJr4ZEu7mwc29Dn+8NtkesLyxVsmS8UDEmEKxsNk2UPqknsb5IvxTG4v/QeigqMI/+NYiOxkLvdpN/D38voXBLTXGcZXaRTfFEPvupU0qHxjyoVc2z9lpFExJJ+SFbVQ/s2PIJgd+2ADM5ekPwcMzXhSCKIAyvmO6vnkUy/CzSMp1RDjcHRL5Uv26/uUPxMJyHK+/nhnY5p53M8X7NzBeJ93r4vK87axlNPhH6thfUp9IU+JDWRnDK/xyDEGowkhpVcNvxXsxNI+750pY5IJznMkOdrzXjaUgdY/2/FIGOZL8mEbdKgUWeG6hqyxUFRQNAiD4wNBRSs3aD6jIa/xqDw15mzp0Ufj5V3hBkn2FRZfu/OYCG04zJlh3I7jtCZkibqzGsAZp4tTWwNUsWowRHW2db5tRC4Nro/q5TpY9Pcnz75BVZuBtZYDUbmQzcD065cHwA4GQw5HLPvx/5+KpSR/EESK0gXBmlqad/8QyOtvdBBWooMSSHrPW60hOIDFn6odPL5dhWtzqhh0OFP6Ius+bm2x3PBBc1aePDEohLBaW/f7OfRZ8/LNTUakbXMUaFCeue3G6I0w4fCYy8/2NZfkEjTlUIVfBUzbNRaEjyyzb3n+sRGAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_01DyDTRicutBesqVxp5FpJcv",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "Q: Which US state is {city} in?\nA: The state of",
+      "cities": [
+       "Ruston",
+       "Shreveport",
+       "Lafayette",
+       "Houma"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_01NdVH3GsmPnNEVKHPRLPfWx",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Lafayette",
+       "Houma",
+       "Slidell",
+       "Alexandria"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.3
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01DyDTRicutBesqVxp5FpJcv",
+     "content": "{\"error\":\"held-out cities are not accessible: ['Houma']\",\"budget_left\":2974}",
+     "is_error": true
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01NdVH3GsmPnNEVKHPRLPfWx",
+     "content": "{\"error\":\"held-out cities are not accessible: ['Houma']\",\"budget_left\":2974}",
+     "is_error": true
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "text": "Good enough; try scale 1.3 quickly.",
+     "type": "text"
+    },
+    {
+     "id": "toolu_01JFs6GEfiWYepn4nmcFGzxE",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "template": "The state containing {city} has its capital in",
+      "cities": [
+       "Lafayette",
+       "Slidell",
+       "Alexandria",
+       "Ruston"
+      ],
+      "vector": "d",
+      "layer": 12,
+      "position": "city_last",
+      "scale": 1.3
+     },
+     "name": "eval_intervention",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01JFs6GEfiWYepn4nmcFGzxE",
+     "content": "{\"predictions\":[{\"city\":\"Lafayette\",\"clean\":\"Baton Rouge\",\"edited\":\"Nashville\"},{\"city\":\"Slidell\",\"clean\":\"Baton Rouge\",\"edited\":\"Nashville\"},{\"city\":\"Alexandria\",\"clean\":\"Richmond\",\"edited\":\"Atlanta\"},{\"city\":\"Ruston\",\"clean\":\"Baton Rouge\",\"edited\":\"Nashville\"}],\"flip_rate\":0.75,\"kl_on_these_prompts\":1.061,\"kl_generic\":0.0031,\"budget_left\":2963}",
+     "is_error": false
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_01AUbN2VS9aovzzaRmKTEGqd",
+     "caller": {
+      "type": "direct"
+     },
+     "input": {
+      "edits": [
+       {
+        "register": "d",
+        "layer": 12,
+        "position": "city_last",
+        "scale": 1.3
+       }
+      ]
+     },
+     "name": "submit",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_01AUbN2VS9aovzzaRmKTEGqd",
+     "content": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":2963}",
+     "is_error": false
+    }
+   ]
+  }
+ ],
+ "turns": 7,
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 16,
+  "output_tokens": 1560,
+  "cache_read_input_tokens": 26194,
+  "cache_creation_input_tokens": 5757
+ },
+ "cost_usd": 0.0353,
+ "secs": 19.7
+}

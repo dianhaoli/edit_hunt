@@ -67,7 +67,7 @@ Same shape in all four models (Fig. 1). Bigger Qwen models generalize better to 
 | Prompt injection instead of an edit | prompting flips zero-shot 0.97 | submissions are vectors only; tools refuse held-out templates |
 | Overfitting dev cities / templates | — | held-out cities × held-out templates; tools refuse them |
 | Tuning on grader-only cities | — | test and leakage cities blocked in every tool |
-| Instance filter selects easy instances | original validation = mean-diff works | difficulty now comes from leakage / state terms, so mean-diff still fails medium/hard |
+| Instance filter selects easy instances | original validation = mean-diff works | difficulty comes from leakage / state terms: mean-diff scores 0/24 on hard, 6/23 on medium |
 
 ## 7. Recommended environment spec
 - **Instance:** (source state, target state, subject model); 4 dev cities per side, dev templates fs1+zs1; private:
@@ -77,11 +77,24 @@ Same shape in all four models (Fig. 1). Bigger Qwen models generalize better to 
   and generic-text KL; leak = share of third-state items whose capital changes.
 - **Tiers** (1.5B; handoff 22): easy = layer ≤21, no leak penalty; medium = layer ≤15, single city-token edit,
   leak_weight 1; hard = keep state answer, layer ≤8, leak_weight 0.5. Pass = reward ≥0.5.
-- **Scripted calibration** (Fig. 3; 7-8 instances per tier): easy — mean-diff 7/8, naive gradient 5/8, careful 7/8;
-  medium — mean-diff 1/7, naive gradient 0/7, **careful 3/7**; hard — mean-diff 0/8, naive gradient 0/8,
-  **careful 3/8**; random 0 everywhere.
-- **Expected frontier-agent band:** easy ≈ solved; medium and hard between the naive (≤0.15) and careful-script
-  (≈0.4) pass rates or above. **Not yet measured with Claude:** the calibration run is blocked on API credits.
+- **Scripted calibration** (Fig. 3; 2 seeds, 23-24 validated instances per tier; pass = reward ≥0.5):
+  | tier | mean-diff | naive gradient | careful script | random |
+  |---|---|---|---|---|
+  | easy | 21/24 | 10/24 | 14/24 | 0/24 |
+  | medium | 6/23 | 3/23 | 5/23 | 0/23 |
+  | hard | **0/24** | **0/24** | **5/24** (0.21 [0.09,0.40]) | 0/24 |
+  **Easy and hard behave as intended. Medium does not yet:** every scripted method scores a mean reward of 0.22-0.35,
+  and the careful script is no better than mean-diff. The first seed (7 instances) suggested otherwise; the second
+  seed overturned it. Diagnosis: inside the tool API the leak-aware gradient is under-trained (held-out F mostly
+  ≤0.5 vs 0.83-0.97 in Phase 4b), and a longer/larger-lr version trades leakage for country/generic damage. Mean-diff
+  leakage under the grader's definition (any capital change, both held-out templates) is 0.6-1.0 on most instances,
+  much higher than Phase 4's "switched to target on the build template".
+- **Medium-tier options (decision needed):** (a) keep it as a "no known scripted solver" frontier tier (risky: it
+  may be unsolvable); (b) measure leakage as "switched to target" only and lower leak_weight, then re-find a
+  separating layer ceiling / dev-city count from Phase 4 (mean-diff at L≤4 with 1-2 dev cities flips 0.33-0.40);
+  (c) make the tool optimizer match Phase 4b (absolute lr, more steps) and re-test the careful recipe.
+- **Expected frontier-agent band:** easy ≈ solved; hard between 0 (naive) and ≥0.21 (careful script).
+  **Not yet measured with Claude:** the calibration run is blocked on API credits.
 
 ## 8. Figures
 1. `results/figures/fig1_layer_curves.png`: the state direction across 4 models, with handoff.
@@ -90,7 +103,8 @@ Same shape in all four models (Fig. 1). Bigger Qwen models generalize better to 
 
 ## 9. Open problems / next steps
 1. **Claude Sonnet 5.5 calibration** (10-20 episodes per tier): blocked on API credit balance; code dry-run tested.
-2. More instances per tier (currently 7-8; per-instance F moves in steps of 0.17-0.33).
+1b. **Medium tier does not separate yet** (see §7 options); needs a design decision before the Claude run.
+2. Per-instance F is coarse (3-6 held-out items; steps of 0.17-0.33): use more held-out cities/templates per instance.
 3. Ladder and hop separation on 3B / gemma / 7B (only Phases 0-2 were repeated there).
 4. The leak-aware method no longer moves the state belief (0.12-0.31). Decide whether medium should also require it.
 5. DAS is undertrained or under-ranked (flip ≤0.71); a better DAS could be a second careful route.

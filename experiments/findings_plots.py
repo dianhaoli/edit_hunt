@@ -100,11 +100,12 @@ fig.savefig(OUT / "fig2_ladder.png", dpi=180)
 plt.close(fig)
 
 # ---------------------------------------------------------------- fig 3
-base = load("Qwen2.5-1.5B", "phase6_baselines")["rows"]
-v2 = load("Qwen2.5-1.5B", "phase6_careful_v2")["rows"]
-# careful = best scripted recipe per tier: v1 (base run) on easy/medium, v2 (+keep_state) on hard
+base = load("Qwen2.5-1.5B", "phase6_baselines")["rows"]          # seed 0, 7-8 instances per tier
+s1 = load("Qwen2.5-1.5B", "phase6_baselines_s1")["rows"]         # seed 1, 16 per tier
+v2 = load("Qwen2.5-1.5B", "phase6_careful_v2")["rows"]           # seed 0 careful with keep_state (hard)
+# careful = scripted recipe per tier: v1 on easy/medium, v2 (+keep_state) on hard (seed 1 used these recipes)
 rows = [r for r in base if not (r["agent"] == "careful" and r["tier"] == "hard")] + \
-       [r | {"tier": "hard"} for r in v2 if r["instance"].startswith("hard")]
+       [r | {"tier": "hard"} for r in v2 if r["instance"].startswith("hard")] + s1
 AG = [("meandiff", "mean-diff", S1), ("gradient", "naive gradient", S2), ("careful", "careful (scripted)", S3),
       ("random", "random", S4)]
 TIERS = ["easy", "medium", "hard"]
@@ -126,9 +127,9 @@ ax.text(2.55, 0.51, "pass", fontsize=8, color=INK2, va="bottom", ha="right")
 ax.set_xticks(range(3)); ax.set_xticklabels(["easy\n(no leak penalty)", "medium\n(leak penalty, layer ≤15)",
                                              "hard\n(keep state, layer ≤8)"])
 ax.set_ylim(0, 1.12); ax.set_ylabel("reward"); ax.grid(axis="x", visible=False)
-ax.set_title("Naive methods pass easy and fail medium/hard; a careful recipe passes some", loc="left", fontsize=11)
+ax.set_title("Hard separates naive from careful; medium does not (yet)", loc="left", fontsize=11)
 ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), fontsize=8, ncol=4)
-fig.text(0.01, 0.005, "Qwen2.5-1.5B, 7-8 validated instances per tier; bar = mean reward, dots = instances, label = "
+fig.text(0.01, 0.005, "Qwen2.5-1.5B, 23-24 validated instances per tier (2 seeds); bar = mean reward, dots = instances, label = "
          "passes (reward ≥ 0.5).\nCareful: v1 on easy/medium, v2 (+keep_state) on hard.", fontsize=7.5, color=INK2)
 fig.tight_layout(rect=(0, 0.06, 1, 1))
 fig.savefig(OUT / "fig3_tiers.png", dpi=180)

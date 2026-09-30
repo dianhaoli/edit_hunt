@@ -390,3 +390,27 @@ the edit but the state question partly does not (the mirror image of gemma L15-1
 
 ### FINDINGS.md drafted (2026-09-30). Claude calibration blocked: API returned 400 "credit balance is too low"
 on the first request (req_011CfZGj7KunoKmx4RRu9TaH), nothing spent. Dry run of the loop passes.
+
+### Phase 6 calibration, seed 1 (16 instances per tier) — **medium does not separate; seed-0 result was noise**
+Pass = reward ≥ 0.5. careful = v1 recipe on easy/medium, v2 (+keep_state) on hard.
+| tier | meandiff | gradient | careful | random |
+|---|---|---|---|---|
+| easy | 14/16 (mean 0.79) | 5/16 (0.38) | 7/16 (0.43) | 0/16 |
+| medium | 5/16 (0.35) | 3/16 (0.24) | 2/16 (0.28) | 0/16 |
+| hard | 0/16 | 0/16 | 2/16 (0.29) | 0/16 |
+Pooled with seed 0 (23-24 instances): medium meandiff 6/23, gradient 3/23, careful 5/23; hard 0/24, 0/24, 5/24;
+easy 21/24, 10/24, 14/24.
+Diagnosis (per-instance components, medium s1):
+- careful does cut leakage (median ~0.25 vs meandiff ~0.6) but its held-out F is low (mostly 0.0-0.5), vs 0.83-0.97
+  for the same method in Phase 4b. Difference = optimisation inside the tool: relative lr (step ≈ 0.05·|resid|/√d),
+  30 steps, one template. The tool's naive gradient is likewise under-trained (|v| 28-39, not the 460 overwrite).
+- careful3 (100 steps, lr 0.3, both templates, 8 keep cities): 4/16 (mean 0.30): lower leakage, but country/generic
+  KL rises to 0.11-0.40. Still no better than mean-diff.
+- Grader leakage ("any change", both held-out templates incl. zero-shot) is much larger than Phase 4's metric
+  ("to target", build template): mean-diff often 0.6-1.0. Recomputing rewards offline with leak = "to target" helps
+  mean-diff most (s1: 7/16, mean 0.52) and careful little (4/16, 0.35). Neither definition separates.
+**Conclusion:** medium as specified is hard for every scripted method (mean 0.22-0.35) but has no demonstrated
+solver, so it is not yet a valid tier. Hard separates (naive exactly 0/24; careful 5/24 = 0.21 [0.09,0.40]).
+Stopped tuning here (brief: don't thrash); options written up in FINDINGS §7/§9 for a decision.
+Scripted-agent bug: the careful agent's refused-city retry parses the error with `'{city}'`, which fails for
+"Coeur d'Alene" (1 instance lost in careful3).

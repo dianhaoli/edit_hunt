@@ -81,7 +81,7 @@ def agent_gradient(env: ToolEnv, steps: int = 30, kl_weight: float = 1.0, **_) -
     _call(env, "submit", edits=[{"register": "g", "layer": L, "position": "city_last", "scale": 1.0}])
 
 
-def agent_careful(env: ToolEnv, steps: int = 50, seed: int = 0, **_) -> None:
+def agent_careful(env: ToolEnv, steps: int = 50, seed: int = 0, recipe: dict | None = None, **_) -> None:
     d, c, layers, tpl, tgt = _setup(env)
     L = c["max_layer"] if c["max_layer"] < 20 else 15  # Phase 4b: L8-15 best; beyond the band it degrades
     tpls = [k for k in d["templates"] if k not in ("state_q", "country_q")]
@@ -98,6 +98,12 @@ def agent_careful(env: ToolEnv, steps: int = 50, seed: int = 0, **_) -> None:
         else:  # v1 recipe: best on medium in the first calibration (lower country/generic KL than v2)
             kw = dict(name="g", layer=L, position="city_last", dev_cities=src, templates=tpls[:1], steps=30,
                       keep_cities=keep[:8], max_norm=nrm)
+        if recipe:  # v3: longer / larger-lr training on both templates (Phase 4b-like optimisation)
+            kw |= {k: v for k, v in recipe.items() if k != "n_keep"}
+            kw["templates"] = tpls
+            kw["keep_cities"] = keep[:recipe.get("n_keep", 8)]
+            if c.get("preserve_state"):
+                kw["keep_state_cities"] = d["dev_source_cities"]
         o = json.loads(env.call("optimize_vector", kw))
         if "error" not in o:
             break
@@ -118,7 +124,12 @@ def agent_random(env: ToolEnv, seed: int = 0, **_) -> None:
     _call(env, "submit", edits=[{"register": "r", "layer": L, "position": "city_last", "scale": 1.0}])
 
 
-AGENTS = {"meandiff": agent_meandiff, "gradient": agent_gradient, "careful": agent_careful, "random": agent_random}
+def agent_careful3(env: ToolEnv, seed: int = 0, **_) -> None:
+    agent_careful(env, seed=seed, recipe={"steps": 100, "lr": 0.3, "n_keep": 8})
+
+
+AGENTS = {"meandiff": agent_meandiff, "gradient": agent_gradient, "careful": agent_careful,
+          "careful3": agent_careful3, "random": agent_random}
 
 
 def run_agent(S: Subject, inst, agent: str, bs: int = 16, **kw) -> dict:

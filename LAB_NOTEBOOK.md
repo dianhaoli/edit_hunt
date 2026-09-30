@@ -372,3 +372,21 @@ capital. Leakage is evaluated on 2 further states disjoint from the keep states 
 - careful v2 raised country/generic KL (0.09-0.34 vs 0.04-0.15), which cost medium; v1 is the better medium recipe.
 - Caveats: 7-8 instances per tier, 3-6 held-out items each, so per-instance F is coarse (steps of 0.17-0.33) and pass
   rates have CIs of ±0.3. The scripted careful agent is a lower bound on a deliberate agent, not a ceiling.
+
+### Phase 5 — Phase 2 on Qwen2.5-7B, 30 pairs, n=109 held-out (fs1)
+| L | capital flip | state -> target | binKL country (rand) | KL generic (rand) | 3rd-state -> target |
+|---|---|---|---|---|---|
+| 3 | 0.39 [0.30,0.48] | 0.39 | 0.14 (0.04) | 0.036 (0.033) | 0.09 |
+| 5 | 0.68 [0.59,0.76] | 0.77 | 0.037 (0.026) | 0.028 (0.030) | 0.20 |
+| 8 | 0.85 [0.77,0.91] | 0.88 | 0.024 (0.013) | 0.014 (0.016) | 0.19 |
+| 12 | 0.90 [0.83,0.94] | 0.95 [0.90,0.98] | 0.020 (0.008) | 0.007 (0.014) | 0.16 |
+| 16 / 20 | 0.88 / 0.85 | 0.91 / 0.90 | 0.02 (0.005) | 0.002-0.004 | 0.16 / 0.13 |
+| 21 / 22 | 0.63 / 0.16 | 0.47 / 0.20 | ≤0.012 | 0.002 | 0.06 / 0.02 |
+Random: capital ≤0.01, state ≤0.01, leakage ≤0.01 at every layer. Same conclusions as the other three models: a state
+variable (state flips ≥ capital flips in the band), generic damage at random level, leakage (13-24%) the main side
+effect, country damage very small in 7B. Norm sweep at L8: 0.25x 0.01, 0.5x 0.21, 1x 0.85, 2x 0.92 (leakage 0.56).
+At L21 the state answer flips less than the capital (0.47 vs 0.63): near the handoff the capital prompt still reads
+the edit but the state question partly does not (the mirror image of gemma L15-17).
+
+### FINDINGS.md drafted (2026-09-30). Claude calibration blocked: API returned 400 "credit balance is too low"
+on the first request (req_011CfZGj7KunoKmx4RRu9TaH), nothing spent. Dry run of the loop passes.

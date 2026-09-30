@@ -149,6 +149,9 @@ HELDOUT_TEMPLATES = ["ho_fs", "ho_zs"]
 STATE_Q = ("Q: Which US state is Chicago in?\nA: The state of Illinois.\n"
            "Q: Which US state is Miami in?\nA: The state of Florida.\n"
            "Q: Which US state is {city} in?\nA: The state of")
+# held-out state-belief wording: never used to train keep-penalties (Phase 3 overfitting control)
+STATE_Q_HO = ("Seattle is located in the state of Washington.\nMiami is located in the state of Florida.\n"
+              "{city} is located in the state of")
 # Country probe (collateral-damage check). The zero-shot form "{city} is a city in the country of" is NOT
 # state-independent: base Qwen2.5-1.5B answers " Texas" etc. (the state) with p~0.3-0.7, so full-vocab KL on it
 # measures the intended state change, not collateral damage (it was ~1.0 nats for working edits). We use a

@@ -18,7 +18,7 @@ class Intervention:
     # list (len B) of lists of *unpadded* positions; converted at apply time
     positions: list[list[int]]
     kind: str  # "add" | "set" | "swap"
-    # add: vec [d] or [B,d];  set: [B,d] or [B,npos,d];  swap: (U [d,k], target coords [B,k])
+    # add: vec [d] or [B,d];  set: [d], [B,d] or [B,npos,d];  swap: (U [d,k], target coords [B,k])
     payload: object = None
     scale: float = 1.0
 
@@ -56,7 +56,10 @@ def _apply(h: torch.Tensor, iv: Intervention, offsets: torch.Tensor) -> torch.Te
         new = x + iv.scale * v
     elif iv.kind == "set":
         v = iv.payload.to(dev, h.dtype)
-        new = v[r] if v.dim() == 2 else v[r, torch.tensor(j, device=dev)]
+        if v.dim() == 1:  # one shared vector for every row/position
+            new = v.expand_as(x)
+        else:
+            new = v[r] if v.dim() == 2 else v[r, torch.tensor(j, device=dev)]
     elif iv.kind == "swap":
         U, tgt = iv.payload  # U: [d,k] orthonormal; tgt: [B,k] (or [k]) target coords
         U = U.to(dev, h.dtype); tgt = tgt.to(dev, h.dtype)

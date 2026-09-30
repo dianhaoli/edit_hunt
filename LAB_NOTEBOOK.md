@@ -96,3 +96,49 @@
 - **Norm sweep** (scales 0.25/0.5/1/2 at L4, L8, L15): flip 0.04/0.25/0.89/0.95 at L8. At 2x, country binKL
   0.27 (P(US) 0.48), leakage 0.48, zero-shot full-vocab KL 3.3. Damage grows with norm, so a grader penalty
   scaled to a reference edit will punish overshooting. The old ~1.0 country KL was entanglement, not norm.
+
+## 2026-09-30 (session 2) — reflection before Phase 4, and plan changes
+
+### What the Phase 4 debug run (1 pair Texas->California, L4/L8, 10 steps, n=6) exposed
+Two results were implementation artifacts, not findings. Diagnosed on the same pair (scratch script):
+- **C3 DAS gave exactly 0 flips and ~0 KL.** Not broken, undertrained: from random init the rank-1 loss
+  goes 9.0 -> 2.1 at step 30 -> 0.26 at step 40 -> 0.07 at step 70 (L4; L8 similar). The debug run used 10 steps.
+  Fix: separate `--das_steps` (default 100).
+- **C2 (Adam lr=2, no norm constraint) lands at |v|=460-480**, vs |C1|=28-32 and |resid|=51-55 at the city
+  token, and is nearly orthogonal to C1 (cos 0.09-0.12). It is an overwrite of the residual, not an edit.
+  Its large KL (country binKL 1.4, generic 0.4) reflects optimizer settings, not task difficulty.
+  Fix: keep it as "naive C2" (and record |v|), add **C2n** (norm capped at |C1| of the same layer) and
+  **C2nkl** (capped + generic KL penalty) as the careful gradient classes.
+- **Leakage was not measured in Phase 4**, though Phase 2 found it to be the main collateral damage. Added:
+  third-state test cities (2 other states, 6 cities, fs1) -> `third_to_tgt`, `third_kept`.
+
+Re-debug with fixes (still n=6, one pair, L4, 50 steps; direction only):
+| class | flip fs1 / ho_fs | 3rd-state -> target | 3rd-state kept | binKL country | KL generic | abs(v) |
+|---|---|---|---|---|---|---|
+| C0 paste | 6/6 / 5/6 | 6/6 | 0/6 | 0.15 | 0.13 | 45 |
+| C1 mean-diff | 3/6 / 3/6 | 0/6 | 4/6 | 0.25 | 0.015 | 28 |
+| C2 (uncapped) | 6/6 / 6/6 | 6/6 | 0/6 | 1.40 | 0.41 | 481 |
+| C2n (capped at abs(C1)) | 5/6 / 5/6 | 6/6 | 0/6 | 0.17 | 0.011 | 28 |
+| C3 DAS rank-1 | 3/6 / 3/6 | 0/6 | 6/6 | 0.02 | 0.002 | — |
+**Candidate insight:** gradient training on "output the target capital" finds an *answer* direction
+("say Sacramento") that fires on any city, even when norm-capped. Mean-diff and DAS find the *state*
+variable and do not leak. A grader that includes third-state leakage would separate these; to be tested at scale.
+
+### Phase 3 changes (before its first full run)
+- Same C2 overshoot issue: added `gradn_city` / `hop2n_city` (norm capped at |md_city|).
+- **Overfitting control:** `hop2_city` trains a keep-source-state penalty on STATE_Q (dev cities) and was
+  evaluated on STATE_Q (test cities), so success could mean "memorized that prompt". Added `STATE_Q_HO`
+  (different wording, never trained on) and `hop2_success_ho`.
+- Debug (1 pair, L8, 20 steps, n=6): hop2n_city flips 6/6 and keeps the source state 6/6 on STATE_Q
+  *and* 6/6 on STATE_Q_HO, at abs(v)=31.6 (= abs(md_city)). md_city: HOP2 1/6. perp_city (md with the
+  STATE_Q direction projected out) flips 0/6. md_final at L23 flips the capital but also the state answer
+  (the vector is applied at the final token of STATE_Q too). Full run launched.
+
+### Plan changes
+1. Phase 4 full run: 12 pairs (was 6), grad layers 3,4,5,8,15, DAS 100 steps, C2n/C2nkl, leakage.
+2. The grader should include third-state leakage (pending Phase 4 at scale). This is the knob that seems
+   to separate answer-direction hacks (C2, C0) from the state variable (C1, DAS).
+3. Still open from the review: the env's `optimize_vector` tool makes C2 one call away. If leakage is
+   penalized, uncapped/answer-direction C2 fails anyway; decide after Phase 4.
+4. Order: Phase 4 + Phase 3 (running concurrently on the A10G) -> Phase 5 (3B, gemma-2-2b, 7B) -> set tiers
+   + grader in edithunt/env -> Claude calibration (ANT_KEY now in .env) -> FINDINGS.md. Deadline Oct 8.

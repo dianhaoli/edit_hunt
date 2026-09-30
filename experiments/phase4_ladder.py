@@ -5,13 +5,16 @@ Classes
   C0   full residual paste of ONE target-state dev city at city_last (reference; disallowed in env)
   C1   mean-difference (target dev - source dev), city_last or all city tokens
   C1t  C1 averaged over the two training templates (fs1, fs2)
-  C2   gradient-trained additive vector (no penalty / with KL penalty on generic text)
+  C2   gradient-trained additive vector, unconstrained norm (naive: lands at ~15x |C1|) / C2kl with
+       KL penalty on generic text
+  C2n  C2 with norm capped at |C1| (same layer, all dev) / C2nkl capped + KL penalty (careful gradient)
   C3   DAS-style learned rank-k subspace, coords set to mean target-dev coords
   C4   black-box prompting: prepend a context sentence ("{city} is in {target}.") - no internals
   C4v  prompt-derived vector: resid(city | context) - resid(city | no context), no target cities needed
 Constraints swept: layer (report per layer; ceilings applied in analysis), position rule,
 n_dev in {1,2,all}, target-city examples (C1 needs them; C2/C4v don't).
-Specificity: KL at final token on generic sentences (vector at token 3) and on COUNTRY_Q,
+Specificity: third-state leakage (other states' test cities -> target capital / kept own capital, fs1),
+KL at final token on generic sentences (vector at token 3) and on COUNTRY_Q,
 state-belief change on STATE_Q."""
 import sys; sys.path.insert(0, __import__("os").path.dirname(__file__) + "/..")
 import time
@@ -19,19 +22,20 @@ import time
 import torch
 
 from edithunt.common import base_args, save, seed_all, valid_table
-from edithunt.data import CAPITALS, COUNTRY_Q, GENERIC_SENTENCES, STATE_Q, STATES, TEMPLATES
+from edithunt.data import CAPITALS, CITIES, COUNTRY_CANDS, COUNTRY_Q, GENERIC_SENTENCES, STATE_Q, STATES, TEMPLATES
 from edithunt.hooks import Intervention
 from edithunt.instances import eligible_states, pick_pairs, split
-from edithunt.metrics import kl, rate
+from edithunt.metrics import binary_kl, kl, p_us, rate
 from edithunt.model import Subject, pos_rule
 from edithunt.optim import train_additive, train_das
 from edithunt.runner import Job, run_jobs
 
 ap = base_args(__doc__)
 ap.add_argument("--n_pairs", type=int, default=6)
-ap.add_argument("--layers", default="1,2,3,4,5,6,8,10,12,15,18,21")
-ap.add_argument("--grad_layers", default="2,3,5,10,15,21")
+ap.add_argument("--layers", default="2,3,4,5,6,8,12,15,21")
+ap.add_argument("--grad_layers", default="3,4,5,8,15")
 ap.add_argument("--steps", type=int, default=50)
+ap.add_argument("--das_steps", type=int, default=100)  # DAS from random init needs ~50-70 steps (checked L4/L8)
 ap.add_argument("--eval_templates", default="fs1,ho_fs,ho_zs")
 args = ap.parse_args()
 seed_all(args.seed)
@@ -61,7 +65,11 @@ for pi, (src, tgt) in enumerate(pairs):
     test_encs = {tn: [S.encode(TEMPLATES[tn], x) for x in test_s if V[tn][x]] for tn in evalT}
     state_encs = [S.encode(STATE_Q, x) for x in test_s]
     country_encs = [S.encode(COUNTRY_Q, x) for x in test_s]
-    clean_country = S.logp_final(country_encs)
+    thirds = [s for s in states if s not in (src, tgt)][pi % 4::8][:2]
+    third_c = [c for s in thirds for c in CITIES[s] if V["fs1"][c]][:6]
+    third_encs = [S.encode(TEMPLATES["fs1"], c) for c in third_c]
+    third_caps = [CAPITALS[next(s for s in thirds if c in CITIES[s])] for c in third_c]
+    clean_pus = p_us(S.score(country_encs, COUNTRY_CANDS, bs=args.bs, exact=True)[0])
     cands = {}  # (cls, L, ndev, pos) -> ("add", v) | ("set", v) | ("swap", (U, coords))
     nall = len(dev_s_all)
     for nd in sorted({1, 2, nall}):
@@ -93,9 +101,15 @@ for pi, (src, tgt) in enumerate(pairs):
         cands[("C2kl", L, "all", "city_last")] = ("add", train_additive(
             S, L, "city_last", dev_encs, CAPITALS[tgt], steps=args.steps, seed=args.seed,
             kl_encs=gen[:8], kl_pos=gen_pos[:8], kl_weight=1.0))
+        cap = float(cands[("C1", L, "all", "city_last")][1].norm())  # grad_layers must be a subset of layers
+        cands[("C2n", L, "all", "city_last")] = ("add", train_additive(
+            S, L, "city_last", dev_encs, CAPITALS[tgt], steps=args.steps, seed=args.seed, max_norm=cap))
+        cands[("C2nkl", L, "all", "city_last")] = ("add", train_additive(
+            S, L, "city_last", dev_encs, CAPITALS[tgt], steps=args.steps, seed=args.seed, max_norm=cap,
+            kl_encs=gen[:8], kl_pos=gen_pos[:8], kl_weight=1.0))
         tgt_encs = [S.encode(TEMPLATES["fs1"], c) for c in dev_t_all]
         for k in (1, 4):
-            cands[(f"C3r{k}", L, "all", "city_last")] = ("swap", train_das(S, L, dev_encs, tgt_encs, CAPITALS[tgt], k=k, steps=args.steps, seed=args.seed))
+            cands[(f"C3r{k}", L, "all", "city_last")] = ("swap", train_das(S, L, dev_encs, tgt_encs, CAPITALS[tgt], k=k, steps=args.das_steps, seed=args.seed))
         print(f"  pair {pi} trained L{L} [{time.time()-t0:.0f}s]", flush=True)
 
     def ivs_for(encs, key, rule=None):
@@ -109,11 +123,16 @@ for pi, (src, tgt) in enumerate(pairs):
         for tn in evalT:
             sc, _ = S.score(test_encs[tn], caps, ivs_for(test_encs[tn], key), bs=args.bs, exact=[CAPITALS[src], CAPITALS[tgt]])
             r[f"flips_{tn}"] = [caps[i] == CAPITALS[tgt] for i in sc.argmax(1).tolist()]
+        if third_encs:
+            st3, _ = S.score(third_encs, caps, ivs_for(third_encs, key), bs=args.bs)
+            top3 = [caps[i] for i in st3.argmax(1).tolist()]
+            r["third_to_tgt"] = [t == CAPITALS[tgt] for t in top3]
+            r["third_kept"] = [t == c for t, c in zip(top3, third_caps)]
         ss, _ = S.score(state_encs, STATES, ivs_for(state_encs, key), bs=args.bs)
         r["state_to_tgt"] = [STATES[i] == tgt for i in ss.argmax(1).tolist()]
         r["state_kept"] = [STATES[i] == src for i in ss.argmax(1).tolist()]
-        lc = S.logp_final(country_encs, ivs_for(country_encs, key))
-        r["kl_country"] = kl(clean_country, lc).tolist()
+        pu = p_us(S.score(country_encs, COUNTRY_CANDS, ivs_for(country_encs, key), bs=args.bs, exact=True)[0])
+        r["kl_country"] = binary_kl(clean_pus, pu).tolist()  # binary KL on P(US), see data.COUNTRY_Q
         if cands[key][0] != "swap":
             lg = S.logp_final(gen, ivs_for(gen, key, "gen"))
             r["kl_generic"] = kl(clean_gen, lg).tolist()
@@ -140,6 +159,11 @@ for key in sorted({(r["cls"], r["L"], r["ndev"], r["pos"]) for r in rows}, key=s
         d[f"flip_{tn}"] = rate([f for r in R for f in r.get(f"flips_{tn}", [])])
     if key[0] != "C4":
         d["state_to_tgt"] = rate([f for r in R for f in r["state_to_tgt"]])
+        d["third_to_tgt"] = rate([f for r in R for f in r.get("third_to_tgt", [])])
+        d["third_kept"] = rate([f for r in R for f in r.get("third_kept", [])])
+        ns = [r["norm"] for r in R if r["norm"] is not None]
+        if ns:
+            d["norm"] = sum(ns) / len(ns)
         d["kl_country"] = float(torch.tensor([x for r in R for x in r["kl_country"]]).mean())
         d["kl_generic"] = float(torch.tensor([x for r in R for x in r["kl_generic"]]).mean())
     agg["|".join(map(str, key))] = d

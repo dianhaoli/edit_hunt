@@ -155,3 +155,51 @@ variable and do not leak. A grader that includes third-state leakage would separ
 | Qwen2.5-3B | 0.87 (0.13) | 0.90 (0.84) | 0.91 | 0.82 | 0.86 (0.36) | 1.00 |
 | gemma-2-2b (eager) | 0.94 (0.77) | 0.96 (0.94) | 0.84 | 0.90 | 0.90 (0.50) | 0.99 |
   gemma-2-2b answers zero-shot far more often (greedy-correct zs1 0.77 vs 0.13 for Qwen-3B).
+
+### Phase 4 full run crashed at pair 9/12 (~58 min lost), fixed
+- `S.score([])` raised (torch.cat on empty list): pair 9 had no clean-valid held-out cities for one template.
+  Fix: `score()` returns empty tensors for empty input. Nothing was saved because the script only wrote at the end.
+  Fix: per-pair checkpoint `phase4_ladder.partial.json` with automatic resume (config must match). Relaunched.
+
+### Phase 3 (Qwen2.5-1.5B, bf16): hop separation, 12 pairs, n=42 held-out source cities (fs1)
+HOP2 = capital flips to target AND STATE_Q still answers the source state. HOP2ho = same with STATE_Q_HO
+(wording never used in training). Grad layers 8/16/20; mean-diff at every listed layer.
+| method | L | flip fs1 | state kept | HOP2 [CI] | HOP2ho | abs(v) |
+|---|---|---|---|---|---|---|
+| md_city (naive) | 8 | 0.88 | 0.05 | 0.02 [0.00,0.12] | 0.02 | 39 |
+| md_city | 16-20 | 0.86-0.88 | 0.02 | 0.02 | 0.02 | 37-46 |
+| gradn_city (capped, no keep term) | 8 | 1.00 | 0.24 | 0.24 [0.13,0.39] | 0.19 | 39 |
+| gradn_city | 16 | 1.00 | 0.62 | 0.62 [0.47,0.75] | 0.57 | 37 |
+| gradn_city | 20 | 1.00 | 0.86 | 0.86 [0.72,0.93] | 0.76 | 46 |
+| **hop2n_city** (capped + keep-state term) | 8 | 0.98 | 1.00 | **0.98 [0.88,1.00]** | 0.93 | 39 |
+| **hop2n_city** | 16 / 20 | 1.00 | 1.00 | **1.00 [0.92,1.00]** | 0.93 / 1.00 | 37 / 46 |
+| grad_city (uncapped) | 8 / 16 / 20 | 1.00 | 0.00 / 0.07 / 0.14 | 0.00 / 0.07 / 0.14 | — | 470-515 |
+| md_final | 22 / 23 / 26 | 0.62 / 0.95 / 0.98 | 0.62 / 0.07 / 0.31 | 0.31 / 0.05 / 0.29 | 0.19 / 0.05 / 0.21 | 27-151 |
+| md_capital, perp_city | all | 0.00 | 1.00 | 0.00 | 0.00 | — |
+- **Hop separation is achievable, and only by a deliberate method.** A norm-capped vector at the city token,
+  trained to output the target capital while keeping the source state on the state question, reaches HOP2 0.98-1.00
+  (0.93-1.00 on the never-trained wording), at the same norm as mean-diff. Mean-diff never does (≤0.02).
+- **Naive capped gradient gets it partly "for free" at late layers** (0.24 at L8 -> 0.86 at L20). By L20 the
+  city-token vector trained on the capital objective increasingly carries the answer rather than the state.
+  So a hard tier (preserve_state) needs a **layer ceiling around 8** to keep naive gradient low (0.24) while the
+  careful method still works (0.98). At L16+ naive gradient is already 0.62-0.86.
+- **perp_city flips nothing.** Removing the state-question direction from the mean-diff vector removes the whole
+  effect, which supports Phase 2: the city-token mean-diff vector *is* the state variable.
+- md_capital (the " capital" token) never works at any layer: the state info is not routed through that token.
+- md_final (final token) works only after the handoff (L23+) and then also moves the state answer, since the same
+  final-token vector is applied to the state question.
+- Caveats: n=42 cities clustered in 12 pairs (3-6 cities each), so true uncertainty is wider than Wilson. The keep
+  term uses the *source* state label of dev cities (the agent would know it).
+
+### Phase 5 — Phase 1 on Qwen2.5-3B (36 layers) and gemma-2-2b (26 layers), 30 pairs each
+| model | mean-diff flip fs1 (best band) | ho_fs | band (flip ≥0.5 fs1) | handoff (A_final ≥0.5) | handoff / depth | random ctrl | shuffled ctrl max | transfer (plateau) |
+|---|---|---|---|---|---|---|---|---|
+| Qwen2.5-1.5B | 0.89 (L8-15) | — | L5-21 | L22 | 0.79 | ≤0.05 | 0.17 | 0.33 |
+| Qwen2.5-3B | 0.86 [0.78,0.91] n=105 (L12) | 0.77 | L8-30 | L31 | 0.86 | ≤0.01 | 0.29 (L18) | 0.33 |
+| gemma-2-2b | 0.91 [0.84,0.95] n=104 (L8) | 0.82 (L9) | L3-17 | L18 | 0.69 | 0.00 | 0.17 | 0.30-0.34 |
+- **Premise holds on all three models**, with the same shape: a mean-diff "state" direction at the city token over a
+  mid-layer band, ending exactly where full-residual patching at the final token takes over (the handoff).
+- Gemma computes the state early (flip 0.76 by L3) and hands off earlier as a fraction of depth (0.69 vs 0.79-0.86).
+- Transfer to third-state cities is ~0.3 in all three models: the vector is partly "target" and partly "not-source".
+- Qwen-3B shuffled control peaks at 0.29 (L18, one layer); elsewhere ≤0.14. Same explanation as 1.5B (unbalanced
+  random splits carry a scaled copy of the real vector); still unverified against group composition.

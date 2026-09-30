@@ -143,6 +143,9 @@ class Subject:
         exact score in the batch (or when it is listed in `exact`, or exact=True for all).
         Unevaluated entries hold the (upper-bound) first-token log-prob.
         Returns scores [B,C] (cpu), [final log-probs [B,V]], captures."""
+        if not encs:  # e.g. a pair with no clean-valid held-out cities for one template
+            e = torch.zeros(0, len(cands))
+            return (e, torch.zeros(0, self.model.config.vocab_size), {}) if return_logp else (e, {})
         toks = self.cand_tokens(cands)
         force = set(range(len(cands))) if exact is True else {cands.index(c) for c in (exact or [])}
         all_scores, all_logp, caps = [], [], {}

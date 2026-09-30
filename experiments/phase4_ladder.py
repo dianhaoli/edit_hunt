@@ -17,11 +17,12 @@ Specificity: third-state leakage (other states' test cities -> target capital / 
 KL at final token on generic sentences (vector at token 3) and on COUNTRY_Q,
 state-belief change on STATE_Q."""
 import sys; sys.path.insert(0, __import__("os").path.dirname(__file__) + "/..")
+import json
 import time
 
 import torch
 
-from edithunt.common import base_args, save, seed_all, valid_table
+from edithunt.common import base_args, rdir, save, seed_all, valid_table
 from edithunt.data import CAPITALS, CITIES, COUNTRY_CANDS, COUNTRY_Q, GENERIC_SENTENCES, STATE_Q, STATES, TEMPLATES
 from edithunt.hooks import Intervention
 from edithunt.instances import eligible_states, pick_pairs, split
@@ -58,8 +59,18 @@ def resid_mean(cities, tn, L_list, which="city_last"):
     return {L: v.mean(0) for L, v in S.resid(encs, L_list, which).items()}
 
 
-rows = []
+# per-pair checkpoint: a crash late in the run (pair 9 of 12, 2026-09-30) used to lose everything
+ckpt = rdir(args.model) / "phase4_ladder.partial.json"
+cfg = vars(args) | {"pairs": pairs}
+rows, done = [], set()
+if ckpt.exists():
+    c = json.loads(ckpt.read_text())
+    if c["config"] == json.loads(json.dumps(cfg)):
+        rows, done = c["rows"], set(c["done"])
+        print(f"resuming: {len(done)} pairs done", flush=True)
 for pi, (src, tgt) in enumerate(pairs):
+    if pi in done:
+        continue
     dev_s_all, test_s = split(V, src, args.seed)
     dev_t_all, _ = split(V, tgt, args.seed)
     test_encs = {tn: [S.encode(TEMPLATES[tn], x) for x in test_s if V[tn][x]] for tn in evalT}
@@ -148,6 +159,8 @@ for pi, (src, tgt) in enumerate(pairs):
         sc, _ = S.score(encs, caps, bs=args.bs)
         rows.append(dict(cls="C4", L=-1, ndev="none", pos="prompt", pair=f"{src}->{tgt}", T=tn,
                          **{f"flips_{tn}": [caps[i] == CAPITALS[tgt] for i in sc.argmax(1).tolist()]}))
+    done.add(pi)
+    ckpt.write_text(json.dumps({"config": cfg, "done": sorted(done), "rows": rows}, default=float))
     print(f"pair {pi} {src}->{tgt} done, {len(cands)} candidates [{time.time()-t0:.0f}s]", flush=True)
 
 # aggregate: per (cls, L, ndev, pos)

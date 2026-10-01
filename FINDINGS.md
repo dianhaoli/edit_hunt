@@ -197,3 +197,130 @@ not shown to the agent.
   with almost no passing settings.
 - All: ≥ 10 held-out items per instance; decoy held-out cities (refusals currently reveal which cities are
   private); leakage measured against the clean prediction at grade time.
+
+## 11. T2 as RAVEL-style RL env (T2_keepstate v2; Qwen2.5-1.5B; no agent spend)
+**Framing.** T2 is rebuilt as an RL-environment version of RAVEL (Huang et al., ACL 2024) with MIB's RAVEL-track
+convention (fixed intervention site: the entity's last token at a layer given per instance). Entity = a US city;
+attribute to change = its state's capital (Cause, held-out cities x held-out wordings); attributes that must not
+change = the city's state (Iso_state: held-out state question AND a hidden postal-abbreviation readout) and other
+states' cities' capitals (Iso_other: >= 12 private cities sampled at grade time from a large pool, compared with
+the clean prediction, bf16 near-ties < 0.1 nats dropped). Code: `edithunt/env/ravel.py` (grader v2; v1 kept),
+tools give a generic "not accessible" refusal and the private set includes decoy cities. >= 10 held-out source
+cities per instance required an extended city list (`data.CITIES_EXTRA`, T2 v2 only).
+
+**1. The plan's reward did not discriminate.** With Disentangle = (Cause + Iso)/2, a zero edit scores exactly 0.5
+(Cause 0, Iso 1) and "flip everything" scores ~0.5 (Cause 1, Iso 0). First 4 pairs, L6-20: null 0.50, random
+0.44-0.47, mean-diff 0.43-0.52, naive gradient 0.04-0.63, plan's oracle 0.56. Pass >= 0.5 passes the null edit.
+We switched to the product reward **R = Cause x Iso_state x Iso_other x (1 - min(1, KL_mean))**: null = 0.
+
+**2. A single additive vector cannot isolate (structural).** The plan's oracle (norm-capped vector, target NLL +
+keep-state + keep-own-capital, 150 steps) reached Cause ~0.4-0.56, Iso_state ~0.7, Iso_other ~0.6. Loosening the
+norm cap changed nothing (the trained norm stays 1.23-1.38 x |mean-diff|, the cap never binds); heavier keep terms
+or extra state wordings raise Iso_state to 0.86-0.93 but drop Cause to 0.12-0.16. Iso_other stays 0.5-0.7 in every
+variant: one fixed vector added to every city moves other states' cities too. RAVEL avoids this by construction
+(interchange interventions depend on the base entity).
+
+**3. A gated (conditional) edit is the existence proof.** x <- x + clamp((k.x - b)/w, 0, 1) v at the city's last
+token: k = unit(mean dev source - mean accessible other-state cities), the ramp b..b+w placed 30%-60% of the way
+between the two group means (other states project ~0, source cities ~25), only v trained (a learned threshold
+overfit to the 4 dev cities: held-out activations 2-6 vs dev ~20, Cause 0). Isolation becomes ~perfect everywhere
+(Iso_state >= 0.71, Iso_other >= 0.94, mostly 1.00 over 16 runs); Cause is the limit and is pair- and
+layer-dependent (Alabama->Maryland L20 0.92-0.96, Indiana->New Mexico L8-16 0.89-0.95, California->Idaho <= 0.52).
+
+**Fit on dev data only (step 2).** The gate direction k, threshold b and ramp w come from the 4 public dev cities
+(fs1, zs1) and accessible keep cities of 8 other states (disjoint from the Iso pool states); v is trained on the
+dev cities (target capital), the visible STATE_Q on dev cities (keep state) and the keep cities (keep own
+capital). Held-out source cities, private wordings (ho_fs, ho_zs, STATE_Q_HO, abbreviation readout) and the Iso
+pool are never used; `train_gated` asserts this at run time (`held-out leak`).
+
+**Grader fix (step 1, decided before any agent run).** The country term now counts binary KL on P(US) only where
+the edit LOWERS P(US), over held-out cities whose name is not also a well-known non-US place (`data.AMBIG_NONUS`).
+Reason: on Colorado->Idaho L20 the gated edit (Cause 0.87, Iso 1/1) had KL_mean 0.63, all from the country probe
+(1.26; generic 0.002), because it moved Colorado cities from P(US) 0.63 to 0.93 (Durango, Pueblo are also Mexican
+places), i.e. toward the correct answer. All 123 earlier runs were regenerated (122/123 reproduce Cause/Iso
+exactly; 1 random-vector run differs by 0.06 on Iso_other) and re-graded (`results/suite/t2_ravel/regrade_summary.json`):
+
+| method (runs) | KL old -> new | mean R old -> new | max R old -> new | R >= 0.6 old -> new |
+|---|---|---|---|---|
+| gated oracle (27) | 0.202 -> 0.096 | 0.46 -> 0.53 | 0.86 -> 0.91 | 8 -> 12 |
+| additive oracle (14) | 0.224 -> 0.162 | 0.17 -> 0.19 | 0.34 -> 0.36 | 0 -> 0 |
+| naive gradient capped (16) | 0.242 -> 0.178 | 0.07 -> 0.08 | 0.28 -> 0.34 | 0 -> 0 |
+| naive gradient uncapped (15) | 0.412 -> 0.359 | 0.01 -> 0.01 | 0.07 -> 0.07 | 0 -> 0 |
+| mean-diff (17) | 0.047 -> 0.024 | 0.01 -> 0.01 | 0.03 -> 0.03 | 0 -> 0 |
+| random (17) / null (17) | 0.03 / 0 | 0.00 | 0.00 | 0 |
+
+**Recipe choice on dev data only.** Default gated (150 steps, fs1+zs1) vs boosted (300 steps, + fs2/zs2), scored
+leave-one-dev-city-out (held dev city's capital and visible state answer, unused accessible other-state cities,
+KL on agent-visible generic sentences): 16 comparisons (4 tuning pairs x L8/12/16/20), boosted better 0, default
+better 7, tied 9; mean proxy 0.377 vs 0.260 (boosted raises KL). Fixed recipe: default gated.
+
+**Validity bar.** Instance valid = oracle R >= 0.6 on >= 2 of 3 seeds at its layer (fixed before step-3 oracle
+results; the best of 82 shortcut runs is 0.34). 0.5 and 0.7 reported for sensitivity.
+
+**Step 3: validation on fresh pairs** (`experiments/t2_validate.py`, `results/suite/t2_ravel/validate_summary.json`).
+20 pairs were drawn (none of them a tuning pair; 9 candidates skipped for < 4 usable target/dev cities, mostly
+West Virginia / Georgia targets and Missouri as source). Shortcuts ran on all 20 pairs x L{8,12,16,20}; the oracle
+(default gated recipe, 3 seeds, seed = which accessible keep cities + init noise) ran on 10 of them (the user chose
+to stop after half: the answer was clear). Seeds agree closely (e.g. 0.70/0.70/0.68).
+
+| layer | valid @0.6 (oracle R >= 0.6 on >= 2/3 seeds) | oracle mean R / Cause / Iso_state / Iso_other / KL (all 30 runs) |
+|---|---|---|
+| 8 | 2/10 | 0.35 / 0.40 / 0.90 / 0.96 / 0.06 |
+| 12 | 0/10 | 0.27 / 0.31 / 0.88 / 0.98 / 0.13 |
+| 16 | 4/10 | 0.53 / 0.66 / 0.93 / 0.95 / 0.16 |
+| 20 | 5/10 | 0.63 / 0.79 / 0.93 / 0.93 / 0.09 |
+| all | **11/40 = 27.5% (Wilson 95% CI 16-43%)**; @0.5: 19/40, @0.7: 9/40 | |
+
+On the 11 valid instances the oracle averages R 0.69-0.84 (Cause 0.77-0.93, Iso ~0.95, KL <= 0.03) and **every
+shortcut passes 0** (null, random, mean-diff, naive gradient capped and uncapped). Over all 400 shortcut runs (20
+pairs) none reaches 0.6; the best is 0.51 (naive capped gradient, Oregon->Idaho L12: Cause 0.88, Iso_state 0.86,
+Iso_other 0.73), which is why the bar is 0.6 and not 0.5. Shortcut profiles: mean-diff flips (Cause ~0.8) but moves
+the state (Iso_state 0.00) and other cities (Iso_other ~0.35); naive gradient flips everything (Cause 0.9-1.0) and
+breaks both Iso terms; random/null change nothing (Cause 0).
+
+**Verdict.** The task is possible (an offline gated edit solves it with near-perfect isolation, and no shortcut
+comes close), but the oracle validates only ~28% of instances (50% at L20), below the 60% target. The bottleneck
+is Cause: held-out source cities that the dev-fitted edit does not flip. Validity is pair-dependent more than
+seed-dependent (e.g. Minnesota->Tennessee, North Carolina->Virginia pass at L16-20; Colorado->New Jersey fails at
+every layer). If T2 v2 is used now, use only validated (pair, layer) instances and prefer L16-20.
+
+**Why Cause is limited (option 3; diagnosed on the 4 tuning pairs only, never on validation pairs).**
+Per held-out item, the gate value and the effect with the gate forced open (`experiments/t2_cause_diag.py`):
+- *Late layers: the push works, the gate does not open.* At L20, forcing the gate open gives Cause 0.96-1.00 on all
+  4 pairs (California->Idaho: Cause 0.50, gate fully open on only 9/42 items, 1.00 if forced open).
+- *Early/mid layers: the push itself does not generalise.* Alabama L8/12 and Colorado L8-16: Cause ~0.4-0.5 even
+  with the gate open (the layer effect seen throughout).
+So at late layers the bottleneck is recognising held-out source cities from 4 dev cities. Dev-only attempts to
+improve the detector, none of which helped:
+
+| detector (fit on dev + accessible cities only) | held-out dev city opens | unused other-state cities stay closed |
+|---|---|---|
+| mean-difference key, current ramp (30-60% of the gap) | 0.38 | 0.91 |
+| same, ramp 10-30% / 5-20% | 0.95 / 0.99 | 0.54 / 0.40 |
+| mean-difference key, threshold at others' mean + 2-4 sd | 0.33 | 0.96 |
+| LDA key (shrunk covariance of other-state cities) | 1.00 | 0.55-0.80 (overfits the fit half) |
+| multi-class state probe (logistic, 3 source examples) | 0.01-0.31 | 0.99-1.00 |
+| logit lens: source state's name top among 50 states | 0.00-0.16 (the state is not readable as a word at the city token) | |
+
+Effect-based check of lower ramps with v trained (`experiments/t2_ramp_effect.py`, leave-one-dev-city-out, 16
+comparisons each): ramp 30-60% proxy 0.585 (cause 0.69, other 0.96); 20-45% 0.569 (0.81, 0.87); 15-35% 0.551
+(0.84, 0.80). Lower thresholds trade isolation for Cause about one for one, so the ramp is unchanged.
+**Conclusion:** with one edit site and a detector fitted from 4 public dev cities, ~28% of instances validate
+(~50% at L20). Raising it needs more information about the source state than 4 cities give: more public dev
+cities per source (needs >= 18 usable cities per state, i.e. more data), or validating instances per (pair, layer)
+and keeping only those (what step 3 does).
+
+**Step 4 (proposal, not implemented): how an agent builds a gated edit from primitive tools.** No named "gated"
+option; instead two generic primitives that also cover ordinary steering:
+1. A read-only `project(register, template, cities, layer)` tool returning k.h at the city's last token (h = the
+   residual after `layer`), so the agent can see how a candidate key separates source cities from others and pick
+   a threshold. The key itself is built with existing tools (cache_mean on dev source vs other-state cities,
+   vec_op difference).
+2. An optional input-dependent scale on any additive edit: `scale_from = {key: register, lo: float, hi: float}`
+   meaning scale = clamp((k.h - lo)/(hi - lo), 0, 1) (constant scale when absent). The same field in
+   `optimize_vector` lets the agent train v with the gate fixed. Wide lo/hi gives a linear rank-one (ROME-like)
+   edit v (k.h); a constant key gives the current additive edit, so the primitive is not a disguised solution.
+Grader: validate the key's shape/finiteness and lo < hi; KL is measured as now, so a gate that opens on unrelated
+text is penalised. Rejected alternatives: firing only on a listed set of cities (the agent would tell the grader
+which cities are the source; it must generalise to held-out cities from activations), and an MLP weight edit
+(linear in h; isolation then needs centring so other cities read ~0, weaker than a clamp).

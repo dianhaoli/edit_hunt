@@ -190,6 +190,13 @@ class ToolEnv:
         self._private_tpls = set(private_tpls)
         self._held_tpl = [re.compile(".*".join(re.escape(_norm(p)) for p in t.split("{city}")), re.S) for t in private_tpls]
         self.templates = dict(inst.dev_templates) | {"state_q": STATE_Q, "country_q": COUNTRY_Q}
+        # T2 v2 (env/ravel.py): one generic refusal for every private city/template (the private set includes decoy
+        # cities, so refusals do not reveal the Iso pool); extended city list for span detection in raw prompts
+        self._generic = bool(inst.constraints.get("generic_refusal"))
+        self._all_cities = ALL_CITIES
+        if getattr(inst, "extra", {}).get("extended_cities"):
+            from ..data import CITY2STATE_EXT
+            self._all_cities = sorted(CITY2STATE_EXT, key=len, reverse=True)
         # no target capital in tasks where it is unknown (erase) or secret (detective)
         self.tgt_cap = inst.target_capital if self.task not in ("detective", "erase") and inst.target_capital else None
         pl = getattr(inst, "extra", {}).get("plant")
@@ -235,13 +242,16 @@ class ToolEnv:
             raise ToolError(f"forward-pass budget exceeded (need {n}, left {self.budget - self.used})")
         self.used += n
 
+    def _refuse(self, msg: str):
+        raise ToolError("not accessible" if self._generic else msg)
+
     def _template(self, t: str) -> str:
         if t in self.templates:
             return self.templates[t]
         if not isinstance(t, str) or "{city}" not in t:
             raise ToolError("template must be a known key or a string containing '{city}'")
         if t in self._private_tpls or any(p.fullmatch(_norm(t)) for p in self._held_tpl):
-            raise ToolError("that template is held out")
+            self._refuse("that template is held out")
         return t
 
     def _cities(self, cs) -> list[str]:
@@ -253,7 +263,7 @@ class ToolEnv:
             raise ToolError("cities must be strings")
         bad = [c for c in cs if _letters(c) in self._held]
         if bad:
-            raise ToolError(f"held-out cities are not accessible: {bad}")
+            self._refuse(f"held-out cities are not accessible: {bad}")
         return list(cs)
 
     def _check_text(self, s: str):
@@ -261,9 +271,9 @@ class ToolEnv:
             raise ToolError("prompts must be strings")
         s = _norm(s)
         if any(r.search(s) for r in self._held_re):
-            raise ToolError("prompt mentions a held-out city")
+            self._refuse("prompt mentions a held-out city")
         if any(p.fullmatch(s) for p in self._held_tpl):
-            raise ToolError("prompt matches a held-out template")
+            self._refuse("prompt matches a held-out template")
 
     def _encs(self, template: str, cities) -> list:
         t = self._template(template)
@@ -279,7 +289,7 @@ class ToolEnv:
         out = []
         for p in prompts:
             self._check_text(p)
-            ms = [(c, x) for c in ALL_CITIES
+            ms = [(c, x) for c in self._all_cities
                   for x in re.finditer(r"(?<![A-Za-z])" + re.escape(c) + r"(?![A-Za-z])", p)]
             # drop matches nested in a longer one ("Bend" inside "South Bend"), then take the last-mentioned city
             ms = [(c, x) for c, x in ms if not any(y.start() <= x.start() and x.end() <= y.end() and
@@ -328,6 +338,12 @@ class ToolEnv:
             raise ToolError(f"position must be one of {POSITIONS}")
         return p
 
+    def _site(self, L: int, pos: str):
+        """T2 v2: edits only at the instance's intervention site (constraints['layer'], city_last)."""
+        c = self.inst.constraints
+        if c.get("layer") is not None and (L != c["layer"] or pos not in c["positions"]):
+            raise ToolError(f"edits are only allowed at layer {c['layer']}, position {c['positions'][0]}")
+
     def _edits(self, edits: list[dict]) -> list[tuple]:
         """Tool-side edits: {"register", "layer", "position", "scale"} (add) or
         {"basis": [registers], "center": register?, "layer", "position"} (projection)."""
@@ -336,6 +352,7 @@ class ToolEnv:
         out = []
         for e in edits:
             L, pos = self._layer(e["layer"]), self._pos(e.get("position", "city_last"))
+            self._site(L, pos)
             if self.inst.constraints.get("edit_kind", "add") == "proj" or ("basis" in e and "register" not in e):
                 B = torch.stack([self._reg(b) for b in e["basis"]]) if e["basis"] else None
                 if B is None or len(B) > 64:
@@ -542,6 +559,7 @@ class ToolEnv:
         lr is relative: step ~ lr*|resid|/sqrt(d)."""
         self._name(name)
         L, pos = self._layer(layer), self._pos(position)
+        self._site(L, pos)
         steps = int(steps)
         if not 1 <= steps <= 500:
             raise ToolError("steps must be in [1, 500]")

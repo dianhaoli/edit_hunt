@@ -662,3 +662,33 @@ Reading for the write-up (proposed, not applied: no task tuning after Claude res
   pass; Colorado→Oregon 30+/50). Redesign: absolute norm or fixed layer, ≥10 held-out items, multi-variant r_ref.
 - Across tasks: 3–16 held-out items per instance, n = 7–8; several outcomes within one item of the line. Sonnet
   clearly beats zero-effort scripts only on T2 (1/7 vs 0/7, not significant) and T6 (7/8 vs 6/8 post-hoc prior).
+
+## T2 v2 (RAVEL-style) — 2026-10-01, Qwen2.5-1.5B, no agent spend
+Full write-up: FINDINGS §11. Sequence: plan's averaged Disentangle reward gives the null edit 0.5 -> product reward
+(Cause x Iso_state x Iso_other x KL factor). Additive single-vector oracle cannot isolate (Iso_other 0.5-0.7 in
+every variant; norm cap never binds). Gated edit (hooks kind "gate") isolates ~perfectly. Country-KL fix (only P(US)
+decreases; AMBIG_NONUS excluded) decided before agent runs; 123 earlier runs regenerated (122 exact) and re-graded.
+Dev-only recipe choice: default gated beat boosted 7-0 (9 ties). Bar 0.6 (best shortcut 0.51 at 400 runs).
+Step 3, 10 fresh pairs x 4 layers x 3 seeds: 11/40 valid (L8 2, L12 0, L16 4, L20 5); every shortcut passes 0.
+Cause diagnosis (tuning pairs only): at L20 forcing the gate open gives Cause 0.96-1.00, so the gate's recognition of
+held-out source cities from 4 dev cities is the bottleneck; 5 dev-only detector variants did not fix it.
+Shared GPU note: another Claude session's job (~6.5 GB) ran concurrently; two of our jobs OOM-crashed and were
+resumed (rows are append-only and keyed, nothing lost). Oracle shard 1 (10 more pairs) skipped by user decision.
+Scripts: experiments/t2_{ravel,oracle_search,gated,gated_boost,regrade,recipe_select,validate,cause_diag,
+ramp_select,gate_select,probe_gate_select,lens_gate_select,ramp_effect}.py; results under results/suite/t2_ravel/.
+
+Key results (product reward R = Cause x Iso_state x Iso_other x KL factor; instance valid = oracle R >= 0.6 on >= 2/3 seeds):
+
+| layer | valid (10 fresh pairs) | oracle mean R / Cause / Iso_state / Iso_other / KL |
+|---|---|---|
+| 8  | 2/10 | 0.35 / 0.40 / 0.90 / 0.96 / 0.06 |
+| 12 | 0/10 | 0.27 / 0.31 / 0.88 / 0.98 / 0.13 |
+| 16 | 4/10 | 0.53 / 0.66 / 0.93 / 0.95 / 0.16 |
+| 20 | 5/10 | 0.63 / 0.79 / 0.93 / 0.93 / 0.09 |
+| all | 11/40 = 27.5% (Wilson 16-43%); @0.5 19/40, @0.7 9/40 | |
+
+Shortcuts (400 runs, 20 pairs): none >= 0.6 (best 0.51); on the 11 valid instances every shortcut passes 0.
+Verdict: possible (offline gated edit, near-perfect isolation, no shortcut close) but only ~28% of instances
+validate (~50% at L20) vs the 60% target. Bottleneck: recognising held-out source cities from 4 dev cities (at L20
+the push alone gives Cause 0.96-1.00 if the gate is forced open). Next levers: more public dev cities per state
+(more city data), or ship only the validated (pair, layer) instances, preferring L16-20.

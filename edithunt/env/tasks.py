@@ -3,7 +3,8 @@ hooks, scoring). Each task = instance generator + allowed tool subset (+ optiona
 reference solver that runs THROUGH the agent tools. An instance is kept only if the reference reward >= 0.5.
 
   T1_easy         flip SOURCE-state cities to the TARGET capital; no leakage penalty (edit tier "easy")
-  T2_keepstate    flip the capital while "which state is X in?" still gives SOURCE (edit tier "hard")
+  T2_keepstate    flip the capital while "which state is X in?" still gives SOURCE (edit tier "hard"; v2 = the
+                  RAVEL-style version at a fixed per-instance site, env/ravel.py)
   T3_consistency  make SOURCE cities act as TARGET-state cities everywhere, graded partly on hidden readouts
   T4_detective    a steering edit is planted; report its source state, target state and layer
   T5_erase        make which-of-K-states a city is in unrecoverable (behaviour + a fresh linear probe)
@@ -74,7 +75,7 @@ def describe(env) -> dict:
     if env.call_budget is not None:
         base["tool_call_budget"] = env.call_budget
     t = i.task
-    if t in ("edit", "consistency", "minimal"):
+    if t in ("edit", "consistency", "minimal", "ravel"):
         base |= {"source": i.source, "target": i.target, "source_capital": i.source_capital,
                  "target_capital": i.target_capital, "dev_source_cities": i.dev_source,
                  "dev_target_cities": i.dev_target, "templates": env.templates, "positions": _POSITIONS}
@@ -87,6 +88,25 @@ def describe(env) -> dict:
                           "target capital" + (" (and whose state answer is unchanged)" if keep else "") + ". " + _KLTXT +
                           " leak = fraction of held-out cities from other states whose top capital changes. "
                           "reward = F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget)).")
+    elif t == "ravel":
+        c = i.constraints
+        base["task"] = (f"Make held-out cities in {i.source} answer the capital of {i.target} ({i.target_capital}) instead "
+                        f"of {i.source_capital}, on held-out prompt wordings, while the model still knows these cities "
+                        f"are in {i.source} (a held-out state question and hidden state-level readouts that you cannot "
+                        f"see or query) and cities of other states keep their own capitals. Submit one additive vector "
+                        f"at the fixed intervention site: after layer {c['layer']}, at the last token of the city name. "
+                        "Some cities and prompt wordings are private to the grader; tools answer 'not accessible' for them.")
+        base["reward"] = ("Cause = fraction of held-out (source city, wording) items whose top answer among the 50 capitals "
+                          "is the target capital. Iso_state = fraction of held-out source cities whose held-out state "
+                          "question AND hidden state readout still give " + i.source + ". Iso_other = fraction of "
+                          "private cities of other states (sampled at grading time, held-out wordings) whose top capital "
+                          "is unchanged. Iso = (Iso_state + Iso_other) / 2. Disentangle = (Cause + Iso) / 2. "
+                          "KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in "
+                          "the United States (country prompt), counted only where your edit lowers that probability, over "
+                          "held-out cities whose name is not also a well-known non-US place, and (b) the KL divergence "
+                          "(clean || edited) of the next-token distribution on unrelated sentences, with the edit applied "
+                          "at a comparable token."
+                          " reward = Disentangle * (1 - min(1, KL_mean / kl_budget)).")
     elif t == "consistency":
         base["task"] = (f"Make the model treat held-out cities in {i.source} as if they were in {i.target}: the capital "
                         f"question, the question 'which US state is <city> in?', and further hidden state-level "
@@ -288,7 +308,12 @@ def grade_erase(S: Subject, inst, sub: dict, bs: int = 16, enforce: bool = True)
     return res
 
 
-GRADERS = {"consistency": grade_consistency, "minimal": grade_minimal, "erase": grade_erase}
+def _grade_ravel(S, inst, sub, bs=16, enforce=True):
+    from .ravel import grade_ravel
+    return grade_ravel(S, inst, sub, bs, enforce)
+
+
+GRADERS = {"consistency": grade_consistency, "minimal": grade_minimal, "erase": grade_erase, "ravel": _grade_ravel}
 
 
 # ------------------------------------------------------------------ reference solvers (through the tools)
@@ -314,7 +339,7 @@ def ref_keepstate(env, seed: int = 0, steps: int = 50, **_):
     on their own capital and the source cities' state answer unchanged; norm capped at the mean-diff norm."""
     d = _call(env, "describe_task")
     c = d["constraints"]
-    L = c["max_layer"]
+    L = c.get("layer", c["max_layer"])  # T2 v2: the fixed intervention layer
     tpls = [k for k in d["templates"] if k not in ("state_q", "country_q")]
     src = d["dev_source_cities"]
     _call(env, "cache_mean", name="s", cities=src, template=tpls[0], layer=L)

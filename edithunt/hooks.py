@@ -17,7 +17,7 @@ class Intervention:
     layer: int
     # list (len B) of lists of *unpadded* positions; converted at apply time
     positions: list[list[int]]
-    kind: str  # "add" | "set" | "swap" | "proj"
+    kind: str  # "add" | "set" | "swap" | "proj" | "gate"
     # add: vec [d] or [B,d];  set: [d], [B,d] or [B,npos,d];  swap: (U [d,k], target coords [B,k])
     # proj: (U [d,k] orthonormal, center [d] or None): x <- x - ((x - center) @ U) @ U.T
     payload: object = None
@@ -66,6 +66,9 @@ def _apply(h: torch.Tensor, iv: Intervention, offsets: torch.Tensor) -> torch.Te
         U = U.to(dev, h.dtype); tgt = tgt.to(dev, h.dtype)
         tgt = tgt[r] if tgt.dim() == 2 else tgt
         new = x + (tgt - x @ U) @ U.T
+    elif iv.kind == "gate":  # gated key->value edit (T2 v2 oracle): x + clamp((k.x - b) / w, 0, 1) * v
+        k, b, w, v = (t.to(dev, h.dtype) for t in iv.payload)
+        new = x + ((x @ k - b) / w).clamp(0, 1).unsqueeze(-1) * v
     elif iv.kind == "proj":
         U, ctr = iv.payload
         U = U.to(dev, h.dtype)

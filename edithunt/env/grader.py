@@ -67,6 +67,8 @@ def check(sub: dict, cons: dict, d_model: int, n_layers: int) -> tuple[list[Edit
             L, pos, sc = e["layer"], e["position"], float(e.get("scale", 1.0))
             if not isinstance(L, int) or isinstance(L, bool) or not 0 <= L <= min(cons["max_layer"], n_layers - 1):
                 return None, f"edit {i}: layer {L!r} outside [0, {cons['max_layer']}]"
+            if cons.get("layer") is not None and L != cons["layer"]:  # fixed intervention site (T2 v2, RAVEL/MIB)
+                return None, f"edit {i}: layer must be {cons['layer']} (the task's intervention site)"
             if pos not in cons["positions"]:
                 return None, f"edit {i}: position {pos!r} not in {cons['positions']}"
             if kind == "proj":

@@ -310,7 +310,21 @@ comparisons each): ramp 30-60% proxy 0.585 (cause 0.69, other 0.96); 20-45% 0.56
 cities per source (needs >= 18 usable cities per state, i.e. more data), or validating instances per (pair, layer)
 and keeping only those (what step 3 does).
 
-**Step 4 (proposal, not implemented): how an agent builds a gated edit from primitive tools.** No named "gated"
+**Tool path (step 4 implemented, 2026-10-01).** Two generic primitives, enabled only for T2 v2 instances
+(`allow_scale_from`): a read-only `project(register, cities, template, layer)` tool (dot of a register with the
+residual), and an optional `scale_from {key, lo, hi}` on additive edits (eval_intervention, optimize_vector,
+submit; grader `check`): the edit becomes vector * clamp((key.h - lo)/(hi - lo), 0, 1). A reference that builds the
+gated edit only through agent tools (`tasks.ref_ravel_gated`: cache_mean -> vec_op key -> project for the ramp ->
+optimize_vector with scale_from, 16 extra examples -> submit; 3,648 of 12,000 forward passes) reaches R 0.49-0.91
+(mean 0.74) on the 11 oracle-validated instances vs the offline oracle's 3-seed mean 0.65-0.93 (mean 0.80); it
+passes 10/11 (fails Wisconsin->Mississippi L8, 0.49). The largest gaps (NC->Kentucky L20 0.70 vs 0.93, NC->Virginia
+L20 0.61 vs 0.74) come with lower Iso_state (0.75, 0.67); a plausible but untested cause is the tool's 16-example cap
+(oracle: 36 keep prompts). The 10 instances passing both are saved as the pilot set
+(`results/suite/instances/T2_keepstate_v2`). **Agent pass criterion (fixed before any agent run):** pass = agent R >=
+0.9 x the tool-path reference's R on that instance; the continuous R and R / R_ref are reported alongside. `verify_references.py`: 51/51 references reproduce (41 earlier tasks
+unchanged; 10 T2 v2 within bf16 tolerance).
+
+**Step 4 (design; implemented as above): how an agent builds a gated edit from primitive tools.** No named "gated"
 option; instead two generic primitives that also cover ordinary steering:
 1. A read-only `project(register, template, cities, layer)` tool returning k.h at the city's last token (h = the
    residual after `layer`), so the agent can see how a candidate key separates source cities from others and pick

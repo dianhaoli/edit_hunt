@@ -59,8 +59,8 @@ MIN_TEST, N_DEV, N_ISO, MIN_MARGIN = 10, 4, 16, 0.1
 DEV_T = ["fs1", "zs1"]
 ABBR_T = READOUTS["abbr"][0]
 ABBRS = [ABBR[s] for s in STATES]
-CONS = dict(positions=["city_last"], max_rank=1, max_norm=None, kl_budget=1.0, fwd_budget=4000,
-            preserve_state=True, leak_weight=0.5, generic_refusal=True)
+CONS = dict(positions=["city_last"], max_rank=1, max_norm=None, kl_budget=1.0, fwd_budget=12000,
+            preserve_state=True, leak_weight=0.5, generic_refusal=True, allow_scale_from=True)
 _CLEAN: dict = {}  # (model, prompt, cands) -> exact clean scores [C]
 
 
@@ -195,7 +195,7 @@ def grade_ravel(S: Subject, inst, sub: dict | None, bs: int = 16, enforce: bool 
            "iso_other_to_target": rate(to_tgt), "iso_other_dropped_near_ties": len(oitems) - len(iso_other),
            "iso_cities": oc, "layer": inst.constraints.get("layer"),
            "formula": "reward = (Cause + (Iso_state + Iso_other)/2)/2 * (1 - min(1, KL_mean/kl_budget))",
-           "edits": edit_summary(edits) if not any(len(e) > 3 and e[3] in ("swap", "gate") for e in edits) else
+           "edits": edit_summary(edits) if not any(len(e) > 3 and e[3] == "swap" for e in edits) else
            [{"layer": e[0], "position": e[1], "kind": e[3] if len(e) > 3 else "add"} for e in edits]}
     # v1 aliases
     res |= {"flip": res["Cause"], "F": Cause, "F_keep": rate(f_keep), "state_kept": res["Iso_state"],

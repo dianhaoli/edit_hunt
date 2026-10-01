@@ -362,8 +362,24 @@ class ToolEnv:
                 c = self._reg(e["center"]) if e.get("center") else None
                 out.append((L, pos, (Q, c), "proj"))
             else:
-                out.append((L, pos, self._reg(e["register"]) * float(e.get("scale", 1.0))))
+                v = self._reg(e["register"]) * float(e.get("scale", 1.0))
+                g = self._scale_from(e.get("scale_from"))
+                out.append((L, pos, g[:2] + (g[2], v), "gate") if g else (L, pos, v))
         return out
+
+    def _scale_from(self, sf):
+        """{key: register, lo, hi} -> (key, lo, hi - lo) tensors, or None. Input-dependent scale of an additive
+        edit: clamp((key . h - lo) / (hi - lo), 0, 1), h = the residual being edited."""
+        if not sf:
+            return None
+        if not self.inst.constraints.get("allow_scale_from"):
+            raise ToolError("scale_from is not available in this task")
+        if not isinstance(sf, dict) or "key" not in sf or "lo" not in sf or "hi" not in sf:
+            raise ToolError("scale_from must be {key: register, lo: number, hi: number}")
+        lo, hi = float(sf["lo"]), float(sf["hi"])
+        if not (math.isfinite(lo) and math.isfinite(hi) and hi > lo):
+            raise ToolError("scale_from needs finite lo < hi")
+        return (self._reg(sf["key"]), torch.tensor(lo), torch.tensor(hi - lo))
 
     def _cands(self, answers: str) -> list[str]:
         if answers not in ("capitals", "states"):
@@ -478,6 +494,16 @@ class ToolEnv:
         return {"registers": [f"{name}_L{L}" for L in ls], "n": len(encs),
                 "norms": [_r(A[L].mean(0).norm(), 2) for L in ls]}
 
+    def t_project(self, name: str, cities: list[str], template: str, layer: int, position: str = "city_last") -> dict:
+        """Per city: dot(register, residual after `layer` at `position`) (city_all: mean over city tokens)."""
+        k = self._reg(name)
+        L, pos = self._layer(layer), self._pos(position)
+        encs = self._encs(template, cities)
+        self._spend(len(encs))
+        x = self._acts(encs, [L], pos, "planted")[L] @ k
+        return {"register": name, "layer": L, "values": {e.city: _r(v, 3) for e, v in zip(encs, x.tolist())},
+                "mean": _r(x.mean(), 3), "sd": _r(x.std(), 3) if len(x) > 1 else 0.0}
+
     def t_act_diff(self, template: str, cities: list[str], layer: int | None = None, position: str = "city_last",
                    layers: list[int] | None = None, name: str | None = None) -> dict:
         """planted - clean residual per city (norm, and relative to the clean residual norm)."""
@@ -551,7 +577,7 @@ class ToolEnv:
     def t_optimize_vector(self, name: str, layer: int, position: str = "city_last", dev_cities: list[str] | None = None,
                           templates: list[str] | None = None, steps: int = 50, kl_weight: float = 0.0,
                           init: str | None = None, lr: float = 0.05, max_norm: float | None = None,
-                          extra_examples: list[dict] | None = None) -> dict:
+                          extra_examples: list[dict] | None = None, scale_from: dict | None = None) -> dict:
         """Adam on an additive vector v (added at `layer`/`position` of every training prompt). Loss =
         mean NLL of the target capital's first token on dev_cities x templates (edit tasks only)
         + sum over extra_examples of weight * NLL(first token of ' ' + answer) on that (template, city) prompt
@@ -560,6 +586,7 @@ class ToolEnv:
         self._name(name)
         L, pos = self._layer(layer), self._pos(position)
         self._site(L, pos)
+        gate = self._scale_from(scale_from)
         steps = int(steps)
         if not 1 <= steps <= 500:
             raise ToolError("steps must be in [1, 500]")
@@ -609,19 +636,20 @@ class ToolEnv:
                 rn = st.captures[L].norm(dim=-1).mean().item()
                 for g in opt.param_groups:
                     g["lr"] = lr * rn / math.sqrt(self.S.d_model)
+            ivv = (lambda ps: Intervention(L, ps, "gate", gate + (v,))) if gate else (lambda ps: Intervention(L, ps, "add", v))
             if encs:
-                lp, *_ = self.S.forward(encs, self._plant_ivs(encs) + [Intervention(L, pos_rule(encs, pos), "add", v)], grad=True)
+                lp, *_ = self.S.forward(encs, self._plant_ivs(encs) + [ivv(pos_rule(encs, pos))], grad=True)
                 nll = -lp[:, tok].mean()
                 loss = loss + nll
                 rec["p_target"] = nll
                 rec["hit"] = lp[:, cap_first].argmax(1) == CAPS.index(self.tgt_cap)
             if xencs:
-                lx, *_ = self.S.forward(xencs, self._plant_ivs(xencs) + [Intervention(L, pos_rule(xencs, pos), "add", v)], grad=True)
+                lx, *_ = self.S.forward(xencs, self._plant_ivs(xencs) + [ivv(pos_rule(xencs, pos))], grad=True)
                 px = lx[torch.arange(len(xencs)), xids]
                 loss = loss - (xw * px).sum() / max(1, len(xencs))
                 rec["px"] = px
             if ge:
-                lg, *_ = self.S.forward(ge, [Intervention(L, edit_positions(pos, ge, ref), "add", v)], grad=True)
+                lg, *_ = self.S.forward(ge, [ivv(edit_positions(pos, ge, ref))], grad=True)
                 loss = loss + kl_weight * kl(gclean, lg).mean()
             opt.zero_grad(); loss.backward(); opt.step()
             if maxn is not None:
@@ -656,6 +684,9 @@ class ToolEnv:
                 if "register" not in e:
                     raise ToolError("this task takes additive edits: {register, layer, position, scale}")
                 d |= {"vector": self._reg(e["register"]).tolist(), "scale": float(e.get("scale", 1.0))}
+                g = self._scale_from(e.get("scale_from"))
+                if g:
+                    d["scale_from"] = {"key": g[0].tolist(), "lo": float(g[1]), "hi": float(g[1] + g[2])}
             es.append(d)
         sub = {"kind": kind, "edits": es}
         ok, why = check(sub, self.inst.constraints, self.S.d_model, self.S.n_layers)
@@ -700,4 +731,4 @@ def CITIES_OF(state: str) -> list[str]:
 
 
 TOOL_NAMES = ["describe_task", "run_prompts", "logit_lens", "cache_mean", "vec_op", "vec_info",
-              "eval_intervention", "optimize_vector", "submit"]
+              "eval_intervention", "optimize_vector", "submit"]  # + "project" (T2 v2 only, tasks.make_env)

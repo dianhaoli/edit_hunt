@@ -96,6 +96,11 @@ def describe(env) -> dict:
                         f"see or query) and cities of other states keep their own capitals. Submit one additive vector "
                         f"at the fixed intervention site: after layer {c['layer']}, at the last token of the city name. "
                         "Some cities and prompt wordings are private to the grader; tools answer 'not accessible' for them.")
+        if c.get("allow_scale_from"):
+            base["edit_format"] = ("Additive edit {register, layer, position, scale}, optionally with scale_from {key: "
+                                   "register, lo, hi}: the edited residual h then gets register * scale * "
+                                   "clamp((dot(key, h) - lo) / (hi - lo), 0, 1). The project tool reports dot(register, "
+                                   "h) for given cities.")
         base["reward"] = ("Cause = fraction of held-out (source city, wording) items whose top answer among the 50 capitals "
                           "is the target capital. Iso_state = fraction of held-out source cities whose held-out state "
                           "question AND hidden state readout still give " + i.source + ". Iso_other = fraction of "
@@ -355,6 +360,33 @@ def ref_keepstate(env, seed: int = 0, steps: int = 50, **_):
     _call(env, "submit", edits=[{"register": "g", "layer": L, "position": "city_last", "scale": 1.0}])
 
 
+def ref_ravel_gated(env, seed: int = 0, steps: int = 150, ramp=(0.3, 0.6), **_):
+    """T2 v2 reference through the agent tools: key = normalize(mean dev source - mean accessible other-state cities)
+    (fs1 + zs1, cache_mean/vec_op), gate ramp from `project` means, push v from optimize_vector with that scale_from
+    (target capital on dev cities, keep-state on state_q, keep-own-capital on other cities), then submit."""
+    d = _call(env, "describe_task")
+    L = d["constraints"]["layer"]
+    tpls = [k for k in d["templates"] if k not in ("state_q", "country_q")]
+    src = d["dev_source_cities"]
+    rng = random.Random(f"{seed}-{d['source']}-{d['target']}")
+    others = [s for s in study_states(min_cities=5) if s not in (d["source"], d["target"])]
+    oth = [x for st in rng.sample(others, 12) for x in _accessible(env, CITIES[st])[:1]][:8]
+    for t in tpls:
+        _call(env, "cache_mean", name=f"s_{t}", cities=src, template=t, layer=L)
+        _call(env, "cache_mean", name=f"o_{t}", cities=oth, template=t, layer=L)
+    _call(env, "vec_op", name="k", expr="normalize(" + " + ".join(f"s_{t}" for t in tpls) + " - (" +
+          " + ".join(f"o_{t}" for t in tpls) + "))")
+    ms = sum(_call(env, "project", name="k", cities=src, template=t, layer=L)["mean"] for t in tpls) / len(tpls)
+    mo = sum(_call(env, "project", name="k", cities=oth, template=t, layer=L)["mean"] for t in tpls) / len(tpls)
+    gate = {"key": "k", "lo": mo + ramp[0] * (ms - mo), "hi": mo + ramp[1] * (ms - mo)}
+    ex = [{"template": "state_q", "city": c, "answer": d["source"], "weight": 1.0} for c in src]
+    ex += [{"template": t, "city": c, "answer": CAPITALS[CITY2STATE[c]], "weight": 1.0} for c in oth[:6] for t in tpls]
+    _call(env, "optimize_vector", name="v", layer=L, position="city_last", dev_cities=src, templates=tpls,
+          steps=steps, extra_examples=ex[:16], scale_from=gate)
+    _call(env, "submit", edits=[{"register": "v", "layer": L, "position": "city_last", "scale": 1.0,
+                                 "scale_from": gate}])
+
+
 def ref_minimal(env, **_):
     """Mean-diff and gradient directions at 3 layers; per direction, bisect the smallest scale that flips every dev
     prompt (both dev templates); submit the smallest relative norm."""
@@ -480,6 +512,8 @@ def make_env(S: Subject, inst, bs: int = 16, blackbox: bool = False):
     from .tools import ToolEnv
     sp = spec_of(inst)
     tools = sp.get("blackbox_tools") if blackbox else sp["tools"]
+    if getattr(inst, "task", "") == "ravel" and not blackbox:
+        tools = list(tools) + ["project"]  # T2 v2: read-only projection tool (other tasks unchanged)
     if blackbox:
         import copy
         inst = copy.deepcopy(inst)
@@ -492,7 +526,7 @@ def run_reference(S: Subject, inst, bs: int = 16, **kw) -> dict:
     env = make_env(S, inst, bs)
     err = None
     try:
-        REFERENCES[inst.suite_task](env, **kw)
+        (ref_ravel_gated if getattr(inst, "task", "") == "ravel" else REFERENCES[inst.suite_task])(env, **kw)
     except RuntimeError as e:
         err = str(e)
     g = grade(S, inst, env.submission, bs)

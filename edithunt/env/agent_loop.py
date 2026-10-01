@@ -25,8 +25,13 @@ _EDITS = {"type": "array", "items": {"type": "object", "properties": {
     "register": {"type": "string"}, "layer": {"type": "integer"},
     "position": {"type": "string", "enum": ["city_last", "city_all", "final"]},
     "scale": {"type": "number"},
-    "basis": {"type": "array", "items": {"type": "string"}}, "center": {"type": "string"}},
+    "basis": {"type": "array", "items": {"type": "string"}}, "center": {"type": "string"},
+    "scale_from": {"type": "object", "properties": {"key": {"type": "string"}, "lo": {"type": "number"},
+                                                    "hi": {"type": "number"}}, "required": ["key", "lo", "hi"]}},
     "required": ["layer", "position"]}}
+_SCALE_FROM_NOTE = (" Optional on additive edits, where the task allows it: scale_from {key: register, lo, hi} makes "
+                    "the scale input-dependent: each edited residual h gets register*scale*clamp((dot(key, h) - lo) / "
+                    "(hi - lo), 0, 1).")
 _STRS = {"type": "array", "items": {"type": "string"}}
 _INTS = {"type": "array", "items": {"type": "integer"}}
 _POS = {"type": "string", "enum": ["city_last", "city_all", "final"]}
@@ -74,25 +79,32 @@ TOOL_SCHEMAS = {t["name"]: t for t in [
           "states with answers='states') on template x cities, the changed rate, the flip rate to the target capital "
           "(if the task has one), KL on these prompts and on a few generic sentences. Edits: additive {register, "
           "layer, position, scale} (adds register*scale after `layer`) or projection {basis: [registers], center?, "
-          "layer, position}. Give `edits` (list) or vector/layer/position/scale for one additive edit.",
+          "layer, position}. Give `edits` (list) or vector/layer/position/scale for one additive edit." + _SCALE_FROM_NOTE,
           {"template": {"type": "string"}, "cities": _STRS, "edits": _EDITS, "vector": {"type": "string"},
            "layer": {"type": "integer"}, "position": _POS, "scale": {"type": "number"},
            "n_generic": {"type": "integer"}, "answers": _ANS}, ["template", "cities"]),
+    _tool("project", "Per city: dot(register, residual after `layer` at `position`) in `template`, plus mean and sd. "
+          "Costs one forward pass per city.",
+          {"name": {"type": "string"}, "cities": _STRS, "template": {"type": "string"}, "layer": {"type": "integer"},
+           "position": _POS}, ["name", "cities", "template", "layer"]),
     _tool("optimize_vector", "Gradient-optimize an additive vector (Adam) added at `layer`/`position`. Loss = mean "
           "NLL of the target capital's first token on dev_cities x templates (tasks with a target capital; optional) "
           "+ weighted NLL of arbitrary (template, city) -> answer examples in extra_examples (first token of the "
           "answer; negative weight pushes the answer down) + kl_weight * KL on generic sentences. max_norm caps the "
           "vector norm during training; init starts from a register; lr is relative to the residual norm. Costs "
-          "steps x prompts forward passes. Result stored in register `name`.",
+          "steps x prompts forward passes. Result stored in register `name`. With scale_from (where allowed), the vector is "
+          "trained with that fixed input-dependent scale applied (see eval_intervention).",
           {"name": {"type": "string"}, "layer": {"type": "integer"}, "position": _POS, "dev_cities": _STRS,
            "templates": _STRS, "steps": {"type": "integer"}, "kl_weight": {"type": "number"},
            "init": {"type": "string"}, "lr": {"type": "number"}, "max_norm": {"type": "number"},
            "extra_examples": {"type": "array", "items": {"type": "object", "properties": {
                "template": {"type": "string"}, "city": {"type": "string"}, "answer": {"type": "string"},
-               "weight": {"type": "number"}}, "required": ["template", "city", "answer"]}}},
+               "weight": {"type": "number"}}, "required": ["template", "city", "answer"]}},
+           "scale_from": {"type": "object", "properties": {"key": {"type": "string"}, "lo": {"type": "number"},
+                                                           "hi": {"type": "number"}}}},
           ["name", "layer"]),
     _tool("submit", "Submit the final edits (ends the episode). Checked against the constraints; a rejected "
-          "submission returns an error and you may retry.", {"edits": _EDITS}, ["edits"]),
+          "submission returns an error and you may retry." + _SCALE_FROM_NOTE, {"edits": _EDITS}, ["edits"]),
     _tool("submit_report", "Submit your final answer (ends the episode), e.g. {source, target, layer} or {layer} as "
           "the task says.", {"report": {"type": "object"}}, ["report"]),
 ]}

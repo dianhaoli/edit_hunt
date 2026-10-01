@@ -91,6 +91,18 @@ def check(sub: dict, cons: dict, d_model: int, n_layers: int) -> tuple[list[Edit
                 return None, f"edit {i}: non-finite values"
             if cons.get("max_norm") is not None and v.norm().item() > cons["max_norm"] * (1 + 1e-4):
                 return None, f"edit {i}: norm {v.norm().item():.3f} > max_norm {cons['max_norm']}"
+            sf = e.get("scale_from")
+            if sf is not None:  # input-dependent scale: clamp((key . h - lo) / (hi - lo), 0, 1) * vector
+                if not cons.get("allow_scale_from"):
+                    return None, f"edit {i}: scale_from is not available in this task"
+                k = torch.tensor([float(x) for x in sf["key"]], dtype=torch.float32)
+                lo, hi = float(sf["lo"]), float(sf["hi"])
+                if k.shape != (d_model,) or not torch.isfinite(k).all() or not (math.isfinite(lo) and math.isfinite(hi)):
+                    return None, f"edit {i}: scale_from needs a finite key of length {d_model} and finite lo/hi"
+                if not hi > lo:
+                    return None, f"edit {i}: scale_from needs hi > lo"
+                out.append((L, pos, (k, torch.tensor(lo), torch.tensor(hi - lo), v), "gate"))
+                continue
             out.append((L, pos, v))
         return out, None
     except (KeyError, TypeError, ValueError) as ex:
@@ -117,8 +129,14 @@ def build_ivs(edits: list[Edit], encs: list[Enc], ref: list[Enc] | None = None) 
 
 
 def edit_summary(edits: list[Edit]) -> list[dict]:
-    return [{"layer": e[0], "position": e[1], "kind": "proj", "rank": int(e[2][0].shape[1])} if len(e) > 3
-            else {"layer": e[0], "position": e[1], "norm": e[2].norm().item()} for e in edits]
+    def one(e):
+        if len(e) > 3 and e[3] == "gate":
+            return {"layer": e[0], "position": e[1], "kind": "scale_from", "norm": e[2][3].norm().item(),
+                    "lo": float(e[2][1]), "hi": float(e[2][1] + e[2][2])}
+        if len(e) > 3:
+            return {"layer": e[0], "position": e[1], "kind": e[3], "rank": int(e[2][0].shape[1])}
+        return {"layer": e[0], "position": e[1], "norm": e[2].norm().item()}
+    return [one(e) for e in edits]
 
 
 def kl_stats(x: torch.Tensor) -> dict:

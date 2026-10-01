@@ -1,0 +1,496 @@
+{
+ "id": "T2_keepstate-Minnesota-Tennessee-L20-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "ravel",
+ "source": "Minnesota",
+ "target": "Tennessee",
+ "source_capital": "Saint Paul",
+ "target_capital": "Nashville",
+ "dev_source": [
+  "Eden Prairie",
+  "Minneapolis",
+  "Winona",
+  "Duluth"
+ ],
+ "dev_target": [
+  "Pigeon Forge",
+  "Gatlinburg",
+  "Clarksville",
+  "Oak Ridge"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 12000,
+  "preserve_state": true,
+  "leak_weight": 0.5,
+  "generic_refusal": true,
+  "allow_scale_from": true,
+  "layer": 20,
+  "max_layer": 20
+ },
+ "test_cities": [
+  "Bemidji",
+  "Brainerd",
+  "Burnsville",
+  "Edina",
+  "Faribault",
+  "International Falls",
+  "Mankato",
+  "Northfield",
+  "Owatonna",
+  "Red Wing",
+  "St. Cloud"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "St. Cloud",
+   "ho_zs"
+  ],
+  [
+   "Mankato",
+   "ho_fs"
+  ],
+  [
+   "Mankato",
+   "ho_zs"
+  ],
+  [
+   "Bemidji",
+   "ho_zs"
+  ],
+  [
+   "Brainerd",
+   "ho_zs"
+  ],
+  [
+   "Owatonna",
+   "ho_fs"
+  ],
+  [
+   "Owatonna",
+   "ho_zs"
+  ],
+  [
+   "Faribault",
+   "ho_fs"
+  ],
+  [
+   "Faribault",
+   "ho_zs"
+  ],
+  [
+   "Northfield",
+   "ho_zs"
+  ],
+  [
+   "Edina",
+   "ho_zs"
+  ],
+  [
+   "Burnsville",
+   "ho_zs"
+  ],
+  [
+   "Red Wing",
+   "ho_zs"
+  ],
+  [
+   "International Falls",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Eden Prairie",
+   "Minneapolis",
+   "Winona",
+   "Duluth"
+  ],
+  "target": [
+   "Pigeon Forge",
+   "Gatlinburg",
+   "Clarksville",
+   "Oak Ridge"
+  ]
+ },
+ "reference": {},
+ "leak_items": [
+  [
+   "Bakersfield",
+   "ho_fs"
+  ],
+  [
+   "Bakersfield",
+   "ho_zs"
+  ],
+  [
+   "Hoover",
+   "ho_zs"
+  ],
+  [
+   "Jersey City",
+   "ho_fs"
+  ],
+  [
+   "Jersey City",
+   "ho_zs"
+  ],
+  [
+   "Twin Falls",
+   "ho_zs"
+  ],
+  [
+   "Fort Worth",
+   "ho_fs"
+  ],
+  [
+   "Fort Worth",
+   "ho_zs"
+  ],
+  [
+   "Ashland",
+   "ho_fs"
+  ],
+  [
+   "Fort Collins",
+   "ho_fs"
+  ],
+  [
+   "Fort Collins",
+   "ho_zs"
+  ],
+  [
+   "Outer Banks",
+   "ho_fs"
+  ],
+  [
+   "Outer Banks",
+   "ho_zs"
+  ]
+ ],
+ "task": "ravel",
+ "suite_task": "T2_keepstate",
+ "extra": {
+  "iso_pool": [
+   "Allentown",
+   "Ashland",
+   "Aspen",
+   "Bakersfield",
+   "Bend",
+   "Berea",
+   "Bethesda",
+   "Boone",
+   "Branson",
+   "Brattleboro",
+   "Brookings",
+   "Cape Girardeau",
+   "Chapel Hill",
+   "Coeur d'Alene",
+   "Council Bluffs",
+   "Dallas",
+   "Derry",
+   "Dubuque",
+   "Durango",
+   "Edmond",
+   "Elko",
+   "Fort Collins",
+   "Fort Smith",
+   "Fort Worth",
+   "Fresno",
+   "Gaithersburg",
+   "Gulfport",
+   "Hagerstown",
+   "Harpers Ferry",
+   "Hoover",
+   "Jersey City",
+   "Kennebunkport",
+   "Kona",
+   "Lubbock",
+   "Macon",
+   "Minot",
+   "Nantucket",
+   "New Haven",
+   "North Platte",
+   "Ogden",
+   "Ogunquit",
+   "Outer Banks",
+   "Palo Alto",
+   "Park City",
+   "Philadelphia",
+   "Pine Bluff",
+   "Pocatello",
+   "San Francisco",
+   "San Jose",
+   "St. Louis",
+   "Stamford",
+   "Stowe",
+   "Sturgis",
+   "Summerville",
+   "Terre Haute",
+   "Twin Falls",
+   "Waco",
+   "Waterville",
+   "West Lafayette",
+   "Worcester"
+  ],
+  "private_cities": [
+   "Allentown",
+   "Ashland",
+   "Aspen",
+   "Bakersfield",
+   "Bend",
+   "Berea",
+   "Bethesda",
+   "Boone",
+   "Branson",
+   "Brattleboro",
+   "Brookings",
+   "Cape Girardeau",
+   "Chapel Hill",
+   "Coeur d'Alene",
+   "Council Bluffs",
+   "Dallas",
+   "Derry",
+   "Dubuque",
+   "Durango",
+   "Edmond",
+   "Elko",
+   "Fort Collins",
+   "Fort Smith",
+   "Fort Worth",
+   "Fresno",
+   "Gaithersburg",
+   "Gulfport",
+   "Hagerstown",
+   "Harpers Ferry",
+   "Hoover",
+   "Jersey City",
+   "Kennebunkport",
+   "Kona",
+   "Lubbock",
+   "Macon",
+   "Minot",
+   "Nantucket",
+   "New Haven",
+   "North Platte",
+   "Ogden",
+   "Ogunquit",
+   "Outer Banks",
+   "Palo Alto",
+   "Park City",
+   "Philadelphia",
+   "Pine Bluff",
+   "Pocatello",
+   "San Francisco",
+   "San Jose",
+   "St. Louis",
+   "Stamford",
+   "Stowe",
+   "Sturgis",
+   "Summerville",
+   "Terre Haute",
+   "Twin Falls",
+   "Waco",
+   "Waterville",
+   "West Lafayette",
+   "Worcester",
+   "Albuquerque",
+   "Baltimore",
+   "Bridgeport",
+   "Broken Arrow",
+   "Camden",
+   "Charlotte",
+   "El Paso",
+   "Fargo",
+   "Gadsden",
+   "Galveston",
+   "Gary",
+   "Gettysburg",
+   "Grand Island",
+   "Hattiesburg",
+   "Henderson",
+   "Hilo",
+   "Hopkinsville",
+   "Lawrence",
+   "Logan",
+   "Martha's Vineyard",
+   "Medford",
+   "Mobile",
+   "Nashua",
+   "Natchez",
+   "Olathe",
+   "Overland Park",
+   "Owensboro",
+   "Paterson",
+   "Reno",
+   "San Diego",
+   "Savannah",
+   "Sioux City",
+   "Spartanburg",
+   "Statesboro",
+   "Stillwater",
+   "Taos",
+   "Vail",
+   "Waikiki",
+   "Waterbury",
+   "Wheeling"
+  ],
+  "decoys": [
+   "Albuquerque",
+   "Baltimore",
+   "Bridgeport",
+   "Broken Arrow",
+   "Camden",
+   "Charlotte",
+   "El Paso",
+   "Fargo",
+   "Gadsden",
+   "Galveston",
+   "Gary",
+   "Gettysburg",
+   "Grand Island",
+   "Hattiesburg",
+   "Henderson",
+   "Hilo",
+   "Hopkinsville",
+   "Lawrence",
+   "Logan",
+   "Martha's Vineyard",
+   "Medford",
+   "Mobile",
+   "Nashua",
+   "Natchez",
+   "Olathe",
+   "Overland Park",
+   "Owensboro",
+   "Paterson",
+   "Reno",
+   "San Diego",
+   "Savannah",
+   "Sioux City",
+   "Spartanburg",
+   "Statesboro",
+   "Stillwater",
+   "Taos",
+   "Vail",
+   "Waikiki",
+   "Waterbury",
+   "Wheeling"
+  ],
+  "keep_states": [
+   "Alaska",
+   "Montana",
+   "Louisiana",
+   "Virginia",
+   "Rhode Island",
+   "Wyoming",
+   "Ohio",
+   "Wisconsin"
+  ],
+  "keep_cities": {
+   "Alaska": [
+    "Anchorage",
+    "Fairbanks"
+   ],
+   "Montana": [
+    "Billings",
+    "Missoula"
+   ],
+   "Louisiana": [
+    "New Orleans",
+    "Shreveport"
+   ],
+   "Virginia": [
+    "Norfolk",
+    "Roanoke"
+   ],
+   "Rhode Island": [
+    "Pawtucket",
+    "Cranston"
+   ],
+   "Wyoming": [
+    "Casper",
+    "Laramie"
+   ],
+   "Ohio": [
+    "Cleveland",
+    "Cincinnati"
+   ],
+   "Wisconsin": [
+    "Milwaukee",
+    "Green Bay"
+   ]
+  },
+  "keep_pool": {
+   "Alaska": [
+    "Anchorage",
+    "Fairbanks",
+    "Ketchikan",
+    "Sitka"
+   ],
+   "Montana": [
+    "Billings",
+    "Missoula",
+    "Bozeman",
+    "Great Falls"
+   ],
+   "Louisiana": [
+    "New Orleans",
+    "Shreveport",
+    "Lake Charles",
+    "Houma"
+   ],
+   "Virginia": [
+    "Norfolk",
+    "Roanoke",
+    "Charlottesville",
+    "Williamsburg"
+   ],
+   "Rhode Island": [
+    "Pawtucket",
+    "Cranston",
+    "Woonsocket",
+    "Narragansett"
+   ],
+   "Wyoming": [
+    "Casper",
+    "Laramie",
+    "Jackson Hole",
+    "Rock Springs"
+   ],
+   "Ohio": [
+    "Cleveland",
+    "Cincinnati",
+    "Toledo",
+    "Akron"
+   ],
+   "Wisconsin": [
+    "Milwaukee",
+    "Green Bay",
+    "Kenosha",
+    "Oshkosh"
+   ]
+  },
+  "layer": 20,
+  "grader": "v2",
+  "extended_cities": true,
+  "reference": {
+   "tool_ref_reward_mult": 0.8795301315218996,
+   "oracle_mean": 0.909060326545538
+  }
+ },
+ "public_extra": {}
+}

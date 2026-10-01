@@ -22,7 +22,7 @@ from .agent_loop import episode, make_client, provider_of
 from .instance import load_instance
 
 LEDGER = ROOT / "results" / "suite" / "ledger.json"
-CAPS = {"anthropic": 4.30, "openai": 8.00}  # cumulative $ incl. earlier runs (user budget $5 / ~$9)
+CAPS = {"anthropic": 4.30, "openai": 50.00}  # cumulative $ incl. earlier runs (user budget $5 / $50 OpenAI from 2026-10-01)
 MARGIN = 0.03
 
 
@@ -97,6 +97,7 @@ def main():
     ap.add_argument("--max_cost", type=float, default=0.10)
     ap.add_argument("--cap", type=float, default=None, help="override the provider's cumulative cap ($)")
     ap.add_argument("--bs", type=int, default=16)
+    ap.add_argument("--run_tag", default="", help="suffix for repeated runs of the same instance (e.g. r2)")
     a = ap.parse_args()
     prov = provider_of(a.model)
     cap = a.cap if a.cap is not None else CAPS[prov]
@@ -107,7 +108,7 @@ def main():
     out_root = ROOT / "results" / "suite" / "runs" / a.model
     for task, p, bb in items:
         inst = load_instance(p)
-        out = out_root / task / f"{inst.id}{'.bb' if bb else ''}.json"
+        out = out_root / task / f"{inst.id}{'.bb' if bb else ''}{'.' + a.run_tag if a.run_tag else ''}.json"
         if out.exists():
             continue
         if S is None or S.name != inst.model:  # before reserving: a load failure spends nothing
@@ -133,7 +134,7 @@ def main():
         except Exception as e:  # keep going; the ledger still gets settled (worst case charged)
             print(f"ERROR {inst.id}: {type(e).__name__}: {e}", flush=True)
         finally:
-            settle(prov, amount, cost, f"{a.model}/{inst.id}{'.bb' if bb else ''}")
+            settle(prov, amount, cost, f"{a.model}/{inst.id}{'.bb' if bb else ''}{'.' + a.run_tag if a.run_tag else ''}")
     with ledger() as d:
         print(f"{prov} spent ${d[prov]['spent']:.4f} (cap ${cap})", flush=True)
 

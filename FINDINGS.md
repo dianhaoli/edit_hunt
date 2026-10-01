@@ -324,6 +324,53 @@ L20 0.61 vs 0.74) come with lower Iso_state (0.75, 0.67); a plausible but untest
 0.9 x the tool-path reference's R on that instance; the continuous R and R / R_ref are reported alongside. `verify_references.py`: 51/51 references reproduce (41 earlier tasks
 unchanged; 10 T2 v2 within bf16 tolerance).
 
+**Agent audit on the 10-instance pilot set (2026-10-01).** Settings and pass rule fixed before the runs. Product
+reward R per instance; "ceiling" = best honestly achievable legal edit (below).
+
+| instance | tool ref | fair oracle (3 seeds) | ceiling | gpt-6.1-sol (2 runs) | Sonnet 5.5 |
+|---|---|---|---|---|---|
+| Minnesota->Nebraska L8 | 0.62 | 0.69 | 0.87 | 0.29, 0.11 | 0.28 |
+| Minnesota->Tennessee L16 | 0.88 | 0.88 | 0.92 | 0.74, 0.74 | 0.51 |
+| Minnesota->Tennessee L20 | 0.88 | 0.91 | 0.84 | 0.61, 0.69 | 0.08 |
+| North Carolina->Kentucky L16 | 0.78 | 0.82 | 0.88 | 0.36, 0.83 | 0.00 |
+| North Carolina->Kentucky L20 | 0.70 | 0.93 | 0.97 | 0.79, 0.82 | 0.00 |
+| North Carolina->Virginia L16 | 0.91 | 0.87 | 0.96 | 0.00, 0.89 | 0.21 |
+| North Carolina->Virginia L20 | 0.61 | 0.74 | 0.81 | 0.28, 0.32 | 0.00 |
+| Pennsylvania->California L20 | 0.66 | 0.65 | 0.62 | 0.56, 0.28 | 0.00 |
+| Wisconsin->Mississippi L16 | 0.75 | 0.78 | 0.98 | 0.84, 0.62 | 0.00 |
+| Wisconsin->Mississippi L20 | 0.87 | 0.84 | 0.90 | 0.00, 0.76 | 0.30 |
+| mean | 0.76 | 0.81 | 0.88 | 0.53 | 0.14 |
+
+| agent (budget) | pass (R >= 0.9 x tool ref, pre-registered) | mean R | mean % of ceiling | gated edit submitted | out of turns/budget |
+|---|---|---|---|---|---|
+| gpt-6.1-sol ($0.25, 40 turns, effort medium) | 5/20 (Wilson 11-47%) | 0.53 | 60% | 17/20 | 2 (40 turns) |
+| Sonnet 5.5 ($0.10, 25 turns, effort medium) | 0/10 (0-28%) | 0.14 | 15% | 2/10 | 5 ($0.10 cap) |
+
+- Sonnet ran at the suite's earlier $0.10 / 25-turn setting; 5/10 episodes hit the cost cap before submitting, 4 of
+  them mid-way through building a gate, so its number mixes skill and budget. Sol ran with a larger budget chosen
+  after that pilot (and before its own runs); the two agents are not compared at equal budgets.
+- Agents discover the conditional edit without being told (sol 17/20 gated submissions, Sonnet 2/10). Typical
+  failure: a gate that is too strict (perfect Iso, Cause ~0.3), or training the push without the gate and
+  attaching the gate only at submission.
+- Run-to-run variance is large (NC->Virginia L16: 0.00 then 0.89).
+- Two sol episodes crashed with a sporadic `CUDA error: unknown error` (shared GPU with another session's 8.7 GB job)
+  and were re-run; the ledger charged the crashed attempts the worst case ($0.25 + margin each).
+- Spend: OpenAI ~$2.2 for the audit (cap raised to $50 on 2026-10-01); Anthropic $0.90 for the Sonnet pilot
+  ($3.91 of the $4.30 cap).
+
+**Ceiling oracle** (`ravel.train_ceiling`, `experiments/t2_ceiling.py`). Same legal edit format (one gated edit at the
+fixed site, passed through the submission `check`), but trained with privileged data an agent never sees: dev + half
+of the held-out source cities on all capital wordings (incl. ho_fs/ho_zs), STATE_Q + STATE_Q_HO + the abbreviation
+readout for keep-state, ~42 private pool cities excluding the grader's 16-city Iso sample (target = their clean top
+capital), KL on the agent-visible generic sentences; gate key/threshold/width learned end-to-end or fixed (chosen by
+the training half's own grade), 300 steps. 2-fold cross-fitting: graded only on the held-out half it never trained
+on; ceiling = mean over the two halves. It is the best found, not a proven maximum, and is noisier (half-size
+evaluation sets): on 2 instances it came out slightly below the fair oracle. Pennsylvania->California has a low
+ceiling (~0.62-0.66) under every method.
+
+**Proposed for the next runs (not applied; to be fixed before any new agent run):** pass = R >= 0.8 x ceiling; equal
+budgets across agents; more instances (oracle shard 1 paused at 0 rows); drop or flag low-ceiling instances.
+
 **Step 4 (design; implemented as above): how an agent builds a gated edit from primitive tools.** No named "gated"
 option; instead two generic primitives that also cover ordinary steering:
 1. A read-only `project(register, template, cities, layer)` tool returning k.h at the city's last token (h = the

@@ -718,7 +718,8 @@ def _letters(s: str) -> str:
 def _drop_empty(args: dict) -> dict:
     """Treat empty optional values ("", None, [], {}) as absent, at the top level and inside `edits` items.
     Some agent APIs fill every schema property with a placeholder (seen with gpt-6.1-sol, 2026-09-30)."""
-    empty = lambda v: v is None or v == "" or v == [] or v == {}
+    # a scale_from placeholder ({key: "", lo: 0, hi: 0}) counts as absent too
+    empty = lambda v: v is None or v == "" or v == [] or v == {} or (isinstance(v, dict) and "key" in v and not v["key"])
     out = {k: v for k, v in args.items() if not empty(v)}
     if isinstance(out.get("edits"), list):
         out["edits"] = [{k: v for k, v in e.items() if not empty(v)} if isinstance(e, dict) else e for e in out["edits"]]

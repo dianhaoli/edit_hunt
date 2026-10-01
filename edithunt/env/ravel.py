@@ -429,3 +429,73 @@ def save_edits(path, edits):
 
 def load_edits(path):
     return [tuple(e) for e in torch.load(path)]
+
+
+# ------------------------------------------------------------------ ceiling oracle (privileged data, cross-fitted)
+def train_ceiling(S: Subject, inst, L: int, fit_cities: list[str], pool_train: list[str], seed: int = 0,
+                  steps: int = 300, lr: float = 0.05, learn_gate: bool = True, per_group: int = 12,
+                  kl_weight: float = 1.0):
+    """Best-achievable gated edit for one instance with privileged training data (not an agent):
+    - target capital on fit_cities x their valid wordings (dev fs1/zs1 + held-out ho_fs/ho_zs items of those cities)
+    - keep state on fit_cities: STATE_Q, STATE_Q_HO (answer source) and the abbreviation readout (source abbr)
+    - keep the CLEAN top capital of pool_train cities (private other-state cities NOT in the grader's Iso sample)
+    - KL on the agent-visible generic sentences (GENERIC_TOOLS; never the grader's)
+    Gate x + clamp((k.x - b)/w, 0, 1) v at city_last; with learn_gate, k, b and w are trained too (w = softplus).
+    Minibatches of per_group prompts per group per step. Returns grader edits (same legal format as an agent's)."""
+    from .grader import GENERIC_TOOLS, edit_positions
+    from ..metrics import kl as _kl
+    g = torch.Generator().manual_seed(seed)
+    torch.manual_seed(seed)
+    tc = CAPITALS[inst.target]
+    items = [(c, tk) for c, tk in inst.test_items if c in set(fit_cities)] + \
+            [(c, tk) for c in fit_cities if c in inst.dev_source for tk in DEV_T]
+    G = [("target", [S.encode(TEMPLATES[tk], c) for c, tk in items], [_first(S, tc)] * len(items))]
+    for tpl in (STATE_Q, STATE_Q_HO):
+        G.append(("state", [S.encode(tpl, c) for c in fit_cities], [_first(S, inst.source)] * len(fit_cities)))
+    G.append(("abbr", [S.encode(ABBR_T, c) for c in fit_cities], [_first(S, ABBR[inst.source])] * len(fit_cities)))
+    pe = [S.encode(TEMPLATES[tk], c) for c in pool_train for tk in HELDOUT_TEMPLATES]
+    p0 = _clean_scores(S, pe, CAPS).argmax(1).tolist()
+    G.append(("other", pe, [_first(S, CAPS[i]) for i in p0]))
+    ge = [S.encode_text(t) for t in GENERIC_TOOLS]
+    gclean = S.logp_final(ge).to(S.device)
+    Rs = S.resid(G[0][1], [L], "city_last")[L].float()
+    Ro = S.resid(pe, [L], "city_last")[L].float()
+    k0 = Rs.mean(0) - Ro.mean(0); k0 = k0 / k0.norm()
+    ms, mo = (Rs @ k0).mean().item(), (Ro @ k0).mean().item()
+    k = k0.clone().to(S.device).requires_grad_(learn_gate)
+    b = torch.tensor(mo + 0.3 * (ms - mo), device=S.device).requires_grad_(learn_gate)
+    wraw = torch.tensor(math.log(math.expm1(0.3 * (ms - mo))), device=S.device).requires_grad_(learn_gate)
+    v = (meandiff(S, inst, L).float() * 1e-3).to(S.device).requires_grad_(True)
+    rn = Rs.norm(dim=-1).mean().item()
+    groups = [{"params": [v], "lr": lr * rn / math.sqrt(S.d_model)}]
+    if learn_gate:
+        groups += [{"params": [k], "lr": lr / math.sqrt(S.d_model)}, {"params": [b, wraw], "lr": lr * 0.05 * (ms - mo)}]
+    opt = torch.optim.Adam(groups)
+    for _ in range(steps):
+        opt.zero_grad()
+        kk = k / k.norm()
+        pay = (kk, b, torch.nn.functional.softplus(wraw), v)
+        loss = 0.0
+        for _, es, ids in G:
+            idx = torch.randperm(len(es), generator=g)[:per_group].tolist()
+            eb = [es[i] for i in idx]
+            lp, *_ = S.forward(eb, [Intervention(L, pos_rule(eb, "city_last"), "gate", pay)], grad=True)
+            loss = loss - lp[torch.arange(len(eb)), torch.tensor([ids[i] for i in idx], device=S.device)].mean()
+        ref = [G[0][1][i % len(G[0][1])] for i in range(len(ge))]
+        lg, *_ = S.forward(ge, [Intervention(L, edit_positions("city_last", ge, ref), "gate", pay)], grad=True)
+        loss = loss + kl_weight * _kl(gclean, lg).mean()
+        loss.backward()
+        opt.step()
+    with torch.no_grad():
+        kk = (k / k.norm()).detach().cpu()
+        return [(L, "city_last", (kk, b.detach().cpu(), torch.nn.functional.softplus(wraw).detach().cpu(),
+                                  v.detach().cpu()), "gate")]
+
+
+def as_submission(edits) -> dict:
+    """Grader edits -> the agent submission format (so the ceiling passes the same `check` as an agent)."""
+    out = []
+    for L, pos, (k, b, w, v), _ in edits:
+        out.append({"layer": L, "position": pos, "vector": v.tolist(), "scale": 1.0,
+                    "scale_from": {"key": k.tolist(), "lo": float(b), "hi": float(b + w)}})
+    return {"kind": "add", "edits": out}

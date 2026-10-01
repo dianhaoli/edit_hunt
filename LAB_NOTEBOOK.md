@@ -692,3 +692,11 @@ Verdict: possible (offline gated edit, near-perfect isolation, no shortcut close
 validate (~50% at L20) vs the 60% target. Bottleneck: recognising held-out source cities from 4 dev cities (at L20
 the push alone gives Cause 0.96-1.00 if the gate is forced open). Next levers: more public dev cities per state
 (more city data), or ship only the validated (pair, layer) instances, preferring L16-20.
+
+### T2 v2 tool path + agent audit (2026-10-01, later)
+Tools `project` + `scale_from` (T2 v2 only); tool-path gated reference passes 10/11 (pilot set saved). Sonnet 5.5
+pilot ($0.10/25 turns): 0/10, 5 budget-outs. OpenAI cap raised to $50 by the user; gpt-6.1-sol ($0.25/40 turns, 2 runs):
+5/20 pass (>= 0.9 x tool ref), mean R 0.53, 17/20 gated submissions. Ceiling oracle (privileged data, 2-fold
+cross-fitted, legal edit): mean 0.88; sol reaches 60% of ceiling on average. Placeholder-safe `scale_from` in
+_drop_empty (OpenAI fills optional objects). Two sol episodes crashed with sporadic CUDA "unknown error" on the shared
+GPU and were re-run. Full table: FINDINGS §11 "Agent audit on the 10-instance pilot set".

@@ -249,3 +249,17 @@ with full-strength training (300 steps, 1,200 pairs per prompt attribute) at L11
   explicit "keep the other attributes" objective holds them (Iso ~0.9). L13 gives the same picture (MDAS 0.60, shortcuts ≤0.18).
   Caveat: the Entity margin over the 0.5 line is thin (0.02–0.06); the gap to the shortcuts is wide.
 - bind name Q stays inseparable at L16–19 (MDAS ≤ 0.16).
+
+**Per-layer gaps and boosted reference (`edithunt/ravel/boost.py`, `results/screen/boost.json`).** A task instance
+fixes the layer, so careful-vs-lazy is compared at the same layer. Reference = MDAS k=256, 600 steps, 2,400 pairs;
+DAS given the same budget. All numbers on fresh pools (Entity seed 2 / Context seed 3), 4 MDAS seeds, 2 DAS seeds.
+
+| task (city_pop, 555 well-known cities) | MDAS ref, Entity / Context | DAS (same budget) | best untrained shortcut | gap |
+|---|---|---|---|---|
+| **Continent @ L10** (keep country, language) | **0.80–0.86 / 0.74–0.77** (Cause 0.90–0.93, Iso 0.89–0.93) | 0.24–0.28 (Cause 0.95, Iso 0.28) | mean-diff 0.42 | **≈0.40** |
+| **Language @ L12** (keep country, continent) | **0.65–0.68 / 0.72–0.76** (Cause 0.75–0.77, Iso 0.85–0.88) | 0.13 (Cause 0.87, Iso 0.15) | SAE-50 0.22 | **≈0.45** |
+
+Both pass 4/4 seeds on both splits with clear margin over the 0.5 line, and every shortcut fails in the same way:
+it moves the target but drags the other attributes along. More training makes DAS leak *more* (Continent DAS 0.43 at
+150 steps → 0.25 at 600), so the gap is not an artefact of under-training the baseline. Keep-weight 2 did not help.
+**These two tasks (one family, one tool set, two difficulty levels) are the recommended Stage-5 candidates.**

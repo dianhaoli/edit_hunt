@@ -764,3 +764,16 @@ pairs); bind Q at L16–19 (binding info reaches the final token at L15+). Same 
 - Seed check (L12, fresh pools entity seed 2 / context seed 3): MDAS k128 seeds 0–3 Entity 0.56/0.53/0.54/0.52,
   Context 0.64/0.66/0.66/0.65 → 4/4 both splits. Shortcuts: full 0.04, mean-diff 0.12, SAE-5 0.02, SAE-50 0.22,
   DAS k16 0.18, DAS k128 0.13. **First candidate meeting the brief's rule.** Stopped before Stage 5.
+
+### Per-layer gap re-analysis and reference boost (user: "more separable tasks? better reference?")
+- The ranking took the best shortcut over all 3 layers, but a task instance fixes the layer, so the fair gap is per
+  layer. Recomputed from existing data (Entity, seed 0): city_pop Continent L10 MDAS 0.68 vs best shortcut 0.47
+  (+0.21, good), L6 0.63 vs 0.43 (+0.20); Language L10/L15/L6 +0.26/+0.24/+0.24 (ref 0.47/0.58/0.40).
+- Boost run (`edithunt/ravel/boost.py`): Language@L12, Continent@L10; MDAS k∈{128,256} × keep-weight∈{1,2},
+  600 steps, 2400 pairs; DAS with the same budget (fair gap). Winner per target seed-checked on fresh pools (4 seeds)
+  with shortcuts re-scored there. das.train gained `iso_weight` (default 1.0 = previous behaviour).
+- Boost results (selection pools): Language@L12 MDAS k128/k256 × w1/w2 = 0.68/0.64/0.72/0.68, DAS k128/k256 0.12/0.09;
+  Continent@L10 MDAS 0.80/0.79/0.81/0.80, DAS 0.25/0.22. Fresh-pool seed check (k256, w1): Language Entity
+  0.65/0.65/0.66/0.68, Context 0.76/0.74/0.72/0.76; Continent Entity 0.86/0.83/0.85/0.80, Context 0.75/0.74/0.77/0.77.
+  Fresh shortcuts: Language full 0.04, mean-diff 0.12, SAE-5 0.02, SAE-50 0.22, DAS 0.13; Continent full 0.03,
+  mean-diff 0.42, SAE-5 0.02, SAE-50 0.18, DAS 0.24/0.28. One Continent seed hit the 900 s cap at step 576.

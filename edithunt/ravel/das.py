@@ -71,7 +71,8 @@ def _examples(F: Fam, pool, target: str, mdas: bool):
 
 
 def train(M: Model, F: Fam, target: str, layer: int, k: int, mdas: bool, seed: int = 0, steps: int = 150,
-          bs: int = 32, lr: float = 2e-3, max_seconds: float = 300, n_train: int = 600, log=print):
+          bs: int = 32, lr: float = 2e-3, max_seconds: float = 300, n_train: int = 600, log=print,
+          iso_weight: float = 1.0):
     """Returns (U [d,k] cpu float32, info)."""
     t0 = time.time()
     surf = surfaces(M, F)
@@ -96,6 +97,7 @@ def train(M: Model, F: Fam, target: str, layer: int, k: int, mdas: bool, seed: i
             log(f"    time cap at step {step}")
             break
         batch = rng.sample(cause, min(len(cause), bs if not mdas else bs // 2))
+        n_c = len(batch)
         if mdas and iso:
             batch += rng.sample(iso, min(len(iso), bs // 2))
         items, labs, rows = [], [], []
@@ -120,7 +122,8 @@ def train(M: Model, F: Fam, target: str, layer: int, k: int, mdas: bool, seed: i
         loss = 0
         for b, lab in enumerate(labs):
             n = len(lab)
-            loss = loss - lp[b, keep - n:, :].gather(-1, torch.tensor(lab, device=M.device).unsqueeze(-1)).sum()
+            w = 1.0 if b < n_c else iso_weight
+            loss = loss - w * lp[b, keep - n:, :].gather(-1, torch.tensor(lab, device=M.device).unsqueeze(-1)).sum()
         loss = loss / len(labs)
         opt.zero_grad()
         loss.backward()

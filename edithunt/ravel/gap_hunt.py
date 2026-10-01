@@ -30,7 +30,7 @@ def city(M, R, log):
     tr_ents, tr = train_reps(M, F, layers)
     for L in layers:
         src = {sp: source_reps(M, p, [L])[L] for sp, p in pools.items()}
-        for a in ("Language", "Country"):
+        for a in ("Language",):  # trimmed after 3 runs (~7 min/run): Country dropped
             key = f"city_pop|{a}|L{L}|shortcuts"
             if key not in R:
                 mu = mean_by_value(F, tr_ents, tr[L], a)
@@ -43,8 +43,8 @@ def city(M, R, log):
                     res[sp] = dict(full=full, meandiff=md)
                 R[key] = res
                 OUT.write_text(json.dumps(R, indent=1))
-            for k in (16, 128):
-                for m in ("das", "mdas"):
+            for k, m in ((128, "mdas"), (16, "mdas"), (16, "das")):  # trimmed grid
+                if True:
                     key = f"city_pop|{a}|L{L}|k{k}|{m}|full"
                     if key in R:
                         continue

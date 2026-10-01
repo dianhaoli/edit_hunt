@@ -238,3 +238,14 @@ verb's identity), city country ↔ language (0.46 / 0.58-then-0.47, as RAVEL rep
 variables only arrive at L15+ (bind) / L17+ (mcqa), so only one of the three layers was informative there. Training
 was cut to 150 steps (300 gave the same result on the one run tested). Nobel Gender has only 24 women (16 held out).
 One seed for the Stage 3 table; the seed check uses fresh pools. KL is not in the screen score (Stage 5 grader only).
+
+**Gap hunt (after the screen; `edithunt/ravel/gap_hunt.py`, `gap_check.py`, `results/screen/gap_{hunt,check}.json`).**
+MDAS can only beat DAS where DAS leaks into the other attributes. city_pop Language is such a case, so it was re-run
+with full-strength training (300 steps, 1,200 pairs per prompt attribute) at L11–15; bind name Q at L16–19.
+- **city_pop Language at L12, MDAS k=128 passes: 4/4 seeds on both splits, scored on fresh pools.** Entity
+  0.52–0.56 (Cause 0.57–0.64, Iso 0.87–0.91); Context 0.64–0.66. Best shortcut on the same pools: SAE-50 0.22
+  (DAS k16 0.18, DAS k128 0.13, mean-diff 0.12, full 0.04). Gap ≈ 0.32 → **meets the brief's "good" rule.**
+  Every shortcut flips the language (Cause 0.74–0.89) but drags the country/continent along (Iso 0.03–0.25); only an
+  explicit "keep the other attributes" objective holds them (Iso ~0.9). L13 gives the same picture (MDAS 0.60, shortcuts ≤0.18).
+  Caveat: the Entity margin over the 0.5 line is thin (0.02–0.06); the gap to the shortcuts is wide.
+- bind name Q stays inseparable at L16–19 (MDAS ≤ 0.16).

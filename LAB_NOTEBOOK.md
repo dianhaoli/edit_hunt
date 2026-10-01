@@ -758,3 +758,9 @@ Hypothesis: MDAS beats DAS only where DAS leaks into the other attributes (low I
 that (DAS Iso 0.1–0.2, MDAS Iso 0.9) and missed the bar narrowly (0.46–0.48) with the budget-cut 150-step training.
 Plan (`edithunt/ravel/gap_hunt.py`): city_pop Language/Country at L11–15 with full-strength DAS/MDAS (300 steps, 1200
 pairs); bind Q at L16–19 (binding info reaches the final token at L15+). Same pools, same rule, seed check after.
+- Trimmed after 3 runs (~7 min/run on the shared GPU): Language only; per layer MDAS k128, MDAS k16, DAS k16.
+- Gap hunt result: city_pop Language L11/12/13/14/15 MDAS k128 (300 steps) = 0.54/0.60/0.60/–/0.62 (L14 k16 0.52);
+  shortcuts at L11–14 ≤ 0.18. bind Q L16–19 MDAS ≤ 0.16 (inseparable).
+- Seed check (L12, fresh pools entity seed 2 / context seed 3): MDAS k128 seeds 0–3 Entity 0.56/0.53/0.54/0.52,
+  Context 0.64/0.66/0.66/0.65 → 4/4 both splits. Shortcuts: full 0.04, mean-diff 0.12, SAE-5 0.02, SAE-50 0.22,
+  DAS k16 0.18, DAS k128 0.13. **First candidate meeting the brief's rule.** Stopped before Stage 5.

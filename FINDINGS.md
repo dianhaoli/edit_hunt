@@ -197,3 +197,44 @@ not shown to the agent.
   with almost no passing settings.
 - All: ≥ 10 held-out items per instance; decoy held-out cities (refusals currently reveal which cities are
   private); leakage measured against the clean prediction at grade time.
+
+## 11. Breadth screen: which task families make good RL tasks (gemma-2-2b; Fig. 5, `results/screen/ranking.json`)
+Brief: screen RAVEL-style families (Huang et al. 2024) for tasks where a trained reference passes, zero-effort
+shortcuts fail. Score = Cause × Iso (strict product) at the entity's last token (RAVEL) or the final token (pointer
+families), Entity split unless noted. Code `edithunt/ravel/`; log in LAB_NOTEBOOK ("Breadth screen").
+**Rule (brief):** ref = best MDAS; short = best of full-vector / mean-diff / SAE (Gemma Scope 16k, 5 or 50 latents
+by L1 probe) / random-16 / DAS; good = ref ≥ 0.5 and ref − short ≥ 0.2; kept if MDAS passes ≥ 3/4 seeds on fresh pools.
+
+**Validity (Stage 1).** Kept: US cities (state, capital, abbr), verbs (past tense, singular), Nobel (field, gender),
+**city_pop** (800 most populous RAVEL cities: country 0.96, continent 0.94, language 0.88), and the two pointer
+families added mid-screen at the user's request: **bind** (in-context binding, "Pete loves jam, Ann loves pie, … So
+Ann loves") and **mcqa** (MIB's colour MCQA). Failed: random RAVEL cities (no attribute ≥ 0.8; many are obscure),
+physical objects (Size/Texture: the model copies the last few-shot demo), occupations (industry 0.66, location 0.72).
+
+| family: target | MDAS ref (layer, k) | best DAS | best untrained shortcut | gap (brief) | gap vs untrained | MDAS seeds ≥0.5 (Entity / Context) |
+|---|---|---|---|---|---|---|
+| city_pop: Language | 0.58 (L15, 128) | 0.33 | 0.27 mean-diff | **0.24 (good)** | 0.31 | **0/4** (0.46–0.48) / 4/4 (0.59–0.64) |
+| city_pop: Continent | 0.68 (L15, 128) | 0.62 | 0.47 mean-diff | 0.07 | 0.22 | 4/4 (0.71–0.73) / 4/4 |
+| bind: position P | 0.96 (L15, 128) | 0.93 | 0.70 mean-diff | 0.03 | 0.25 | 4/4 (0.94–0.95) / 4/4 (0.66–0.77) |
+| nobel: Gender | 0.61 (L10, 128) | 0.52 | 0.50 mean-diff | 0.09 | 0.11 | 2/4 / 4/4 |
+| nobel: Field | 0.79 (L10, 16) | 0.79 | 0.76 mean-diff | 0.01 | 0.03 | 4/4 / 4/4 |
+| mcqa: letter X | 0.98 (L17, 16) | 0.94 | 0.97 mean-diff | 0.02 | 0.02 | 4/4 / 4/4 |
+| city_pop: Country | 0.46 | 0.35 | 0.38 | 0.09 | 0.09 | — |
+| us_cities: capital / abbr / state | 0.37 / 0.27 / 0.24 | ≤0.23 | ≤0.11 | ≤0.13 | 0.15–0.26 | — (ref < 0.5) |
+| bind: name Q | 0.19 | 0.13 | 0.07 | 0.06 | 0.13 | — |
+| mcqa: content O; verb: past / singular | ≤0.03 | ≤0.20 | ≤0.02 | < 0 | ≈0 | — |
+
+**Verdict under the brief's rule: no candidate survives.** The only "good" one on seed 0 (city_pop Language) scores
+0.46–0.48 on fresh held-out cities over 4 seeds (it passes on held-out templates, 0.59–0.64). Where MDAS is strong
+(bind P, city_pop Continent, mcqa X, Nobel Field), Cause-only DAS is nearly as good: Iso comes almost for free, so the
+MDAS "keep the other attributes" term adds little.
+**Under a looser reading (DAS needs training, so it is not a zero-effort shortcut)**, two robust candidates appear:
+**bind P** (0.95 vs mean-diff 0.70; 4/4 seeds, both splits) and **city_pop Continent** (0.72 vs mean-diff 0.47; 4/4).
+Both would test "train a subspace from interchange data" rather than "add an Iso regulariser".
+**Inseparable pairs (every method < 0.5):** US state ↔ capital ↔ abbr (the two-hop pair: best MDAS 0.24–0.37; MDAS holds
+Iso ≈ 0.8–0.9 but moves the target on only 30–41% of held-out cities), verb past tense ↔ singular (both follow from the
+verb's identity), city country ↔ language (0.46 / 0.58-then-0.47, as RAVEL reported), bind name Q, mcqa content O.
+**Caveats:** layers were chosen by depth (25/45/65%) from a full-vector sweep; for the final-token pointer families the
+variables only arrive at L15+ (bind) / L17+ (mcqa), so only one of the three layers was informative there. Training
+was cut to 150 steps (300 gave the same result on the one run tested). Nobel Gender has only 24 women (16 held out).
+One seed for the Stage 3 table; the seed check uses fresh pools. KL is not in the screen score (Stage 5 grader only).

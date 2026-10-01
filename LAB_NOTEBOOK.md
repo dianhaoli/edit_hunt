@@ -662,3 +662,99 @@ Reading for the write-up (proposed, not applied: no task tuning after Claude res
   pass; Colorado→Oregon 30+/50). Redesign: absolute norm or fixed layer, ≥10 held-out items, multi-variant r_ref.
 - Across tasks: 3–16 held-out items per instance, n = 7–8; several outcomes within one item of the line. Sonnet
   clearly beats zero-effort scripts only on T2 (1/7 vs 0/7, not significant) and T6 (7/8 vs 6/8 post-hoc prior).
+
+## 2026-10-01 — Breadth screen of RAVEL-style task families on gemma-2-2b (brief in this session)
+Code: `edithunt/ravel/` (new). RAVEL data: `git clone github.com/explanare/ravel` → `~/ravel/data` (outside the repo).
+Results: `results/screen/`. The GPU is shared with a concurrent T2 session (its files are not touched).
+
+### Pre-specified choices (written before any Stage 1 data was scored)
+- Scoring: exact full-sequence log-prob of every surface of every candidate value (token trie; argmax checked
+  against brute-force full forwards; argmax agreed 63/64 with `Subject.score` on US capitals fs1).
+  Value score = max over its surfaces.
+- Verbalizers per (attribute, template): Category yes/no templates excluded (answer is not the value; 9/54);
+  Timezone UTC-offset templates excluded (31/73); Size uses "mm/cm/m/km" or "millimeter/…" by the template's
+  demos; Texture `"soft": "yes/no"` maps yes→soft; Gender (Nobel) and Gender Bias (occupation) score
+  male = {male, man, he, his, him}, female = {female, woman, she, her}.
+- Open-ish categoricals (city Country/Language/Timezone, occupation Industry/Work Location, Nobel Country of
+  Birth): candidate set = values held by ≥10 entities in the full RAVEL family, multi-valued "A,B" excluded;
+  entities outside the set cannot pass that attribute. Industry "health care" = "healthcare".
+- Occupation Gender Bias has no labels in the RAVEL files → label = the model's majority value over its 8
+  templates ("accuracy" = agreement with that majority). Verb values are per-verb (candidate set = the 400
+  sampled verbs' forms). US cities: state/capital/abbr values are the state; country is constant → Iso-only.
+  US extras (NEW templates so each attribute has ≥2 train + ≥1 held-out): 2 state, 1 abbr.
+- Sampling for Stage 1: city 800 random entities, occupation all 799, others 400 (verb, Nobel, object) / 343
+  (US); per attribute up to 10 train + 8 held-out format-valid templates (RAVEL prompt split; val+test =
+  held-out; same for entities).
+- Validity rule (the brief's order, read literally): template kept if accuracy ≥0.8 over in-set entities;
+  attribute kept if accuracy over all format-valid templates × in-set entities ≥0.8 AND ≥2 train + ≥1
+  held-out kept templates; entity kept if correct on >50% of the kept templates of every kept attribute;
+  family survives with ≥60 entities and ≥2 kept attributes incl. ≥1 target. A "lenient" outcome (template
+  condition only) is logged for reference but does not decide. Glimpsed before fixing this rule: city Country
+  0.71–0.74 on 2 templates, Timezone 0.59–0.63, Nobel Country of Birth 0.77–0.84, object Size 0.66–0.70.
+- Expected time: Stage 1 ≈ 1 h (city Timezone dominates).
+
+### Stage 1 results (validity; 59 min; results/screen/stage1/*.json)
+| family | attribute | acc (all templates) | kept tpl (train+held-out / scored) | kept (strict) | lenient |
+|---|---|---|---|---|---|
+| us_cities | state / capital / abbr | 0.99 / 0.91 / 0.96 | 2+2/4, 4+2/6, 2+1/3 | yes | yes |
+| us_cities | country | 0.84 | 1+0/2 | no (constant; 1 train template) | no |
+| verb | Past Tense / Singular | 0.99 / 1.00 | 10+8/18 each | yes | yes |
+| nobel | Field / Gender | 0.83 / 1.00 | 8+7, 10+8 | yes | yes |
+| nobel | Country of Birth | 0.79 | 6+6/18 | no (0.79 < 0.8) | yes |
+| physical_object | Category | 0.82 | 7+6/18 (9 yes/no templates skipped) | yes | yes |
+| physical_object | Color / Size / Texture | 0.73 / 0.55 / 0.55 | 2+2, 0+0, 0+0 | no | Color only |
+| occupation | Gender Bias (self-labeled) | 0.95 | 4+4/8 | yes | yes |
+| occupation | Industry / Work Location | 0.66 / 0.72 | 0+0, 0+1 | no | no |
+| city | Country / Continent / Language / Timezone | 0.73 / 0.76 / 0.73 / (≤0.63) | 0, 4+2, 0, 0 | no | Continent only |
+Survivors (≥60 entities, ≥2 kept attributes): **us_cities** (308 entities; state, capital, abbr), **verb** (398;
+Past Tense, Singular), **nobel** (338; Field, Gender). Dropped: city (no attribute ≥0.8 on 800 random RAVEL
+cities; many are obscure), physical_object (1 attribute), occupation (only the self-labeled Gender Bias).
+- Size/Texture are not a scoring bug: gemma-2-2b copies the last few-shot demo (Size answers "m" for 400/400
+  objects when the last demo is "m", "km" when it is "meter"; Texture follows the last demo similarly).
+- Nobel Gender among kept entities: 314 male / 24 female (16 held-out) → small Cause n (pairs must differ).
+- us_cities: state, capital and abbr share one value (the state), so every Iso pair also differs in the target.
+
+### city_pop: city re-screened on well-known cities (user go-ahead, 2026-10-01)
+`city` failed validity on 800 random RAVEL cities (many obscure). With the user's approval, a new family
+`city_pop` re-screens it on the **800 most populous RAVEL cities** (GeoNames cities15000 matched on ASCII-folded
+name + country, max population over matches; 2,659/3,552 matched; the 800th has 255k people;
+`edithunt/ravel/data/city_pop_top800.json`). Rule fixed before scoring; templates, verbalizers, candidate sets
+and the validity rule are unchanged (same seed → same templates). Unmatched names (e.g. "New York City") are
+simply not in the set. The original `city` result stays on record as "random RAVEL cities: fails".
+Work moved to git worktree `../edit_hunt-ravel-screen` (branch `ravel-screen`) at the user's request; Stage 1–2
+for the first families ran from the main checkout (identical code; HEAD data.py has the same CITIES/templates).
+
+### Pointer families added (user request: "try some different task"; 2026-10-01)
+Literature check: MIB (Mueller et al. 2025) causal-variable track on Gemma-2-2B — MCQA answer-position variable:
+DAS 77 vs full-vector 44 / SAE 51; answer content: DAS 95 vs 61 / 73. In-context binding (Gur-Arieh et al. 2025,
+arXiv 2510.06182): gemma-2 retrieves bound entities by a mix of positional, lexical and reflexive mechanisms at the
+last token. New module `edithunt/ravel/pointer.py` (definitions in its docstring): `bind` (variables P = queried
+position, Q = queried name; sources reuse the base names with fresh items so copying the source answer cannot hit a
+base candidate) and `mcqa` (O = answer colour, X = answer letter). Site = final token. Same validity rule, layer
+pick, cheap methods, DAS/MDAS as the RAVEL screen; Cause(V) × Iso(V) with one other variable.
+Smoke test (n=40/template, not a result): bind template "...Then {q} ate the" 0.45 → replaced by "{q} ordered"
+before the real run (template fix, no method results seen). Full-vector at L12 already gave bind P 0.55 on 8 pairs.
+
+### Stage 2 done (all 4 RAVEL survivors; city_pop 19 min); Stage 3 training budget cut
+- city_pop: survives Stage 1 (555 entities; Country 0.96, Continent 0.94, Language 0.88; Timezone 0.64 dropped).
+  Layers 6/10/15 (full-vector Cause 0.94 / 0.92 / 0.45). Best cheap Entity scores: Country 0.38, Continent 0.47,
+  Language 0.27 (mostly mean-diff / SAE-50).
+- Stage 3 first run (us_cities state L4 k16 DAS, 300 steps): 533 s, train loss 8.2→0.06, held-out Cause 0.18 /
+  Iso 0.53. At this rate the 120 Stage-3 runs need ~14 h (shared GPU, ~1.7 s/step). Cut to 150 steps and a 300 s cap
+  per run (RAVEL and pointer trainers alike) before any MDAS result; the 300-step run is archived as
+  results/screen/stage3_first_run_300steps_us_cities.json and redone under the new setting.
+
+### Stage 3–4 results (screen complete; results/screen/{stage3,pointer,stage4_seeds.json,ranking.json}; Fig. 5)
+- Stage 3: 120 RAVEL runs (~6 h on the shared GPU) + 48 pointer runs. Pointer layers: bind 5/11/15 (binding info
+  reaches the final token at L15: full-vector Cause 0.06–0.14 before, 0.3–0.4 after), mcqa 6/14/17 (arrives at L17).
+- Ranking and seed checks: see FINDINGS §11. Under the brief's rule nothing survives (city_pop Language: seed-0 0.58
+  but 0.46–0.48 on fresh Entity pools, 4 seeds; 4/4 on Context). Robust high-MDAS targets (bind P, city_pop Continent,
+  mcqa X, Nobel Field) all have DAS within 0.07 of MDAS. Gap vs untrained shortcuts only: bind P 0.25, Continent 0.22.
+- Waiter bug avoided: a `pgrep -f` waiter was replaced by a literal-PID wait (memory note pgrep-self-match).
+- STOPPED before Stage 5, as the brief asks. Nothing committed; all work on branch ravel-screen (worktree).
+
+### Gap hunt (user: "look for gap more"; started 2026-10-01 after the screen)
+Hypothesis: MDAS beats DAS only where DAS leaks into the other attributes (low Iso). city_pop Language has exactly
+that (DAS Iso 0.1–0.2, MDAS Iso 0.9) and missed the bar narrowly (0.46–0.48) with the budget-cut 150-step training.
+Plan (`edithunt/ravel/gap_hunt.py`): city_pop Language/Country at L11–15 with full-strength DAS/MDAS (300 steps, 1200
+pairs); bind Q at L16–19 (binding info reaches the final token at L15+). Same pools, same rule, seed check after.

@@ -263,3 +263,29 @@ Both pass 4/4 seeds on both splits with clear margin over the 0.5 line, and ever
 it moves the target but drags the other attributes along. More training makes DAS leak *more* (Continent DAS 0.43 at
 150 steps → 0.25 at 600), so the gap is not an artefact of under-training the baseline. Keep-weight 2 did not help.
 **These two tasks (one family, one tool set, two difficulty levels) are the recommended Stage-5 candidates.**
+
+## 12. Stage 5: city environment, script-saturation and learnability tests (gemma-2-2b; `results/screen/env/`)
+Environment `edithunt/ravel/env.py`: change a city's Language (layer 12) or Continent (layer 10) via an interchange
+featurizer while keeping its other attributes; generic tools (run_prompts, interchange, train_subspace with example
+recipes and a held-out report, submit); private held-out cities + wordings, alias/decoy refusals; grade = Cause × Iso
+× KL hinge, pass ≥ 0.5. Six validated instances (reference 4/4 seeds each). Then, at the user's request, the test
+became: **does a fixed script saturate the reward?** (cf. AUDIT_T2V2 §8.2).
+
+| question | result |
+|---|---|
+| Lazy scripts (library: full, SAE, DAS k ∈ {1,2,4,8,16,256}) | **Continent fails**: DAS (no keep examples) reaches 0.50 at k = 8 (0.49 at k = 4) → its gap is a hyperparameter gap. **Language holds**: every lazy script ≤ 0.18. |
+| Ceiling (cross-fitted, privileged data + held-out templates, 2× volume) | Language reference / ceiling = 0.91, 0.88, 0.94, 0.82, 0.88, 0.88 → **the MDAS-via-tools script is at ~89 % of the ceiling**; headroom 0.05–0.11. |
+| Noise | Reference SD over seeds 0.014–0.027, bootstrap over private cities 0.036–0.047 (~0.05 combined); margin over the pass line 0.06–0.15; headroom ≈ 1.5 SD. Soft score (probability of the expected value) is slightly less noisy and preserves the ordering. |
+| KL guard | Inert: damaging edits possible via the tools have KL ≤ 0.05 (reference up to 0.66) and fail on Iso anyway. |
+| Axes where the recipe should break | Multilingual same-country pairs (India/Canada/Nigeria): script and privileged ceiling drop together (ratio ~0.87) → no room. Transcontinental: unavailable (RAVEL gives each country one continent). Hidden downstream readouts (country capital, currency): ratio falls to 0.77, but a privileged ceiling with the *same facts in other wording* recovers little (hidden 0.61/0.56 vs exact-wording 0.71/0.67), so most of that headroom is knowing the grader's exact prompts. Scripts that guess the facts (agent wording) do not close it either. Layer choice / second model / other entity types: not run. |
+| **Learnability (gpt-6-luna, 6 samples × 2 Language instances, $1.43)** | Scores 0.32–0.53; pass 0/6 and 2/6 (pass@1 ≈ 0.17); run SD 0.05–0.07 ≈ grading noise. **Keep examples used in 12/12 runs**; the score tracks training volume (the passes are the largest runs: 2,600–3,000 examples, 600 steps, k 64–128). |
+
+**Verdict.** The Language task is honest (lazy scripts fail, the grader is sound) but, as an RL environment, it teaches
+one recipe plus "spend the whole training budget": luna already knows the recipe, a fixed script is at ~89 % of a
+privileged ceiling, and the remaining reward spread is the size of the grading noise. It is usable as an eval /
+calibration unit ("can the agent run DAS/MDAS correctly"), not as a stand-alone training environment. Continent is not
+valid (small-k DAS passes). None of the tested axes (multilingual pairs, hidden readouts as built) opens learnable room
+above the recipe. Recommended next directions, in order: (1) planted mechanisms with per-instance ground truth
+(AUDIT_T2V2 §8.5), where the right action depends on facts learned by experimenting; (2) a budget squeeze with no
+gradient training, testing whether analysis-only routes separate agents; (3) a large, varied private pool of downstream
+readouts sampled per instance (the small hidden set tested here was mostly wording-specific).

@@ -14,8 +14,11 @@ for p in sorted(glob.glob("results/suite/instances/*/*.private.json")):
         continue
     seed = int(inst.id.rsplit("-s", 1)[1]) if inst.suite_task != "T4_detective" else 0
     r = run_reference(S, inst, seed=seed)  # generation passed the instance seed (only ref_keepstate uses it)
-    new, old = r["grade"]["reward"], inst.extra["reference"]["reward"]
-    ok = r["error"] is None and abs(new - old) < 1e-6
+    if inst.task == "ravel":  # T2 v2: product reward, tool-path gated reference (bf16 tolerance)
+        new, old, tol = r["grade"]["reward_mult"], inst.extra["reference"]["tool_ref_reward_mult"], 0.02
+    else:
+        new, old, tol = r["grade"]["reward"], inst.extra["reference"]["reward"], 1e-6
+    ok = r["error"] is None and abs(new - old) < tol
     n += 1; bad += not ok
     print(("same " if ok else "DIFF ") + inst.id, round(old, 4), round(new, 4), r["error"] or "", flush=True)
 print(f"references: {n - bad}/{n} reproduce the stored reward")

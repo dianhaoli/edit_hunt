@@ -272,3 +272,65 @@ READOUTS = {
     "nick": ("Chicago is in the state nicknamed the Prairie State. Miami is in the state nicknamed the Sunshine "
              "State. {city} is in the state nicknamed the", NICKNAMES),
 }
+
+
+# ---------------------------------------------------------------- extended cities (T2_keepstate v2 only)
+# RAVEL-style T2 needs >= 10 held-out source cities per instance; CITIES has <= 12 per state. These extra
+# cities are used ONLY by env/ravel.py (other tasks, tools' city detection and existing instances are unchanged).
+# Same curation rules as CITIES; the clean-validity filter (env/ravel.py) drops any city the model gets wrong.
+CITIES_EXTRA = {
+    "California": ["Long Beach", "Riverside", "Stockton", "Irvine", "Santa Monica", "Modesto", "Santa Cruz",
+                   "Monterey", "Napa", "Palm Springs", "Redding", "Chula Vista", "Santa Clara", "Sunnyvale"],
+    "Texas": ["Midland", "Odessa", "Abilene", "Beaumont", "Brownsville", "McAllen", "Tyler", "Killeen", "Denton",
+              "Round Rock", "San Marcos", "College Station", "Wichita Falls", "Frisco"],
+    "Ohio": ["Lorain", "Mansfield", "Kettering", "Zanesville", "Findlay", "Elyria", "Chillicothe", "Steubenville",
+             "Shaker Heights", "Cuyahoga Falls", "Wooster", "Massillon"],
+    "Pennsylvania": ["Reading", "Bethlehem", "State College", "Altoona", "Johnstown", "Wilkes-Barre", "Williamsport",
+                     "Hazleton", "King of Prussia", "Pottsville", "Easton", "Chambersburg"],
+    "Tennessee": ["Johnson City", "Kingsport", "Cookeville", "Oak Ridge", "Collierville", "Sevierville", "Dyersburg",
+                  "Tullahoma", "Maryville", "Crossville"],
+    "North Carolina": ["High Point", "Gastonia", "Hickory", "Rocky Mount", "Goldsboro", "Kannapolis", "Kitty Hawk",
+                       "Pinehurst", "Wake Forest", "Mooresville", "New Bern"],
+    "Virginia": ["Hampton", "Fredericksburg", "Harrisonburg", "Staunton", "Danville", "Leesburg", "Manassas",
+                 "Fairfax", "Christiansburg", "Herndon", "Reston", "McLean"],
+    "Wisconsin": ["Sheboygan", "Janesville", "Waukesha", "Wausau", "Fond du Lac", "Stevens Point", "Manitowoc",
+                  "Beloit", "West Allis", "Baraboo", "Platteville"],
+    "Colorado": ["Grand Junction", "Greeley", "Loveland", "Steamboat Springs", "Glenwood Springs", "Longmont",
+                 "Littleton", "Castle Rock", "Estes Park", "Montrose", "Crested Butte"],
+    "Oregon": ["Klamath Falls", "Grants Pass", "Roseburg", "Pendleton", "The Dalles", "Hood River", "Tillamook",
+               "Coos Bay", "Gresham", "Lake Oswego", "Cannon Beach", "McMinnville", "Tigard"],
+    "Louisiana": ["Slidell", "Bossier City", "Metairie", "Kenner", "New Iberia", "Opelousas", "Bogalusa",
+                  "Morgan City", "Breaux Bridge", "Mandeville", "Grand Isle"],
+    "Kentucky": ["Murray", "Pikeville", "Hazard", "Corbin", "Bardstown", "Madisonville", "Harlan", "Maysville",
+                 "Paintsville", "Middlesboro", "Radcliff", "Nicholasville"],
+    "Missouri": ["Lee's Summit", "Blue Springs", "Florissant", "Sedalia", "Rolla", "Kirksville", "Poplar Bluff",
+                 "Sikeston", "Warrensburg", "Ferguson", "Lake of the Ozarks"],
+    "Minnesota": ["Winona", "Brainerd", "Hibbing", "Owatonna", "Faribault", "Willmar", "Northfield", "Edina",
+                  "Burnsville", "Red Wing", "International Falls"],
+    "New Jersey": ["Edison", "Toms River", "Cherry Hill", "Morristown", "Montclair", "Vineland", "New Brunswick",
+                   "Bayonne", "Cape May", "Hackensack", "Paramus", "Secaucus", "Teaneck"],
+    "Indiana": ["Kokomo", "Elkhart", "Noblesville", "Fishers", "Merrillville", "Hammond", "Mishawaka", "Vincennes",
+                "Logansport", "Jeffersonville", "Crawfordsville"],
+    "Alabama": ["Opelika", "Anniston", "Selma", "Prattville", "Gulf Shores", "Orange Beach", "Muscle Shoals",
+                "Cullman", "Phenix City", "Scottsboro", "Talladega", "Bessemer"],
+    "Oklahoma": ["Enid", "Ponca City", "Bartlesville", "Ardmore", "Midwest City", "Guthrie", "Owasso", "Tahlequah",
+                 "Durant", "McAlester", "Okmulgee"],
+}
+for _s, _cs in CITIES_EXTRA.items():
+    for _c in _cs:
+        assert _c not in CITY2STATE and _c not in AMBIGUOUS and _c not in CAPITALS.values(), _c
+        assert not any(st.lower() in _c.lower() for st in STATES), _c
+assert len({c for cs in CITIES_EXTRA.values() for c in cs}) == sum(map(len, CITIES_EXTRA.values())), "dup extra city"
+CITIES_EXT = {s: CITIES[s] + CITIES_EXTRA.get(s, []) for s in STATES}
+CITY2STATE_EXT = {c: s for s, cs in CITIES_EXT.items() for c in cs}
+
+# Cities whose name is also a well-known non-US place (country-probe exclusion for T2 v2, env/ravel.py). Fixed on
+# 2026-10-01 before any agent run on T2 v2: on the country probe these cities' P(US) is legitimately uncertain, so a
+# change there is not collateral damage (e.g. Colorado's Durango/Pueblo: clean P(US) 0.63).
+AMBIG_NONUS = {
+    "Birmingham", "Durango", "Pueblo", "Montrose", "Stamford", "Greenwich", "Macon", "Vincennes", "Bangor",
+    "Worcester", "Derry", "Camden", "Toledo", "Mansfield", "Reading", "Bethlehem", "Memphis", "Odessa",
+    "San Antonio", "Moab", "St. George", "Norfolk", "Hampton", "San Jose", "Santa Cruz", "Santa Clara", "Monterey",
+    "Santa Barbara", "San Francisco", "Hoboken", "Stowe", "Easton", "Laredo", "Syracuse", "Ithaca", "Utica",
+    "Naples",
+}

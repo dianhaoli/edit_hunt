@@ -190,6 +190,13 @@ class ToolEnv:
         self._private_tpls = set(private_tpls)
         self._held_tpl = [re.compile(".*".join(re.escape(_norm(p)) for p in t.split("{city}")), re.S) for t in private_tpls]
         self.templates = dict(inst.dev_templates) | {"state_q": STATE_Q, "country_q": COUNTRY_Q}
+        # T2 v2 (env/ravel.py): one generic refusal for every private city/template (the private set includes decoy
+        # cities, so refusals do not reveal the Iso pool); extended city list for span detection in raw prompts
+        self._generic = bool(inst.constraints.get("generic_refusal"))
+        self._all_cities = ALL_CITIES
+        if getattr(inst, "extra", {}).get("extended_cities"):
+            from ..data import CITY2STATE_EXT
+            self._all_cities = sorted(CITY2STATE_EXT, key=len, reverse=True)
         # no target capital in tasks where it is unknown (erase) or secret (detective)
         self.tgt_cap = inst.target_capital if self.task not in ("detective", "erase") and inst.target_capital else None
         pl = getattr(inst, "extra", {}).get("plant")
@@ -235,13 +242,16 @@ class ToolEnv:
             raise ToolError(f"forward-pass budget exceeded (need {n}, left {self.budget - self.used})")
         self.used += n
 
+    def _refuse(self, msg: str):
+        raise ToolError("not accessible" if self._generic else msg)
+
     def _template(self, t: str) -> str:
         if t in self.templates:
             return self.templates[t]
         if not isinstance(t, str) or "{city}" not in t:
             raise ToolError("template must be a known key or a string containing '{city}'")
         if t in self._private_tpls or any(p.fullmatch(_norm(t)) for p in self._held_tpl):
-            raise ToolError("that template is held out")
+            self._refuse("that template is held out")
         return t
 
     def _cities(self, cs) -> list[str]:
@@ -253,7 +263,7 @@ class ToolEnv:
             raise ToolError("cities must be strings")
         bad = [c for c in cs if _letters(c) in self._held]
         if bad:
-            raise ToolError(f"held-out cities are not accessible: {bad}")
+            self._refuse(f"held-out cities are not accessible: {bad}")
         return list(cs)
 
     def _check_text(self, s: str):
@@ -261,9 +271,9 @@ class ToolEnv:
             raise ToolError("prompts must be strings")
         s = _norm(s)
         if any(r.search(s) for r in self._held_re):
-            raise ToolError("prompt mentions a held-out city")
+            self._refuse("prompt mentions a held-out city")
         if any(p.fullmatch(s) for p in self._held_tpl):
-            raise ToolError("prompt matches a held-out template")
+            self._refuse("prompt matches a held-out template")
 
     def _encs(self, template: str, cities) -> list:
         t = self._template(template)
@@ -279,7 +289,7 @@ class ToolEnv:
         out = []
         for p in prompts:
             self._check_text(p)
-            ms = [(c, x) for c in ALL_CITIES
+            ms = [(c, x) for c in self._all_cities
                   for x in re.finditer(r"(?<![A-Za-z])" + re.escape(c) + r"(?![A-Za-z])", p)]
             # drop matches nested in a longer one ("Bend" inside "South Bend"), then take the last-mentioned city
             ms = [(c, x) for c, x in ms if not any(y.start() <= x.start() and x.end() <= y.end() and
@@ -328,6 +338,12 @@ class ToolEnv:
             raise ToolError(f"position must be one of {POSITIONS}")
         return p
 
+    def _site(self, L: int, pos: str):
+        """T2 v2: edits only at the instance's intervention site (constraints['layer'], city_last)."""
+        c = self.inst.constraints
+        if c.get("layer") is not None and (L != c["layer"] or pos not in c["positions"]):
+            raise ToolError(f"edits are only allowed at layer {c['layer']}, position {c['positions'][0]}")
+
     def _edits(self, edits: list[dict]) -> list[tuple]:
         """Tool-side edits: {"register", "layer", "position", "scale"} (add) or
         {"basis": [registers], "center": register?, "layer", "position"} (projection)."""
@@ -336,6 +352,7 @@ class ToolEnv:
         out = []
         for e in edits:
             L, pos = self._layer(e["layer"]), self._pos(e.get("position", "city_last"))
+            self._site(L, pos)
             if self.inst.constraints.get("edit_kind", "add") == "proj" or ("basis" in e and "register" not in e):
                 B = torch.stack([self._reg(b) for b in e["basis"]]) if e["basis"] else None
                 if B is None or len(B) > 64:
@@ -345,8 +362,24 @@ class ToolEnv:
                 c = self._reg(e["center"]) if e.get("center") else None
                 out.append((L, pos, (Q, c), "proj"))
             else:
-                out.append((L, pos, self._reg(e["register"]) * float(e.get("scale", 1.0))))
+                v = self._reg(e["register"]) * float(e.get("scale", 1.0))
+                g = self._scale_from(e.get("scale_from"))
+                out.append((L, pos, g[:2] + (g[2], v), "gate") if g else (L, pos, v))
         return out
+
+    def _scale_from(self, sf):
+        """{key: register, lo, hi} -> (key, lo, hi - lo) tensors, or None. Input-dependent scale of an additive
+        edit: clamp((key . h - lo) / (hi - lo), 0, 1), h = the residual being edited."""
+        if not sf:
+            return None
+        if not self.inst.constraints.get("allow_scale_from"):
+            raise ToolError("scale_from is not available in this task")
+        if not isinstance(sf, dict) or "key" not in sf or "lo" not in sf or "hi" not in sf:
+            raise ToolError("scale_from must be {key: register, lo: number, hi: number}")
+        lo, hi = float(sf["lo"]), float(sf["hi"])
+        if not (math.isfinite(lo) and math.isfinite(hi) and hi > lo):
+            raise ToolError("scale_from needs finite lo < hi")
+        return (self._reg(sf["key"]), torch.tensor(lo), torch.tensor(hi - lo))
 
     def _cands(self, answers: str) -> list[str]:
         if answers not in ("capitals", "states"):
@@ -461,6 +494,16 @@ class ToolEnv:
         return {"registers": [f"{name}_L{L}" for L in ls], "n": len(encs),
                 "norms": [_r(A[L].mean(0).norm(), 2) for L in ls]}
 
+    def t_project(self, name: str, cities: list[str], template: str, layer: int, position: str = "city_last") -> dict:
+        """Per city: dot(register, residual after `layer` at `position`) (city_all: mean over city tokens)."""
+        k = self._reg(name)
+        L, pos = self._layer(layer), self._pos(position)
+        encs = self._encs(template, cities)
+        self._spend(len(encs))
+        x = self._acts(encs, [L], pos, "planted")[L] @ k
+        return {"register": name, "layer": L, "values": {e.city: _r(v, 3) for e, v in zip(encs, x.tolist())},
+                "mean": _r(x.mean(), 3), "sd": _r(x.std(), 3) if len(x) > 1 else 0.0}
+
     def t_act_diff(self, template: str, cities: list[str], layer: int | None = None, position: str = "city_last",
                    layers: list[int] | None = None, name: str | None = None) -> dict:
         """planted - clean residual per city (norm, and relative to the clean residual norm)."""
@@ -534,7 +577,7 @@ class ToolEnv:
     def t_optimize_vector(self, name: str, layer: int, position: str = "city_last", dev_cities: list[str] | None = None,
                           templates: list[str] | None = None, steps: int = 50, kl_weight: float = 0.0,
                           init: str | None = None, lr: float = 0.05, max_norm: float | None = None,
-                          extra_examples: list[dict] | None = None) -> dict:
+                          extra_examples: list[dict] | None = None, scale_from: dict | None = None) -> dict:
         """Adam on an additive vector v (added at `layer`/`position` of every training prompt). Loss =
         mean NLL of the target capital's first token on dev_cities x templates (edit tasks only)
         + sum over extra_examples of weight * NLL(first token of ' ' + answer) on that (template, city) prompt
@@ -542,6 +585,8 @@ class ToolEnv:
         lr is relative: step ~ lr*|resid|/sqrt(d)."""
         self._name(name)
         L, pos = self._layer(layer), self._pos(position)
+        self._site(L, pos)
+        gate = self._scale_from(scale_from)
         steps = int(steps)
         if not 1 <= steps <= 500:
             raise ToolError("steps must be in [1, 500]")
@@ -591,19 +636,20 @@ class ToolEnv:
                 rn = st.captures[L].norm(dim=-1).mean().item()
                 for g in opt.param_groups:
                     g["lr"] = lr * rn / math.sqrt(self.S.d_model)
+            ivv = (lambda ps: Intervention(L, ps, "gate", gate + (v,))) if gate else (lambda ps: Intervention(L, ps, "add", v))
             if encs:
-                lp, *_ = self.S.forward(encs, self._plant_ivs(encs) + [Intervention(L, pos_rule(encs, pos), "add", v)], grad=True)
+                lp, *_ = self.S.forward(encs, self._plant_ivs(encs) + [ivv(pos_rule(encs, pos))], grad=True)
                 nll = -lp[:, tok].mean()
                 loss = loss + nll
                 rec["p_target"] = nll
                 rec["hit"] = lp[:, cap_first].argmax(1) == CAPS.index(self.tgt_cap)
             if xencs:
-                lx, *_ = self.S.forward(xencs, self._plant_ivs(xencs) + [Intervention(L, pos_rule(xencs, pos), "add", v)], grad=True)
+                lx, *_ = self.S.forward(xencs, self._plant_ivs(xencs) + [ivv(pos_rule(xencs, pos))], grad=True)
                 px = lx[torch.arange(len(xencs)), xids]
                 loss = loss - (xw * px).sum() / max(1, len(xencs))
                 rec["px"] = px
             if ge:
-                lg, *_ = self.S.forward(ge, [Intervention(L, edit_positions(pos, ge, ref), "add", v)], grad=True)
+                lg, *_ = self.S.forward(ge, [ivv(edit_positions(pos, ge, ref))], grad=True)
                 loss = loss + kl_weight * kl(gclean, lg).mean()
             opt.zero_grad(); loss.backward(); opt.step()
             if maxn is not None:
@@ -638,6 +684,9 @@ class ToolEnv:
                 if "register" not in e:
                     raise ToolError("this task takes additive edits: {register, layer, position, scale}")
                 d |= {"vector": self._reg(e["register"]).tolist(), "scale": float(e.get("scale", 1.0))}
+                g = self._scale_from(e.get("scale_from"))
+                if g:
+                    d["scale_from"] = {"key": g[0].tolist(), "lo": float(g[1]), "hi": float(g[1] + g[2])}
             es.append(d)
         sub = {"kind": kind, "edits": es}
         ok, why = check(sub, self.inst.constraints, self.S.d_model, self.S.n_layers)
@@ -669,7 +718,8 @@ def _letters(s: str) -> str:
 def _drop_empty(args: dict) -> dict:
     """Treat empty optional values ("", None, [], {}) as absent, at the top level and inside `edits` items.
     Some agent APIs fill every schema property with a placeholder (seen with gpt-6.1-sol, 2026-09-30)."""
-    empty = lambda v: v is None or v == "" or v == [] or v == {}
+    # a scale_from placeholder ({key: "", lo: 0, hi: 0}) counts as absent too
+    empty = lambda v: v is None or v == "" or v == [] or v == {} or (isinstance(v, dict) and "key" in v and not v["key"])
     out = {k: v for k, v in args.items() if not empty(v)}
     if isinstance(out.get("edits"), list):
         out["edits"] = [{k: v for k, v in e.items() if not empty(v)} if isinstance(e, dict) else e for e in out["edits"]]
@@ -682,4 +732,4 @@ def CITIES_OF(state: str) -> list[str]:
 
 
 TOOL_NAMES = ["describe_task", "run_prompts", "logit_lens", "cache_mean", "vec_op", "vec_info",
-              "eval_intervention", "optimize_vector", "submit"]
+              "eval_intervention", "optimize_vector", "submit"]  # + "project" (T2 v2 only, tasks.make_env)

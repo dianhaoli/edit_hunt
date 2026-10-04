@@ -1,0 +1,3941 @@
+{
+ "instance": "T2_keepstate-North_Carolina-Kentucky-L20-s0",
+ "suite_task": "T2_keepstate",
+ "tier": "ravel",
+ "agent_model": "gpt-6.1-sol",
+ "blackbox": false,
+ "config": {
+  "max_turns": 40,
+  "max_tokens": 16000,
+  "effort": "medium",
+  "max_cost": 0.25
+ },
+ "budget_used": 5944,
+ "budget_total": 12000,
+ "tool_calls": 0,
+ "call_budget": null,
+ "tool_log": [
+  {
+   "tool": "describe_task",
+   "args": {},
+   "used": 0,
+   "calls": 0
+  },
+  {
+   "tool": "run_prompts",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin"
+    ],
+    "top_k": 3
+   },
+   "used": 8,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "nc",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "template": "fs1",
+    "layer": 20
+   },
+   "used": 12,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "ky",
+    "cities": [
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin"
+    ],
+    "template": "fs1",
+    "layer": 20
+   },
+   "used": 16,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "ncstate",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "template": "state_q",
+    "layer": 20
+   },
+   "used": 20,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "kystate",
+    "cities": [
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin"
+    ],
+    "template": "state_q",
+    "layer": 20
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "others",
+    "cities": [
+     "Chicago",
+     "Miami",
+     "Seattle",
+     "Boston",
+     "Austin",
+     "Denver",
+     "Atlanta",
+     "Portland",
+     "New York",
+     "Los Angeles",
+     "Detroit",
+     "Columbus",
+     "Milwaukee",
+     "Richmond",
+     "Nashville",
+     "Birmingham",
+     "Phoenix",
+     "Baltimore",
+     "Las Vegas",
+     "Albuquerque"
+    ],
+    "template": "fs1",
+    "layer": 20
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "diff",
+    "expr": "ky-nc"
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "statediff",
+    "expr": "kystate-ncstate"
+   },
+   "used": 24,
+   "calls": 0
+  },
+  {
+   "tool": "cache_mean",
+   "args": {
+    "name": "others",
+    "cities": [
+     "Chicago",
+     "Miami",
+     "Seattle",
+     "Boston",
+     "Austin",
+     "Denver",
+     "Atlanta",
+     "Portland",
+     "New York",
+     "Los Angeles",
+     "Detroit",
+     "Milwaukee",
+     "Nashville",
+     "Birmingham",
+     "Phoenix",
+     "Baltimore"
+    ],
+    "template": "fs1",
+    "layer": 20
+   },
+   "used": 40,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "capdiff",
+    "expr": "proj_out(diff,statediff)"
+   },
+   "used": 40,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "key",
+    "expr": "normalize(nc-others)"
+   },
+   "used": 40,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "diff",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "n_generic": 4
+   },
+   "used": 56,
+   "calls": 0
+  },
+  {
+   "tool": "project",
+   "args": {
+    "name": "key",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin",
+     "Chicago",
+     "Miami",
+     "Seattle",
+     "Boston",
+     "Atlanta",
+     "Richmond",
+     "Nashville",
+     "Birmingham"
+    ],
+    "template": "fs1",
+    "layer": 20
+   },
+   "used": 72,
+   "calls": 0
+  },
+  {
+   "tool": "project",
+   "args": {
+    "name": "key",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin",
+     "Chicago",
+     "Miami",
+     "Seattle",
+     "Boston",
+     "Atlanta",
+     "Richmond",
+     "Nashville",
+     "Birmingham"
+    ],
+    "template": "zs1",
+    "layer": 20
+   },
+   "used": 88,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "capdiff",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 3,
+    "n_generic": 4
+   },
+   "used": 96,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "diff",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 104,
+   "calls": 0
+  },
+  {
+   "tool": "optimize_vector",
+   "args": {
+    "name": "opt",
+    "layer": 20,
+    "position": "city_last",
+    "dev_cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "templates": [
+     "fs1",
+     "zs1"
+    ],
+    "steps": 100,
+    "kl_weight": 2,
+    "init": "capdiff",
+    "lr": 0.04,
+    "max_norm": 65,
+    "extra_examples": [
+     {
+      "template": "state_q",
+      "city": "Charlotte",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "state_q",
+      "city": "Kannapolis",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "state_q",
+      "city": "Outer Banks",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "state_q",
+      "city": "Chapel Hill",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "country_q",
+      "city": "Charlotte",
+      "answer": "United States",
+      "weight": 1
+     },
+     {
+      "template": "country_q",
+      "city": "Kannapolis",
+      "answer": "United States",
+      "weight": 1
+     },
+     {
+      "template": "country_q",
+      "city": "Outer Banks",
+      "answer": "United States",
+      "weight": 1
+     },
+     {
+      "template": "country_q",
+      "city": "Chapel Hill",
+      "answer": "United States",
+      "weight": 1
+     },
+     {
+      "template": "zs1",
+      "city": "Atlanta",
+      "answer": "Atlanta",
+      "weight": 1
+     },
+     {
+      "template": "zs1",
+      "city": "Richmond",
+      "answer": "Richmond",
+      "weight": 1
+     },
+     {
+      "template": "zs1",
+      "city": "Nashville",
+      "answer": "Nashville",
+      "weight": 1
+     },
+     {
+      "template": "zs1",
+      "city": "Birmingham",
+      "answer": "Montgomery",
+      "weight": 1
+     }
+    ]
+   },
+   "used": 2504,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin",
+     "Chicago",
+     "Miami",
+     "Seattle",
+     "Boston",
+     "Atlanta",
+     "Richmond",
+     "Nashville",
+     "Birmingham"
+    ],
+    "vector": "opt",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "n_generic": 8
+   },
+   "used": 2544,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin",
+     "Chicago",
+     "Miami",
+     "Seattle",
+     "Boston",
+     "Atlanta",
+     "Richmond",
+     "Nashville",
+     "Birmingham"
+    ],
+    "edits": [
+     {
+      "register": "opt",
+      "layer": 20,
+      "position": "city_last",
+      "scale": 1,
+      "scale_from": {
+       "key": "key",
+       "lo": 10,
+       "hi": 20
+      }
+     }
+    ],
+    "n_generic": 8
+   },
+   "used": 2584,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 2588,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "statecomponent",
+    "expr": "dot(opt,normalize(statediff))"
+   },
+   "used": 2588,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "optorth",
+    "expr": "proj_out(opt,statediff)"
+   },
+   "used": 2588,
+   "calls": 0
+  },
+  {
+   "tool": "run_prompts",
+   "args": {
+    "template": "The city of {city} is in the state of",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "answers": "states",
+    "top_k": 2
+   },
+   "used": 2592,
+   "calls": 0
+  },
+  {
+   "tool": "project",
+   "args": {
+    "name": "key",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin"
+    ],
+    "template": "state_q",
+    "layer": 20
+   },
+   "used": 2600,
+   "calls": 0
+  },
+  {
+   "tool": "project",
+   "args": {
+    "name": "key",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin"
+    ],
+    "template": "country_q",
+    "layer": 20
+   },
+   "used": 2608,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "optorth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "n_generic": 0
+   },
+   "used": 2612,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "optorth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "n_generic": 0
+   },
+   "used": 2616,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The city of {city} is in the state of",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 2624,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The state that {city} is in has the capital city of",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "n_generic": 0
+   },
+   "used": 2632,
+   "calls": 0
+  },
+  {
+   "tool": "vec_info",
+   "args": {
+    "name": "opt",
+    "top_k": 15
+   },
+   "used": 2632,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The city of {city} is in the state of",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "optorth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 2636,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "country_q",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Chicago",
+     "Miami",
+     "Seattle",
+     "Birmingham"
+    ],
+    "edits": [
+     {
+      "register": "opt",
+      "layer": 20,
+      "position": "city_last",
+      "scale": 1,
+      "scale_from": {
+       "key": "key",
+       "lo": 10,
+       "hi": 20
+      }
+     }
+    ],
+    "n_generic": 8
+   },
+   "used": 2660,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "optorth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1.3,
+    "n_generic": 0
+   },
+   "used": 2664,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The city of {city} is in the state of",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "optorth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1.3,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 2668,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "optorth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1.3,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 2672,
+   "calls": 0
+  },
+  {
+   "tool": "project",
+   "args": {
+    "name": "key",
+    "cities": [
+     "Columbia",
+     "Charleston",
+     "Greenville",
+     "Roanoke",
+     "Knoxville",
+     "Memphis",
+     "Savannah",
+     "Augusta",
+     "Lexington",
+     "Newport",
+     "Norfolk",
+     "Jacksonville",
+     "Wilmington",
+     "Greensboro",
+     "Asheville",
+     "Durham"
+    ],
+    "template": "zs1",
+    "layer": 20
+   },
+   "used": 2672,
+   "calls": 0
+  },
+  {
+   "tool": "project",
+   "args": {
+    "name": "key",
+    "cities": [
+     "Columbia",
+     "Charleston",
+     "Greenville",
+     "Roanoke",
+     "Knoxville",
+     "Memphis",
+     "Savannah",
+     "Augusta",
+     "Lexington",
+     "Newport",
+     "Norfolk",
+     "Jacksonville"
+    ],
+    "template": "zs1",
+    "layer": 20
+   },
+   "used": 2672,
+   "calls": 0
+  },
+  {
+   "tool": "optimize_vector",
+   "args": {
+    "name": "opt2",
+    "layer": 20,
+    "position": "city_last",
+    "dev_cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "templates": [
+     "fs1",
+     "zs1",
+     "The state that {city} is in has the capital city of"
+    ],
+    "steps": 100,
+    "kl_weight": 3,
+    "init": "optorth",
+    "lr": 0.025,
+    "max_norm": 80,
+    "extra_examples": [
+     {
+      "template": "state_q",
+      "city": "Charlotte",
+      "answer": "North Carolina",
+      "weight": 4
+     },
+     {
+      "template": "state_q",
+      "city": "Kannapolis",
+      "answer": "North Carolina",
+      "weight": 4
+     },
+     {
+      "template": "state_q",
+      "city": "Outer Banks",
+      "answer": "North Carolina",
+      "weight": 4
+     },
+     {
+      "template": "state_q",
+      "city": "Chapel Hill",
+      "answer": "North Carolina",
+      "weight": 4
+     },
+     {
+      "template": "The city of {city} is in the state of",
+      "city": "Charlotte",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "The city of {city} is in the state of",
+      "city": "Kannapolis",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "The city of {city} is in the state of",
+      "city": "Outer Banks",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "The city of {city} is in the state of",
+      "city": "Chapel Hill",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "{city} is located in",
+      "city": "Charlotte",
+      "answer": "North Carolina",
+      "weight": 2
+     },
+     {
+      "template": "{city} is located in",
+      "city": "Kannapolis",
+      "answer": "North Carolina",
+      "weight": 2
+     },
+     {
+      "template": "{city} is located in",
+      "city": "Outer Banks",
+      "answer": "North Carolina",
+      "weight": 2
+     },
+     {
+      "template": "{city} is located in",
+      "city": "Chapel Hill",
+      "answer": "North Carolina",
+      "weight": 2
+     },
+     {
+      "template": "country_q",
+      "city": "Charlotte",
+      "answer": "United States",
+      "weight": 2
+     },
+     {
+      "template": "country_q",
+      "city": "Kannapolis",
+      "answer": "United States",
+      "weight": 2
+     },
+     {
+      "template": "country_q",
+      "city": "Outer Banks",
+      "answer": "United States",
+      "weight": 2
+     },
+     {
+      "template": "country_q",
+      "city": "Chapel Hill",
+      "answer": "United States",
+      "weight": 2
+     },
+     {
+      "template": "zs1",
+      "city": "Atlanta",
+      "answer": "Atlanta",
+      "weight": 1
+     },
+     {
+      "template": "zs1",
+      "city": "Richmond",
+      "answer": "Richmond",
+      "weight": 1
+     },
+     {
+      "template": "zs1",
+      "city": "Nashville",
+      "answer": "Nashville",
+      "weight": 1
+     },
+     {
+      "template": "zs1",
+      "city": "Birmingham",
+      "answer": "Montgomery",
+      "weight": 1
+     }
+    ]
+   },
+   "used": 2672,
+   "calls": 0
+  },
+  {
+   "tool": "optimize_vector",
+   "args": {
+    "name": "opt2",
+    "layer": 20,
+    "position": "city_last",
+    "dev_cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "templates": [
+     "fs1",
+     "zs1",
+     "The state that {city} is in has the capital city of"
+    ],
+    "steps": 100,
+    "kl_weight": 3,
+    "init": "optorth",
+    "lr": 0.025,
+    "max_norm": 80,
+    "extra_examples": [
+     {
+      "template": "state_q",
+      "city": "Charlotte",
+      "answer": "North Carolina",
+      "weight": 4
+     },
+     {
+      "template": "state_q",
+      "city": "Kannapolis",
+      "answer": "North Carolina",
+      "weight": 4
+     },
+     {
+      "template": "state_q",
+      "city": "Outer Banks",
+      "answer": "North Carolina",
+      "weight": 4
+     },
+     {
+      "template": "state_q",
+      "city": "Chapel Hill",
+      "answer": "North Carolina",
+      "weight": 4
+     },
+     {
+      "template": "The city of {city} is in the state of",
+      "city": "Charlotte",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "The city of {city} is in the state of",
+      "city": "Kannapolis",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "The city of {city} is in the state of",
+      "city": "Outer Banks",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "The city of {city} is in the state of",
+      "city": "Chapel Hill",
+      "answer": "North Carolina",
+      "weight": 3
+     },
+     {
+      "template": "{city} is located in",
+      "city": "Charlotte",
+      "answer": "North Carolina",
+      "weight": 2
+     },
+     {
+      "template": "{city} is located in",
+      "city": "Kannapolis",
+      "answer": "North Carolina",
+      "weight": 2
+     },
+     {
+      "template": "{city} is located in",
+      "city": "Outer Banks",
+      "answer": "North Carolina",
+      "weight": 2
+     },
+     {
+      "template": "{city} is located in",
+      "city": "Chapel Hill",
+      "answer": "North Carolina",
+      "weight": 2
+     },
+     {
+      "template": "country_q",
+      "city": "Charlotte",
+      "answer": "United States",
+      "weight": 2
+     },
+     {
+      "template": "country_q",
+      "city": "Kannapolis",
+      "answer": "United States",
+      "weight": 2
+     },
+     {
+      "template": "country_q",
+      "city": "Outer Banks",
+      "answer": "United States",
+      "weight": 2
+     },
+     {
+      "template": "country_q",
+      "city": "Chapel Hill",
+      "answer": "United States",
+      "weight": 2
+     }
+    ]
+   },
+   "used": 5872,
+   "calls": 0
+  },
+  {
+   "tool": "vec_op",
+   "args": {
+    "name": "opt2orth",
+    "expr": "proj_out(opt2,statediff)"
+   },
+   "used": 5872,
+   "calls": 0
+  },
+  {
+   "tool": "vec_info",
+   "args": {
+    "name": "opt2",
+    "top_k": 5
+   },
+   "used": 5872,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: What is the capital of the state where {city} is located?\nA:",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "edits": [
+     {
+      "register": "opt2",
+      "layer": 20,
+      "position": "city_last",
+      "scale": 1,
+      "scale_from": {
+       "key": "key",
+       "lo": 10,
+       "hi": 20
+      }
+     }
+    ],
+    "n_generic": 8
+   },
+   "used": 5888,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill",
+     "Paducah",
+     "Louisville",
+     "Middlesboro",
+     "Corbin",
+     "Chicago",
+     "Miami",
+     "Seattle",
+     "Boston",
+     "Atlanta",
+     "Richmond",
+     "Nashville",
+     "Birmingham"
+    ],
+    "edits": [
+     {
+      "register": "opt2",
+      "layer": 20,
+      "position": "city_last",
+      "scale": 1,
+      "scale_from": {
+       "key": "key",
+       "lo": 10,
+       "hi": 20
+      }
+     }
+    ],
+    "n_generic": 8
+   },
+   "used": 5912,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt2orth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "n_generic": 0
+   },
+   "used": 5916,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "The city of {city} is in the state of",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt2orth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 5920,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "state_q",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt2orth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 5924,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "{city} lies in the US state of",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt2orth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 1,
+    "answers": "states",
+    "n_generic": 0
+   },
+   "used": 5932,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "zs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt2orth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 0.8,
+    "n_generic": 0
+   },
+   "used": 5936,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "Q: What is the capital of the state where {city} is located?\nA:",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt2orth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 0.8,
+    "n_generic": 0
+   },
+   "used": 5940,
+   "calls": 0
+  },
+  {
+   "tool": "eval_intervention",
+   "args": {
+    "template": "fs1",
+    "cities": [
+     "Charlotte",
+     "Kannapolis",
+     "Outer Banks",
+     "Chapel Hill"
+    ],
+    "vector": "opt2orth",
+    "layer": 20,
+    "position": "city_last",
+    "scale": 0.8,
+    "n_generic": 0
+   },
+   "used": 5944,
+   "calls": 0
+  },
+  {
+   "tool": "submit",
+   "args": {
+    "edits": [
+     {
+      "register": "opt2orth",
+      "layer": 20,
+      "position": "city_last",
+      "scale": 1.1,
+      "scale_from": {
+       "key": "key",
+       "lo": 12,
+       "hi": 20
+      }
+     }
+    ]
+   },
+   "used": 5944,
+   "calls": 0
+  }
+ ],
+ "submission": {
+  "kind": "add"
+ },
+ "submission_edits": [
+  {
+   "layer": 20,
+   "position": "city_last",
+   "scale": 1.1,
+   "scale_from": {
+    "key": [
+     -0.06556760519742966,
+     -0.006808812730014324,
+     0.024146877229213715,
+     0.006698182318359613,
+     -0.007476464845240116,
+     0.00955059565603733,
+     0.001435877406038344,
+     -0.016179924830794334,
+     -0.00548666063696146,
+     -0.017629727721214294,
+     0.011189940385520458,
+     0.014069432392716408,
+     -0.0018072249367833138,
+     0.0007836981676518917,
+     -0.018517866730690002,
+     0.019597869366407394,
+     -0.0054533942602574825,
+     -0.03346460685133934,
+     0.010942762717604637,
+     0.020145606249570847,
+     -0.0020006352569907904,
+     0.008565750904381275,
+     -0.014109660871326923,
+     -0.021810481324791908,
+     -0.0001114042752305977,
+     0.010584953241050243,
+     -0.005632105283439159,
+     -0.016154393553733826,
+     -0.025610605254769325,
+     0.03781633824110031,
+     -0.010697904974222183,
+     -0.004790383856743574,
+     0.005071989260613918,
+     0.05546076223254204,
+     -0.015494477935135365,
+     -0.004714567214250565,
+     -0.005658409092575312,
+     -0.020331280305981636,
+     -0.0007225805311463773,
+     0.0033158245496451855,
+     0.002110492205247283,
+     -0.0006730675231665373,
+     0.020054703578352928,
+     0.00036515845567919314,
+     -0.03297566622495651,
+     0.0007117495406419039,
+     -0.02500561811029911,
+     -0.011137333698570728,
+     -0.0019108927808701992,
+     0.011521059088408947,
+     -0.07357943058013916,
+     -0.03206586465239525,
+     -0.00934480782598257,
+     -0.009320824407041073,
+     -0.029787492007017136,
+     -0.011189940385520458,
+     -0.043859247118234634,
+     0.07331020385026932,
+     0.004951301030814648,
+     -0.00013616078649647534,
+     0.015496025793254375,
+     0.022577933967113495,
+     0.02105540782213211,
+     -0.013721293769776821,
+     0.010066614486277103,
+     0.029308609664440155,
+     -0.00047656273818574846,
+     -0.038632526993751526,
+     -0.012806850485503674,
+     -0.011480829678475857,
+     -0.02549610659480095,
+     0.00790660921484232,
+     0.11134857684373856,
+     -0.03410208597779274,
+     -0.001052151550538838,
+     0.018360044807195663,
+     -0.02955307997763157,
+     0.0003496856370475143,
+     0.013254014775156975,
+     -0.010679338127374649,
+     -0.001912440056912601,
+     -0.02472865581512451,
+     -0.04265546053647995,
+     -0.02108325995504856,
+     -0.008274862542748451,
+     -0.02964591607451439,
+     -0.003555653151124716,
+     -0.005587234161794186,
+     -0.009439965710043907,
+     -0.009616355411708355,
+     -0.015398547053337097,
+     0.002153815934434533,
+     -0.007600247394293547,
+     -0.010032573714852333,
+     -0.004285970237106085,
+     0.028080066666007042,
+     0.004651128780096769,
+     0.00578296510502696,
+     0.000767451710999012,
+     0.006762394215911627,
+     0.010912977159023285,
+     -0.02363472618162632,
+     -0.011134238913655281,
+     0.0014730121474713087,
+     0.002956855110824108,
+     -0.009224893525242805,
+     0.017591044306755066,
+     -0.002324016997590661,
+     0.027501383796334267,
+     0.017221244052052498,
+     0.00410958006978035,
+     0.016883937641978264,
+     -0.0053628780879080296,
+     0.03946186974644661,
+     0.0070687560364604,
+     0.0027665395755320787,
+     0.005421674810349941,
+     -0.015451154671609402,
+     0.04414704069495201,
+     0.04446461796760559,
+     -0.005437147803604603,
+     -0.055924948304891586,
+     0.009593145921826363,
+     0.02831525355577469,
+     0.02380647510290146,
+     0.017815787345170975,
+     0.001883041812106967,
+     -0.06846102327108383,
+     -0.014126681722700596,
+     0.009239592589437962,
+     0.008974233642220497,
+     -0.011982149444520473,
+     -0.018437407910823822,
+     -0.0068884980864822865,
+     -0.01686382293701172,
+     0.0040662563405931,
+     -0.008008729666471481,
+     0.0022342747543007135,
+     -0.012217335402965546,
+     -0.0048986938782036304,
+     0.007742597255855799,
+     -0.0027603504713624716,
+     -0.0009840711718425155,
+     -0.0063005308620631695,
+     0.00030171990511007607,
+     0.020888302475214005,
+     0.010372975841164589,
+     -0.03821166604757309,
+     0.009884035214781761,
+     -0.004584595561027527,
+     -0.014395908452570438,
+     0.005706374533474445,
+     0.02886299230158329,
+     0.0013523241505026817,
+     -0.006535717751830816,
+     0.00317038013599813,
+     -0.008271767757833004,
+     -0.01857975870370865,
+     -0.011524153873324394,
+     -0.008388587273657322,
+     -0.023852894082665443,
+     -0.0004456171009223908,
+     0.005218980833888054,
+     -0.05429411306977272,
+     0.03246970474720001,
+     0.003843447659164667,
+     0.011972865089774132,
+     -0.011992979794740677,
+     -0.006563568487763405,
+     0.012248281389474869,
+     -0.0013492295984178782,
+     -0.0076311929151415825,
+     -0.01539545226842165,
+     -0.018548812717199326,
+     -0.005543909966945648,
+     -0.025236163288354874,
+     0.008321280591189861,
+     -0.015208231285214424,
+     0.011844441294670105,
+     -0.014386625029146671,
+     -0.016339294612407684,
+     0.007997898384928703,
+     0.01299484446644783,
+     0.0025901494082063437,
+     0.003990439232438803,
+     -0.08341705054044724,
+     0.05369686335325241,
+     -0.0025831866078078747,
+     0.00368253025226295,
+     -0.0012997165322303772,
+     0.006091260816901922,
+     0.01666538417339325,
+     0.0028315254021435976,
+     0.0014250463573262095,
+     -0.009375366382300854,
+     -0.019781995564699173,
+     -0.002438515890389681,
+     -0.0013677969109266996,
+     0.005861876532435417,
+     0.027034103870391846,
+     -0.008680249564349651,
+     -0.02101672627031803,
+     0.011500170454382896,
+     0.024348024278879166,
+     0.003930095583200455,
+     -0.03334159776568413,
+     0.008404834195971489,
+     0.0028469981625676155,
+     0.00023828136909287423,
+     0.00579921156167984,
+     0.014847714453935623,
+     0.006045229267328978,
+     0.01665494032204151,
+     -0.014414475299417973,
+     0.012161633931100368,
+     -0.05768188461661339,
+     -0.003207514761015773,
+     0.0028825856279581785,
+     0.011920257471501827,
+     0.01999087817966938,
+     0.0117918336763978,
+     -0.011920257471501827,
+     0.012870288453996181,
+     -0.01931316964328289,
+     -0.0027541613671928644,
+     -0.005360557232052088,
+     -0.026675134897232056,
+     -0.0164383202791214,
+     0.08775562793016434,
+     0.012966220267117023,
+     -0.01702628657221794,
+     -0.00857812911272049,
+     0.005587234161794186,
+     0.012025472708046436,
+     -0.009630280546844006,
+     -0.014739404432475567,
+     0.00913205649703741,
+     -0.00242923223413527,
+     0.004768722224980593,
+     -0.012480373494327068,
+     0.0020981139969080687,
+     0.020260104909539223,
+     -0.002139890566468239,
+     -0.007131421007215977,
+     -0.012604156509041786,
+     -0.007255203556269407,
+     0.0030326719861477613,
+     -0.004169924184679985,
+     -0.007064887788146734,
+     0.027965568006038666,
+     0.0028253362979739904,
+     -0.04549936205148697,
+     -0.009407472796738148,
+     0.005075083579868078,
+     -0.03840972110629082,
+     -0.009552916511893272,
+     -0.019214143976569176,
+     -0.010543176904320717,
+     -0.02339489758014679,
+     0.012478826567530632,
+     0.0033235610462725163,
+     0.0025916968006640673,
+     0.006905518006533384,
+     0.02432636171579361,
+     -0.015410925261676311,
+     -0.016110297292470932,
+     -0.034522946923971176,
+     0.01115899533033371,
+     0.02408808097243309,
+     -0.0040662563405931,
+     -0.019865548238158226,
+     0.0014234990812838078,
+     0.016964396461844444,
+     0.006920604035258293,
+     -0.0029893480241298676,
+     -0.004428320098668337,
+     -0.0812910795211792,
+     -0.015267027541995049,
+     0.009890223853290081,
+     -0.01071956753730774,
+     0.010953206568956375,
+     0.003339033806696534,
+     -0.00548666063696146,
+     -0.0016401185421273112,
+     -0.01646655797958374,
+     -0.0725860744714737,
+     -0.008108529262244701,
+     0.012563927099108696,
+     0.0010335841216146946,
+     -0.010888220742344856,
+     -0.014903416857123375,
+     0.00544333690777421,
+     -0.0019503484945744276,
+     0.006764715537428856,
+     0.009830653667449951,
+     0.012929858639836311,
+     -0.01875305362045765,
+     0.003292615292593837,
+     -0.015526197850704193,
+     -0.02008371613919735,
+     -0.07023420929908752,
+     0.0015194305451586843,
+     -0.01588129810988903,
+     0.0128486268222332,
+     -0.02379564382135868,
+     -0.027981040999293327,
+     0.005901332013309002,
+     0.01236896961927414,
+     -0.011066158302128315,
+     -0.017111387103796005,
+     -0.026327384635806084,
+     -0.007974689826369286,
+     -0.08062884956598282,
+     0.006930274423211813,
+     -0.004298348445445299,
+     0.0028887747321277857,
+     0.017403824254870415,
+     0.0052917031571269035,
+     -0.02039085142314434,
+     -0.007691537030041218,
+     -0.014792012050747871,
+     0.0034167845733463764,
+     -0.006164370104670525,
+     0.003738232422620058,
+     0.0041776602156460285,
+     0.00524683203548193,
+     -0.011301345191895962,
+     0.04127218946814537,
+     -0.012724843807518482,
+     0.01026776060461998,
+     0.08114718645811081,
+     -0.01643986813724041,
+     -0.0245398860424757,
+     -0.0006931821699254215,
+     -0.0010088275885209441,
+     -0.06080197915434837,
+     0.0066842567175626755,
+     -0.030295774340629578,
+     0.012557737529277802,
+     -0.0826774463057518,
+     -0.008036580868065357,
+     0.013070275075733662,
+     0.019796695560216904,
+     0.0013043584767729044,
+     -0.0012006905162706971,
+     -0.018206089735031128,
+     0.005613537970930338,
+     0.01883351244032383,
+     -0.026715364307165146,
+     0.011654125526547432,
+     -0.0031877870205789804,
+     -0.0709242969751358,
+     -0.0032245349138975143,
+     -0.027284763753414154,
+     0.011152805760502815,
+     -0.00012378253450151533,
+     -0.004654223099350929,
+     0.015039577148854733,
+     0.00010985699918819591,
+     0.03382357582449913,
+     0.0028918692842125893,
+     -0.0036562264431267977,
+     0.007621909491717815,
+     -0.0018226978136226535,
+     -0.005700185429304838,
+     -0.007991709746420383,
+     0.0011883123079314828,
+     -0.01143750548362732,
+     -0.0379362516105175,
+     0.008561109192669392,
+     -0.0015898318961262703,
+     0.009853089228272438,
+     0.009055852890014648,
+     0.0016076256288215518,
+     -0.014160721562802792,
+     -0.018254054710268974,
+     -0.0059647709131240845,
+     0.010657675564289093,
+     -0.0008819505455903709,
+     -0.0020362227223813534,
+     0.003818691009655595,
+     -0.00635816715657711,
+     -0.013195217587053776,
+     -0.0005276230513118207,
+     -0.09648848325014114,
+     0.019294602796435356,
+     -0.015212872996926308,
+     -0.014895680360496044,
+     -0.005601159762591124,
+     -0.007838528603315353,
+     0.008529390208423138,
+     -0.007454802747815847,
+     0.009378073737025261,
+     0.015200494788587093,
+     -0.00746486010029912,
+     -0.00517410971224308,
+     0.015856541693210602,
+     0.033322256058454514,
+     -0.011709826998412609,
+     0.0025483728386461735,
+     0.010217473842203617,
+     0.00933707132935524,
+     0.012799113988876343,
+     0.026248086243867874,
+     0.0075228833593428135,
+     0.03853040561079979,
+     -0.01457848772406578,
+     0.002788201440125704,
+     -0.019319359213113785,
+     0.03902244195342064,
+     -0.017725657671689987,
+     0.031877096742391586,
+     0.02108016423881054,
+     -0.026223329827189445,
+     -0.01631763204932213,
+     -0.0016091729048639536,
+     0.02112348936498165,
+     -0.005665371660143137,
+     0.003688719356432557,
+     0.006198410410434008,
+     0.004729266278445721,
+     0.016549725085496902,
+     -0.013399459421634674,
+     0.03162024915218353,
+     0.0018799471436068416,
+     -0.011323006823658943,
+     -0.007962311618030071,
+     -0.0014436137862503529,
+     -0.008689146488904953,
+     -0.007219616323709488,
+     0.012946105562150478,
+     -0.011596876196563244,
+     0.012823870405554771,
+     -0.009419851005077362,
+     -0.001633929437957704,
+     0.0001114042752305977,
+     -0.018629271537065506,
+     0.025794731453061104,
+     0.0073526822961866856,
+     0.011840186081826687,
+     0.015265480615198612,
+     0.013133326545357704,
+     -0.08373578637838364,
+     0.01327412948012352,
+     0.0014204045291990042,
+     -0.0042735920287668705,
+     -0.01936732418835163,
+     -0.018162764608860016,
+     -0.0050803059712052345,
+     -0.00958966463804245,
+     0.0032214403618127108,
+     -0.0039842501282691956,
+     -0.01738216169178486,
+     -0.014029975980520248,
+     0.009279048070311546,
+     0.011756245978176594,
+     0.005356688983738422,
+     -0.011810400523245335,
+     -0.047489166259765625,
+     -0.0006622365326620638,
+     -0.01581631228327751,
+     -0.014894133433699608,
+     -0.012359686195850372,
+     0.0007643571007065475,
+     -0.0097819147631526,
+     -0.19040538370609283,
+     0.04364262521266937,
+     -0.02676178328692913,
+     0.019494201987981796,
+     0.00243077939376235,
+     0.01206260733306408,
+     -0.00736196618527174,
+     -0.03089921362698078,
+     0.0021785725839436054,
+     0.011626274324953556,
+     -0.0007705462630838156,
+     -0.021012084558606148,
+     -0.0024547623470425606,
+     -0.07403433322906494,
+     -0.019475633278489113,
+     0.004183849319815636,
+     -0.013244730420410633,
+     -0.01312094833701849,
+     -0.009338618256151676,
+     -0.008361510001122952,
+     0.0067213913425803185,
+     -0.0028098635375499725,
+     -0.033099450170993805,
+     0.0077023678459227085,
+     -0.02972560189664364,
+     -0.0009283690014854074,
+     0.0007550734444521368,
+     0.014519690535962582,
+     -0.0024431576021015644,
+     -0.0031812109518796206,
+     0.01219644770026207,
+     0.003942473791539669,
+     0.012916707433760166,
+     -0.003447343595325947,
+     0.0008664777269586921,
+     0.11347763240337372,
+     -0.021578390151262283,
+     -0.009565682150423527,
+     -0.02076452039182186,
+     -0.0008258615853264928,
+     0.015554822050035,
+     0.01995064876973629,
+     -0.02158767357468605,
+     0.0035154239740222692,
+     0.015513045713305473,
+     -0.028767060488462448,
+     -0.0012409199262037873,
+     -0.0009670510189607739,
+     -0.0049698688089847565,
+     -0.14861524105072021,
+     -0.002848545555025339,
+     0.01364083494991064,
+     0.009884035214781761,
+     -0.05570213869214058,
+     -0.012944558635354042,
+     0.018533339723944664,
+     0.016166772693395615,
+     0.0016370239900425076,
+     -0.01928531751036644,
+     -0.004084823653101921,
+     -0.006093195173889399,
+     0.0244083683937788,
+     0.00548666063696146,
+     -0.009313087910413742,
+     0.008296524174511433,
+     0.027405451983213425,
+     -0.015164907090365887,
+     -0.05771515145897865,
+     -0.00772093515843153,
+     0.010753607377409935,
+     0.015107657760381699,
+     -0.00016091729048639536,
+     0.0032725005876272917,
+     0.014631095342338085,
+     -0.09276262670755386,
+     0.024908140301704407,
+     0.005823967978358269,
+     -0.0042256261222064495,
+     0.011499397456645966,
+     0.03895436227321625,
+     0.011301345191895962,
+     -0.011808853596448898,
+     -0.007306263782083988,
+     -0.011889312416315079,
+     -0.015794651582837105,
+     -0.0031456234864890575,
+     0.03277142345905304,
+     0.0075940582901239395,
+     0.024162350222468376,
+     0.005155542399734259,
+     -0.010676243342459202,
+     -0.011183751747012138,
+     -0.007170103024691343,
+     -0.007799846585839987,
+     0.04414704069495201,
+     -0.0015472816303372383,
+     0.0029027003329247236,
+     -0.006727580446749926,
+     0.0016169092850759625,
+     0.0051973192021250725,
+     0.00047037360491231084,
+     0.08978565782308578,
+     0.009742265567183495,
+     -0.0020284862257540226,
+     -0.010252288542687893,
+     -0.0015163359930738807,
+     -0.007742597255855799,
+     -0.03249678388237953,
+     0.01135859452188015,
+     -0.045507099479436874,
+     -0.012630459852516651,
+     -0.0016973679885268211,
+     0.017775172367691994,
+     -0.0711037814617157,
+     -0.014999348670244217,
+     0.011945013888180256,
+     0.00223272736184299,
+     0.004511873237788677,
+     0.0004873937286902219,
+     -0.007816866971552372,
+     -0.01846216432750225,
+     -0.019477181136608124,
+     -0.008070620708167553,
+     -0.013086908496916294,
+     -0.005700185429304838,
+     0.0081603629514575,
+     0.009273245930671692,
+     0.004041499458253384,
+     0.007724029943346977,
+     0.014389718882739544,
+     0.007813772186636925,
+     0.009859278798103333,
+     0.01034203078597784,
+     0.0075569236651062965,
+     -0.022444866597652435,
+     0.006199957337230444,
+     -0.005909068509936333,
+     0.007563112769275904,
+     0.0024895761162042618,
+     -0.012561606243252754,
+     -0.006568210665136576,
+     0.0369800329208374,
+     -0.01147154625505209,
+     -0.0014730121474713087,
+     0.0335698239505291,
+     0.009525065310299397,
+     0.011586044915020466,
+     -0.07513289898633957,
+     0.02105540782213211,
+     0.009639564901590347,
+     -0.018596777692437172,
+     -0.019115116447210312,
+     -0.02189403586089611,
+     0.0038465422112494707,
+     0.02314269170165062,
+     -0.03624971583485603,
+     0.040931787341833115,
+     0.0004827518714591861,
+     0.004613220226019621,
+     -0.019854718819260597,
+     0.023388709872961044,
+     -0.0053907292895019054,
+     0.005223623011261225,
+     0.012526792474091053,
+     0.014959119260311127,
+     -0.004123505670577288,
+     0.006004226393997669,
+     -0.10554317384958267,
+     0.002195592736825347,
+     0.004564480856060982,
+     -0.017388351261615753,
+     -0.0035525585990399122,
+     -0.011610801331698895,
+     -0.004428320098668337,
+     -0.008710421621799469,
+     -0.021982230246067047,
+     0.09087494760751724,
+     0.02779691480100155,
+     0.011313723400235176,
+     0.08943906426429749,
+     -0.01558112632483244,
+     -0.0015472816303372383,
+     -0.00552998436614871,
+     0.010422488674521446,
+     -0.00795302726328373,
+     0.004134336486458778,
+     0.007123684510588646,
+     -0.04000961035490036,
+     -0.010399280115962029,
+     -0.0006506319041363895,
+     0.0014915794599801302,
+     -0.012560832314193249,
+     0.00046650541480630636,
+     -0.0041064852848649025,
+     -0.011728394776582718,
+     -0.014275220222771168,
+     0.052756115794181824,
+     0.038567930459976196,
+     -0.025913873687386513,
+     0.02242475189268589,
+     0.002715479349717498,
+     0.005502133630216122,
+     0.0036577738355845213,
+     0.006201504729688168,
+     -0.025369230657815933,
+     0.00489405170083046,
+     0.005102934781461954,
+     -0.027553992345929146,
+     -0.006817322690039873,
+     0.0268824715167284,
+     -0.006108667701482773,
+     0.0707850381731987,
+     -0.006264943163841963,
+     0.011418938636779785,
+     -0.025305790826678276,
+     -0.008983517065644264,
+     0.007085776422172785,
+     -0.021523848176002502,
+     -0.029769698157906532,
+     0.018146518617868423,
+     -0.004643972497433424,
+     -0.01767691969871521,
+     0.016913335770368576,
+     -0.03546369448304176,
+     -0.00493428111076355,
+     0.024617251008749008,
+     -0.003995081409811974,
+     0.002571582095697522,
+     0.014528200961649418,
+     -0.030252451077103615,
+     0.008559562265872955,
+     0.008231538347899914,
+     0.02795937843620777,
+     -0.00978965125977993,
+     0.0004456171009223908,
+     0.004227173514664173,
+     -0.008602885529398918,
+     -0.013182839378714561,
+     0.006161275319755077,
+     -0.009896413423120975,
+     -0.00857194047421217,
+     0.0017081989208236337,
+     0.009602430276572704,
+     -0.003227629465982318,
+     0.01288885623216629,
+     -0.06098146364092827,
+     -0.04562624171376228,
+     0.0029831589199602604,
+     0.0074888430535793304,
+     -0.03918026387691498,
+     -0.017993338406085968,
+     0.0027893618680536747,
+     0.00315413367934525,
+     -0.0760597214102745,
+     -0.010586501099169254,
+     -0.007306263782083988,
+     -0.0026953646447509527,
+     -0.013668686151504517,
+     0.03938296064734459,
+     0.003218345809727907,
+     -0.0003773432981688529,
+     0.01918010227382183,
+     -0.001912440056912601,
+     0.009589278139173985,
+     -0.0068498156033456326,
+     -0.0022280856501311064,
+     0.0049776048399508,
+     -0.004155998583883047,
+     -0.020619075745344162,
+     -0.02380802296102047,
+     -0.02053552120923996,
+     -0.048900287598371506,
+     -0.001066077034920454,
+     -0.007844718173146248,
+     -0.014553731307387352,
+     0.02769015170633793,
+     0.0077271247282624245,
+     0.035624612122774124,
+     0.016394997015595436,
+     -0.007908156141638756,
+     -0.013523241505026817,
+     -0.015222156420350075,
+     -0.0036593209952116013,
+     -0.007934460416436195,
+     0.0036423010751605034,
+     -0.007080360781401396,
+     -5.260757461655885e-05,
+     -0.03976823389530182,
+     0.004716114606708288,
+     0.020207498222589493,
+     -0.010252288542687893,
+     -0.008943287655711174,
+     -0.0008912342018447816,
+     0.01810319535434246,
+     -0.011146617121994495,
+     -0.0062100146897137165,
+     0.010817819274961948,
+     0.028401901945471764,
+     -0.17209485173225403,
+     0.005941561423242092,
+     -0.01911395601928234,
+     -0.024329455569386482,
+     -0.014717742800712585,
+     -0.0016463076462969184,
+     0.004545139614492655,
+     0.02714860439300537,
+     -0.03353114053606987,
+     -0.011282777413725853,
+     -0.008590507321059704,
+     -0.006240186747163534,
+     -0.005749698728322983,
+     0.017202677205204964,
+     0.009559106081724167,
+     0.0007550734444521368,
+     0.0375061072409153,
+     0.010905240662395954,
+     -0.008010276593267918,
+     -0.0027758232317864895,
+     0.003997402265667915,
+     0.02444704994559288,
+     -0.003490667324513197,
+     -0.00916454941034317,
+     0.029958467930555344,
+     -0.017812306061387062,
+     -0.011383350938558578,
+     0.0011357046896591783,
+     -0.0022806930355727673,
+     0.009677086025476456,
+     -0.015943190082907677,
+     0.03014065884053707,
+     0.0035076874773949385,
+     0.05481554567813873,
+     0.024689972400665283,
+     0.002259031170979142,
+     0.009466269053518772,
+     -0.03107251040637493,
+     0.007098928093910217,
+     -0.013789374381303787,
+     -0.015926169231534004,
+     0.00877927616238594,
+     -0.014436137862503529,
+     0.035054437816143036,
+     -0.008021107874810696,
+     0.12442620098590851,
+     -0.032072052359580994,
+     0.0029181730933487415,
+     0.014621811918914318,
+     0.013459029607474804,
+     -0.01272793859243393,
+     -0.032539334148168564,
+     0.03649728000164032,
+     0.022793972864747047,
+     0.001869116211310029,
+     -0.006808039266616106,
+     -0.011134238913655281,
+     0.015534707345068455,
+     -0.006186032202094793,
+     0.019570019096136093,
+     -0.00014389719581231475,
+     0.022766701877117157,
+     0.031422194093465805,
+     0.0005291703273542225,
+     -0.02942310832440853,
+     0.009846900589764118,
+     0.005396918393671513,
+     0.012563927099108696,
+     -0.016500212252140045,
+     -0.00602820934727788,
+     -0.007612625602632761,
+     -0.01838015951216221,
+     0.0004966774140484631,
+     -0.010481285862624645,
+     -0.014660493470728397,
+     0.008528616279363632,
+     -0.01097332127392292,
+     -0.001621551113203168,
+     0.009877845644950867,
+     -0.017391445115208626,
+     -0.0002189403458032757,
+     -0.001550376182422042,
+     -0.01581476628780365,
+     -0.0064374650828540325,
+     -0.0270279161632061,
+     0.030995145440101624,
+     0.03427847847342491,
+     0.015624449588358402,
+     0.014219517819583416,
+     0.003732043318450451,
+     0.01355418749153614,
+     0.0025174273177981377,
+     -7.736407860647887e-05,
+     -0.03170070797204971,
+     -0.04080181568861008,
+     0.01681121438741684,
+     -0.010865011252462864,
+     0.012941463850438595,
+     0.016964396461844444,
+     0.02416776493191719,
+     -0.01356037613004446,
+     -0.07251722365617752,
+     0.05528127774596214,
+     0.03435429558157921,
+     0.0482550710439682,
+     -0.008763803169131279,
+     -0.015398547053337097,
+     0.017509039491415024,
+     0.015058144927024841,
+     -0.022726472467184067,
+     -0.004326973110437393,
+     -0.007291661575436592,
+     0.010572575032711029,
+     -0.007679932285100222,
+     0.022593406960368156,
+     -0.0045954263769090176,
+     0.018629271537065506,
+     0.04524870589375496,
+     0.007383627817034721,
+     -0.0048986938782036304,
+     0.03446105495095253,
+     -0.00387903512455523,
+     0.0034782891161739826,
+     -0.005984885152429342,
+     -0.0174502432346344,
+     -0.02019202522933483,
+     -0.01887528784573078,
+     0.01960715278983116,
+     0.010844896547496319,
+     0.027369864284992218,
+     0.05393204838037491,
+     -0.006536878179758787,
+     0.005075083579868078,
+     0.007114401087164879,
+     -0.019235804677009583,
+     -0.04263070225715637,
+     -0.020541710779070854,
+     0.01923271082341671,
+     -0.013814130797982216,
+     0.016144337132573128,
+     0.004926544614136219,
+     -0.01589367724955082,
+     0.026204761117696762,
+     -0.016215510666370392,
+     0.0006993712740950286,
+     0.006709013134241104,
+     0.029930615797638893,
+     -0.006411935202777386,
+     0.00529015576466918,
+     0.0034009250812232494,
+     -4.564480695989914e-05,
+     -0.004220984410494566,
+     -0.0015967946965247393,
+     0.0005663050687871873,
+     0.11169826239347458,
+     0.009299162775278091,
+     0.0019928987603634596,
+     -0.0025932439602911472,
+     0.0024214957375079393,
+     0.009385810233652592,
+     -0.0009206325630657375,
+     -0.01034203078597784,
+     -0.0020161080174148083,
+     -0.018797151744365692,
+     0.002424590289592743,
+     -0.028593765571713448,
+     -0.0007914345478639007,
+     0.005025570746511221,
+     0.0003311182663310319,
+     -0.0023913236800581217,
+     0.10044024139642715,
+     0.01594937965273857,
+     0.011087819933891296,
+     0.004610899370163679,
+     0.009286784566938877,
+     0.013479144312441349,
+     0.009593145921826363,
+     0.03868203982710838,
+     0.01973751187324524,
+     0.006190673913806677,
+     -0.021142056211829185,
+     0.023319467902183533,
+     -0.0011496302904561162,
+     0.012997165322303772,
+     -0.008079905062913895,
+     0.005459196399897337,
+     0.006903970614075661,
+     0.012591778300702572,
+     0.01288885623216629,
+     -0.010063519701361656,
+     0.0018149613169953227,
+     0.002679891884326935,
+     0.0025824131444096565,
+     0.017566287890076637,
+     -0.02087012119591236,
+     0.01441757008433342,
+     -0.012187937274575233,
+     -0.006486204452812672,
+     -0.003809407353401184,
+     -0.017787549644708633,
+     0.013517051935195923,
+     -0.022683149203658104,
+     -0.006704371422529221,
+     -0.013507768511772156,
+     0.03269096463918686,
+     0.006817322690039873,
+     -0.0014265936333686113,
+     0.005836346186697483,
+     -0.00901136826723814,
+     -0.007501221261918545,
+     0.014776539988815784,
+     -0.02246343530714512,
+     0.06447522342205048,
+     0.006784829776734114,
+     -0.0028965112287551165,
+     0.026910321786999702,
+     0.02819611318409443,
+     -0.0009825238958001137,
+     -0.0011310628615319729,
+     -0.017669957131147385,
+     -0.0085378997027874,
+     -0.008893774822354317,
+     0.006076174788177013,
+     -0.01828577369451523,
+     -0.019415289163589478,
+     0.025573471561074257,
+     -0.038086336106061935,
+     -0.004159092903137207,
+     0.14007695019245148,
+     0.012424672022461891,
+     0.0021708360873162746,
+     -0.012153897434473038,
+     -0.0275199506431818,
+     -0.0042256261222064495,
+     0.0006622365326620638,
+     -0.012469543144106865,
+     0.009085637517273426,
+     -0.0031286035664379597,
+     0.006275774445384741,
+     -0.013139516115188599,
+     0.006961219944059849,
+     -0.013585132546722889,
+     -0.017626632004976273,
+     0.002166194375604391,
+     -0.10524145513772964,
+     0.014067884534597397,
+     0.014558373019099236,
+     -0.025650834664702415,
+     0.015220609493553638,
+     0.012464900501072407,
+     -0.022175639867782593,
+     0.008909247815608978,
+     0.009973003529012203,
+     0.00769385788589716,
+     -0.008125162683427334,
+     -0.0004920355859212577,
+     0.010289423167705536,
+     -0.0032709534280002117,
+     -0.020886754617094994,
+     0.013623815029859543,
+     0.033897846937179565,
+     -0.006331476382911205,
+     0.0026241897139698267,
+     -4.487116893869825e-05,
+     -0.006842079572379589,
+     0.018511677160859108,
+     0.01635786145925522,
+     0.003824880113825202,
+     0.00920323096215725,
+     0.018879931420087814,
+     0.018112478777766228,
+     0.023518681526184082,
+     -0.0010861917398869991,
+     -0.007409931626170874,
+     -0.0021367960143834352,
+     0.021742401644587517,
+     -0.006956578232347965,
+     -0.005310270469635725,
+     -0.0153486467897892,
+     -0.0035525585990399122,
+     0.0014467083383351564,
+     -0.013950291089713573,
+     -0.01830434240400791,
+     0.008175835944712162,
+     -0.019984690472483635,
+     -0.013863643631339073,
+     0.020755235105752945,
+     0.004159092903137207,
+     0.0035773152485489845,
+     -0.0035525585990399122,
+     -0.010236815549433231,
+     0.007027753163129091,
+     -0.0004022932262159884,
+     0.024187879636883736,
+     0.01061435230076313,
+     -0.00965039525181055,
+     0.0035479168873280287,
+     -0.018585173413157463,
+     0.01681276224553585,
+     0.006606118753552437,
+     0.0022095181047916412,
+     -0.007199501618742943,
+     0.006908612325787544,
+     -0.030209125950932503,
+     0.016110297292470932,
+     0.019741766154766083,
+     0.004019837826490402,
+     -0.002110492205247283,
+     -0.0070772659964859486,
+     -0.016619352623820305,
+     0.06884784251451492,
+     -0.010985699482262135,
+     -0.021770251914858818,
+     -0.019062509760260582,
+     -0.003957946319133043,
+     0.004669696092605591,
+     0.00352470763027668,
+     0.00022899768373463303,
+     -0.02051076479256153,
+     0.018681878224015236,
+     0.019221879541873932,
+     -0.026873188093304634,
+     -0.011610801331698895,
+     0.00035123294219374657,
+     0.023017361760139465,
+     -0.011954298242926598,
+     -0.0008734404691495001,
+     -0.009198589250445366,
+     -0.00602820934727788,
+     -0.010781458579003811,
+     0.01605459488928318,
+     0.012120630592107773,
+     -0.005494397133588791,
+     0.02015024796128273,
+     -0.008342942222952843,
+     -0.04181992635130882,
+     -0.006065343972295523,
+     -0.012384442612528801,
+     0.09304732829332352,
+     0.1845303624868393,
+     -0.02356819435954094,
+     0.004016743041574955,
+     0.0037861980963498354,
+     -0.0040121013298630714,
+     -0.0009252743911929429,
+     -0.02504430152475834,
+     0.009571484290063381,
+     0.020953288301825523,
+     -0.0020795464515686035,
+     0.03290139511227608,
+     -0.013194444589316845,
+     -0.024598684161901474,
+     0.006659500300884247,
+     0.027603505179286003,
+     -0.04587225988507271,
+     0.00013461349590215832,
+     0.020679419860243797,
+     -0.004321557469666004,
+     -0.01264129113405943,
+     -0.01351395808160305,
+     -0.002339489758014679,
+     -0.007479559630155563,
+     -0.0022791458759456873,
+     0.012718655169010162,
+     0.0009376526577398181,
+     -0.008853545412421227,
+     -0.004877031780779362,
+     -0.016456887125968933,
+     0.0026489461306482553,
+     -0.005256889387965202,
+     -0.001813414040952921,
+     -0.016297517344355583,
+     0.016096370294690132,
+     -0.011610801331698895,
+     -0.006999901961535215,
+     -0.0018954200204461813,
+     -0.07153701782226562,
+     -0.0037846509367227554,
+     0.005853753071278334,
+     0.009724665433168411,
+     -0.0004796573193743825,
+     -0.010663865134119987,
+     -0.009292200207710266,
+     -0.012910517863929272,
+     -0.008055148646235466,
+     0.0010892862919718027,
+     0.006747695151716471,
+     0.0069596730172634125,
+     -0.003140981774777174,
+     -0.00937033724039793,
+     -0.004474738612771034,
+     0.012081175111234188,
+     0.08610312640666962,
+     -0.0005423222319222987,
+     -0.11766458302736282,
+     -0.01504421979188919,
+     -0.006436691619455814,
+     0.008293429389595985,
+     -0.021432945504784584,
+     0.008621453307569027,
+     0.03532753512263298,
+     -0.003297257237136364,
+     0.0071731978096067905,
+     -0.08883253484964371,
+     0.014583129435777664,
+     0.004007459618151188,
+     0.041213393211364746,
+     0.01850239373743534,
+     -0.011637878604233265,
+     -0.00986237358301878,
+     -0.07684419304132462,
+     0.006065343972295523,
+     0.029559267684817314,
+     -0.01559505145996809,
+     0.02428613230586052,
+     -0.007623456418514252,
+     0.004499495029449463,
+     0.01517651230096817,
+     0.01272174995392561,
+     -0.04464062303304672,
+     -0.08694484829902649,
+     -0.003860467579215765,
+     -0.012099741958081722,
+     0.001735276309773326,
+     -0.018011905252933502,
+     -0.001890778192318976,
+     -0.0044159418903291225,
+     0.017533795908093452,
+     -0.0011805759277194738,
+     0.02339799329638481,
+     -0.011313723400235176,
+     0.014671324752271175,
+     -0.014361868612468243,
+     0.03248982131481171,
+     -0.07831721007823944,
+     0.012266849167644978,
+     0.010046499781310558,
+     0.005833251867443323,
+     0.00537061458453536,
+     -0.014095735736191273,
+     0.0031502654310315847,
+     0.003824880113825202,
+     -0.02185225859284401,
+     0.014646568335592747,
+     -0.002915078541263938,
+     -0.010408563539385796,
+     -0.012245186604559422,
+     0.0067182970233261585,
+     0.00650013005360961,
+     -0.013941007666289806,
+     -0.023376330733299255,
+     0.023815758526325226,
+     -0.045203834772109985,
+     0.00597173348069191,
+     0.0033916414249688387,
+     0.023026645183563232,
+     0.01141274906694889,
+     -0.00012378253450151533,
+     0.0034782891161739826,
+     -0.0072784130461514,
+     0.03969086706638336,
+     0.014014502987265587,
+     0.05845552682876587,
+     -0.011117991991341114,
+     -0.03224999085068703,
+     0.014154531992971897,
+     0.019149158149957657,
+     0.011176015250384808,
+     -0.006981334649026394,
+     0.01641356386244297,
+     -0.07429736852645874,
+     0.002792069688439369,
+     -0.03153979033231735,
+     -0.008203687146306038,
+     0.01481057982891798,
+     0.008078357204794884,
+     -0.018604515120387077,
+     -0.01944391429424286,
+     -0.02551235258579254,
+     -0.02199925109744072,
+     0.013430404476821423,
+     -0.0072443727403879166,
+     -0.021541254594922066,
+     0.009416756220161915,
+     0.0012687708949670196,
+     -0.0038620149716734886,
+     0.022178735584020615,
+     0.015031841583549976,
+     0.09766054898500443,
+     0.015850353986024857,
+     0.010435640811920166,
+     -0.023896217346191406,
+     0.07030847668647766,
+     -0.0016370239900425076,
+     0.0006591419805772603,
+     -0.01007589790970087,
+     -0.009456985630095005,
+     -0.0006297436193563044,
+     0.00011449884186731651,
+     -0.04967702552676201,
+     0.0005632105167023838,
+     -0.01543568167835474,
+     -0.00831354409456253,
+     -0.033512573689222336,
+     0.008209876716136932,
+     -0.03304065391421318,
+     -0.022126127034425735,
+     0.008947929367423058,
+     0.035705070942640305,
+     0.0011109482729807496,
+     0.008763803169131279,
+     0.025674045085906982,
+     -0.0025545619428157806,
+     0.0015867373440414667,
+     0.02783869206905365,
+     0.017286229878664017,
+     -0.017216602340340614,
+     0.010895183309912682,
+     -0.0030605231877416372,
+     0.011047590523958206,
+     -0.025127854198217392,
+     0.01984543353319168,
+     0.0014730121474713087,
+     0.012138424441218376,
+     -0.040959641337394714,
+     -0.10365007817745209,
+     0.007408384699374437,
+     -0.023351574316620827,
+     -0.003687172196805477,
+     -0.007982426322996616,
+     0.006062249653041363,
+     0.025824131444096565,
+     0.06626079231500626,
+     -0.03459721803665161,
+     -0.005598064977675676,
+     0.002450894098728895,
+     -0.003304993500933051,
+     0.003516971133649349,
+     -0.043843772262334824,
+     -0.00535978376865387,
+     0.05623982101678848,
+     -0.023518681526184082,
+     0.012486563064157963,
+     -0.0032245349138975143,
+     0.008395549841225147,
+     0.024151518940925598,
+     -0.006861420348286629,
+     -0.018192937597632408,
+     0.0006993712740950286,
+     -0.0032941626850515604,
+     0.01236355397850275,
+     -0.016150524839758873,
+     -0.009275953285396099,
+     0.017787549644708633,
+     0.01816895417869091,
+     -0.0017994885565713048,
+     -0.003957946319133043,
+     0.011495528742671013,
+     -0.008906153030693531,
+     0.0014637283748015761,
+     0.003075995948165655,
+     0.02312876656651497,
+     -0.005661503411829472,
+     -0.06208931654691696,
+     -0.026486754417419434,
+     -0.01279447227716446,
+     -0.014773445203900337,
+     -0.0016200038371607661,
+     0.019718557596206665,
+     0.004448434803634882,
+     -0.010809309780597687,
+     0.020592771470546722,
+     0.018638554960489273,
+     0.0072242580354213715,
+     0.007228899747133255,
+     -0.0025189744774252176,
+     -0.009747873991727829,
+     -0.007129873614758253,
+     0.0010119221406057477,
+     -0.012206505052745342,
+     0.02895737625658512,
+     -0.014943646267056465,
+     -0.004703736398369074,
+     -0.0016478549223393202,
+     0.019102739170193672,
+     -0.0123426653444767,
+     -0.029924426227808,
+     0.019093455746769905,
+     -0.006804944481700659,
+     0.03818691149353981,
+     -0.000533038517460227,
+     0.014878660440444946,
+     0.0117500564083457,
+     0.000860288564581424,
+     0.011935730464756489,
+     -0.08856020867824554,
+     0.01510920561850071,
+     0.11177562922239304,
+     -0.004598521161824465,
+     0.026978403329849243,
+     -0.00829961895942688,
+     0.011613896116614342,
+     -0.006312909070402384,
+     -0.0042256261222064495,
+     -0.018415745347738266,
+     0.00746157206594944,
+     -0.0028531872667372227,
+     0.008028844371438026,
+     0.0038109547458589077,
+     0.015327371656894684,
+     0.02259804867208004,
+     -0.006605925504118204,
+     -0.00732483109459281,
+     -0.007443971931934357,
+     -0.010010912083089352,
+     -0.0003744421701412648,
+     0.0008432684699073434,
+     0.015185021795332432,
+     0.03425062820315361,
+     -0.010560196824371815,
+     0.05553193762898445,
+     0.01320140715688467,
+     -0.010329652577638626,
+     -0.010895957238972187,
+     0.010571028105914593,
+     0.022779081016778946,
+     -0.016955113038420677,
+     -0.06294960528612137,
+     -0.01766376756131649,
+     -0.011932635679841042,
+     0.009026841260492802,
+     0.0037846509367227554,
+     -0.022565554827451706,
+     -0.005348952487111092,
+     0.08212970942258835,
+     -0.00540620181709528,
+     -0.003948662895709276,
+     -0.07603728771209717,
+     0.01168507058173418,
+     -0.01007589790970087,
+     0.003140981774777174,
+     0.005006229970604181,
+     -0.012765073217451572,
+     0.010082087479531765,
+     -0.002636567922309041,
+     0.0010637561790645123,
+     0.001343040494248271,
+     0.0038620149716734886,
+     -0.015178833156824112,
+     0.011691260151565075,
+     -0.004801215138286352,
+     -0.03677579015493393,
+     0.11137333512306213,
+     -0.006743053440004587,
+     0.01026930846273899,
+     -0.0057605295442044735,
+     0.005539268255233765,
+     0.0055191535502672195,
+     -0.022974038496613503,
+     -0.05460047349333763,
+     0.010270855389535427,
+     -0.014866282232105732,
+     -0.010880484245717525,
+     -0.01030799001455307,
+     0.011875386349856853,
+     0.0011140428250655532,
+     0.00822534877806902,
+     0.00923727173358202,
+     -0.009624091908335686,
+     -0.003317371942102909,
+     -0.019600963220000267,
+     0.030029641464352608,
+     -0.009778819978237152,
+     0.003496856428682804,
+     0.001974331447854638,
+     -0.0078416233882308,
+     -0.011152032762765884,
+     -0.161721870303154,
+     -0.02242320589721203,
+     -0.01516954880207777,
+     -0.011794927529990673,
+     -0.023320628330111504,
+     -0.0029398351907730103,
+     0.005344310775399208,
+     0.006829701364040375,
+     0.004951301030814648,
+     0.0005802306113764644,
+     0.014510407112538815,
+     -0.0034628163557499647,
+     0.039270009845495224,
+     0.0016184565611183643,
+     0.0006034398102201521,
+     -0.0011821232037618756,
+     0.010685526765882969,
+     0.00028469981043599546,
+     -0.007193312514573336,
+     -0.004692131653428078,
+     -0.002986253472045064,
+     -0.004337030462920666,
+     0.016953565180301666,
+     -0.011827420443296432,
+     0.023373236879706383,
+     0.03532753512263298,
+     -0.00806752685457468,
+     -0.007339336909353733,
+     0.009184664115309715,
+     0.0021491742227226496,
+     -0.0007968500722199678,
+     0.02359604462981224,
+     0.010923808440566063,
+     0.007628872059285641,
+     -0.012124499306082726,
+     0.08163458108901978,
+     -0.018384801223874092,
+     -0.039656829088926315,
+     -0.01035363506525755,
+     -0.0007426951779052615,
+     0.0019433856941759586,
+     -0.01629442349076271,
+     -0.006496261805295944,
+     -0.004101843573153019,
+     -0.004839897155761719,
+     -0.005762076936662197,
+     0.013845075853168964,
+     -0.026757141575217247,
+     -0.024624601006507874,
+     0.004270497243851423,
+     0.006465316284447908,
+     -3.558747630449943e-05,
+     0.0073526822961866856,
+     0.01584029570221901,
+     -0.009389678947627544,
+     -0.030571190640330315,
+     0.008826468139886856,
+     0.013684159144759178,
+     0.002537541789934039,
+     0.017775172367691994,
+     0.005929183214902878,
+     -0.0004456171009223908,
+     -0.015287142246961594,
+     -0.0015364506980404258,
+     0.0061071207746863365,
+     -0.00626803794875741,
+     -0.010778363794088364,
+     -0.03379262983798981,
+     0.015757516026496887,
+     0.010769080370664597,
+     0.004199322313070297,
+     -0.010837160982191563,
+     -0.02581639401614666,
+     -0.02191763184964657,
+     -0.00028469981043599546,
+     -0.009842258878052235,
+     -0.001926365657709539,
+     -0.013105475343763828,
+     0.0013182839611545205,
+     0.007875663228332996,
+     0.02474103309214115,
+     0.021806614473462105,
+     -0.0029676861595362425,
+     0.0008850450976751745,
+     -0.006995260249823332,
+     -0.023004597052931786,
+     0.01768929697573185,
+     0.0003496856370475143,
+     -0.012621176429092884,
+     -0.0005013192421756685,
+     0.020919248461723328,
+     0.010181887075304985,
+     0.09543014317750931,
+     -0.0021290595177561045,
+     0.0016865369398146868,
+     0.005273135844618082
+    ],
+    "lo": 12.0,
+    "hi": 20.0
+   }
+  }
+ ],
+ "grade": {
+  "valid": true,
+  "grader": "v2",
+  "Cause": {
+   "k": 15,
+   "n": 17,
+   "rate": 0.8823529411764706,
+   "ci95": [
+    0.6566315750229009,
+    0.967120919987079
+   ]
+  },
+  "Iso_state": {
+   "k": 12,
+   "n": 12,
+   "rate": 1.0,
+   "ci95": [
+    0.7574992425007574,
+    1.0
+   ]
+  },
+  "Iso_other": {
+   "k": 27,
+   "n": 30,
+   "rate": 0.9,
+   "ci95": [
+    0.7437855868473339,
+    0.9654007400402839
+   ]
+  },
+  "Iso": 0.95,
+  "Disentangle": 0.9161764705882353,
+  "kl_mean": 0.0,
+  "kl_budget": 1.0,
+  "kl_factor": 1.0,
+  "reward": 0.9161764705882353,
+  "reward_product": 0.838235294117647,
+  "reward_mult": 0.7941176470588235,
+  "kl_country_fixed": {
+   "mean": 0.0,
+   "n": 13,
+   "excluded_ambiguous": [],
+   "p_us_clean": 0.7617453932762146,
+   "p_us_edited": 0.9361768364906311
+  },
+  "kl_mean_oldprobe": 0.476938933134079,
+  "continuous": {
+   "cause_margin": 5.597084045410156,
+   "state_q_margin": 6.363929271697998,
+   "abbr_margin": 4.40625,
+   "iso_other_margin": 2.305586099624634,
+   "note": "mean log-prob margin of the wanted answer over the best other candidate; Iso_other: clean top answer under the edit"
+  },
+  "Iso_state_parts": {
+   "state_q_ho": {
+    "k": 12,
+    "n": 12,
+    "rate": 1.0,
+    "ci95": [
+     0.7574992425007574,
+     1.0
+    ]
+   },
+   "abbr": {
+    "k": 12,
+    "n": 12,
+    "rate": 1.0,
+    "ci95": [
+     0.7574992425007574,
+     1.0
+    ]
+   }
+  },
+  "iso_other_to_target": {
+   "k": 1,
+   "n": 30,
+   "rate": 0.03333333333333333,
+   "ci95": [
+    0.0059084379948573795,
+    0.16670751396958874
+   ]
+  },
+  "iso_other_dropped_near_ties": 2,
+  "iso_cities": [
+   "Green Bay",
+   "Sparks",
+   "St. Joseph",
+   "Vicksburg",
+   "Oakland",
+   "Overland Park",
+   "Scottsbluff",
+   "Gettysburg",
+   "Memphis",
+   "Kearney",
+   "Waikiki",
+   "Nampa",
+   "Stamford",
+   "Lubbock",
+   "Bridgeport",
+   "Aspen"
+  ],
+  "layer": 20,
+  "formula": "reward = (Cause + (Iso_state + Iso_other)/2)/2 * (1 - min(1, KL_mean/kl_budget))",
+  "edits": [
+   {
+    "layer": 20,
+    "position": "city_last",
+    "kind": "scale_from",
+    "norm": 87.90858459472656,
+    "lo": 12.0,
+    "hi": 20.0
+   }
+  ],
+  "flip": {
+   "k": 15,
+   "n": 17,
+   "rate": 0.8823529411764706,
+   "ci95": [
+    0.6566315750229009,
+    0.967120919987079
+   ]
+  },
+  "F": 0.8823529411764706,
+  "F_keep": {
+   "k": 15,
+   "n": 17,
+   "rate": 0.8823529411764706,
+   "ci95": [
+    0.6566315750229009,
+    0.967120919987079
+   ]
+  },
+  "state_kept": {
+   "k": 12,
+   "n": 12,
+   "rate": 1.0,
+   "ci95": [
+    0.7574992425007574,
+    1.0
+   ]
+  },
+  "leak": {
+   "rate": 0.09999999999999998,
+   "n": 30
+  },
+  "kl_country": {
+   "mean": 0.953877866268158,
+   "sd": 0.9043951630592346,
+   "n": 13,
+   "ci95": [
+    0.4622430553423345,
+    1.4455126771939815
+   ],
+   "max": 3.0987701416015625
+  },
+  "kl_generic": {
+   "mean": 0.0,
+   "sd": 0.0,
+   "n": 40,
+   "ci95": [
+    0.0,
+    0.0
+   ],
+   "max": 0.0
+  },
+  "p_us": {
+   "clean": 0.7617453932762146,
+   "edited": 0.9361768364906311
+  }
+ },
+ "messages": [
+  {
+   "role": "user",
+   "content": "Task (output of describe_task):\n{\"subject\":{\"model\":\"Qwen/Qwen2.5-1.5B\",\"n_layers\":28,\"d_model\":1536},\"registers\":[],\"budget_total\":12000,\"constraints\":{\"positions\":[\"city_last\"],\"max_rank\":1,\"max_norm\":null,\"kl_budget\":1.0,\"fwd_budget\":12000,\"preserve_state\":true,\"leak_weight\":0.5,\"generic_refusal\":true,\"allow_scale_from\":true,\"layer\":20,\"max_layer\":20},\"source\":\"North Carolina\",\"target\":\"Kentucky\",\"source_capital\":\"Raleigh\",\"target_capital\":\"Frankfort\",\"dev_source_cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"dev_target_cities\":[\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\"],\"templates\":{\"fs1\":\"The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in\",\"zs1\":\"The state containing {city} has its capital in\",\"state_q\":\"Q: Which US state is Chicago in?\\nA: The state of Illinois.\\nQ: Which US state is Miami in?\\nA: The state of Florida.\\nQ: Which US state is {city} in?\\nA: The state of\",\"country_q\":\"Lyon is a city in the country of France.\\nOsaka is a city in the country of Japan.\\nToronto is a city in the country of Canada.\\n{city} is a city in the country of\"},\"positions\":{\"city_last\":\"last token of the city name\",\"city_all\":\"all city-name tokens\",\"final\":\"last prompt token\"},\"task\":\"Make held-out cities in North Carolina answer the capital of Kentucky (Frankfort) instead of Raleigh, on held-out prompt wordings, while the model still knows these cities are in North Carolina (a held-out state question and hidden state-level readouts that you cannot see or query) and cities of other states keep their own capitals. Submit one additive vector at the fixed intervention site: after layer 20, at the last token of the city name. Some cities and prompt wordings are private to the grader; tools answer 'not accessible' for them.\",\"edit_format\":\"Additive edit {register, layer, position, scale}, optionally with scale_from {key: register, lo, hi}: the edited residual h then gets register * scale * clamp((dot(key, h) - lo) / (hi - lo), 0, 1). The project tool reports dot(register, h) for given cities.\",\"reward\":\"Cause = fraction of held-out (source city, wording) items whose top answer among the 50 capitals is the target capital. Iso_state = fraction of held-out source cities whose held-out state question AND hidden state readout still give North Carolina. Iso_other = fraction of private cities of other states (sampled at grading time, held-out wordings) whose top capital is unchanged. Iso = (Iso_state + Iso_other) / 2. Disentangle = (Cause + Iso) / 2. KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in the United States (country prompt), counted only where your edit lowers that probability, over held-out cities whose name is not also a well-known non-US place, and (b) the KL divergence (clean || edited) of the next-token distribution on unrelated sentences, with the edit applied at a comparable token. reward = Disentangle * (1 - min(1, KL_mean / kl_budget)).\",\"budget_left\":12000}"
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"template\":\"fs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\"],\"top_k\":3}",
+     "call_id": "call_taCk9hPZSKedcccGwDmUglGK",
+     "name": "run_prompts",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea74a61d087d2a7cdfef5f15b9b0f",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"nc\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"template\":\"fs1\",\"layer\":20}",
+     "call_id": "call_KLeMfCcqSvDFILrvD5zr29Ok",
+     "name": "cache_mean",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea74a61e087d2b4877bc7e103fb38",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"ky\",\"cities\":[\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\"],\"template\":\"fs1\",\"layer\":20}",
+     "call_id": "call_TFgOWB0P2VCKDnOe2CwlCwmQ",
+     "name": "cache_mean",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea74a61e887d2be3444649101311a",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_taCk9hPZSKedcccGwDmUglGK",
+     "output": "{\"results\":[{\"prompt\":\" Tallahassee. The state containing Seattle has its capital in Olympia. The state containing Charlotte has its capital in\",\"city\":\"Charlotte\",\"next_tokens\":[[\" Raleigh\",0.6132],[\" Columbia\",0.1066],[\" Baton\",0.0346]],\"top_capitals\":[[\"Raleigh\",-0.49],[\"Columbia\",-2.24],[\"Baton Rouge\",-3.36]],\"target_capital_rank\":18},{\"prompt\":\"Tallahassee. The state containing Seattle has its capital in Olympia. The state containing Kannapolis has its capital in\",\"city\":\"Kannapolis\",\"next_tokens\":[[\" Raleigh\",0.4506],[\" Columbia\",0.2412],[\" Charlotte\",0.0475]],\"top_capitals\":[[\"Raleigh\",-0.8],[\"Columbia\",-1.42],[\"Little Rock\",-4.42]],\"target_capital_rank\":11},{\"prompt\":\"allahassee. The state containing Seattle has its capital in Olympia. The state containing Outer Banks has its capital in\",\"city\":\"Outer Banks\",\"next_tokens\":[[\" Raleigh\",0.853],[\" Wilmington\",0.0227],[\" Washington\",0.0107]],\"top_capitals\":[[\"Raleigh\",-0.16],[\"Richmond\",-5.28],[\"Charleston\",-5.41]],\"target_capital_rank\":16},{\"prompt\":\"allahassee. The state containing Seattle has its capital in Olympia. The state containing Chapel Hill has its capital in\",\"city\":\"Chapel Hill\",\"next_tokens\":[[\" Raleigh\",0.935],[\" Richmond\",0.0081],[\" the\",0.0056]],\"top_capitals\":[[\"Raleigh\",-0.07],[\"Richmond\",-4.82],[\"Nashville\",-5.44]],\"target_capital_rank\":13},{\"prompt\":\"in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing Paducah has its capital in\",\"city\":\"Paducah\",\"next_tokens\":[[\" Frank\",0.8785],[\" Lexington\",0.0301],[\" Pad\",0.0142]],\"top_capitals\":[[\"Frankfort\",-0.13],[\"Jefferson City\",-4.75],[\"Nashville\",-5.44]],\"target_capital_rank\":1},{\"prompt\":\"Tallahassee. The state containing Seattle has its capital in Olympia. The state containing Louisville has its capital in\",\"city\":\"Louisville\",\"next_tokens\":[[\" Frank\",0.7867],[\" Jefferson\",0.0732],[\" Lexington\",0.057]],\"top_capitals\":[[\"Frankfort\",-0.24],[\"Jefferson City\",-2.61],[\"Nashville\",-4.36]],\"target_capital_rank\":1},{\"prompt\":\"allahassee. The state containing Seattle has its capital in Olympia. The state containing Middlesboro has its capital in\",\"city\":\"Middlesboro\",\"next_tokens\":[[\" Frank\",0.7353],[\" Lexington\",0.1278],[\" Louisville\",0.0135]],\"top_capitals\":[[\"Frankfort\",-0.31],[\"Jefferson City\",-4.93],[\"Montpelier\",-5.18]],\"target_capital_rank\":1},{\"prompt\":\" in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing Corbin has its capital in\",\"city\":\"Corbin\",\"next_tokens\":[[\" Frank\",0.7784],[\" Lexington\",0.0388],[\" Jefferson\",0.0162]],\"top_capitals\":[[\"Frankfort\",-0.25],[\"Jefferson City\",-4.13],[\"Nashville\",-4.63]],\"target_capital_rank\":1}],\"note\":\"top_capitals: full-sequence log-prob ranking over the 50 capitals (the top entry is exact; lower ranks of pruned multi-token candidates use a first-token bound)\",\"budget_left\":11992}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_KLeMfCcqSvDFILrvD5zr29Ok",
+     "output": "{\"register\":\"nc\",\"n\":4,\"norm\":83.4944,\"budget_left\":11988}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_TFgOWB0P2VCKDnOe2CwlCwmQ",
+     "output": "{\"register\":\"ky\",\"n\":4,\"norm\":85.1916,\"budget_left\":11984}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"ncstate\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"template\":\"state_q\",\"layer\":20}",
+     "call_id": "call_2hSQJrPlEz5so8Sl6BF3UN0R",
+     "name": "cache_mean",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7532d6887d2b13501b1c5492547",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"kystate\",\"cities\":[\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\"],\"template\":\"state_q\",\"layer\":20}",
+     "call_id": "call_mXKIVNWFWRrrGPT8TygSLUEz",
+     "name": "cache_mean",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7532d7c87d2bba9babc33e9b64f",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"others\",\"cities\":[\"Chicago\",\"Miami\",\"Seattle\",\"Boston\",\"Austin\",\"Denver\",\"Atlanta\",\"Portland\",\"New York\",\"Los Angeles\",\"Detroit\",\"Columbus\",\"Milwaukee\",\"Richmond\",\"Nashville\",\"Birmingham\",\"Phoenix\",\"Baltimore\",\"Las Vegas\",\"Albuquerque\"],\"template\":\"fs1\",\"layer\":20}",
+     "call_id": "call_xGQYT7volqpLUXyDIKxcxl4m",
+     "name": "cache_mean",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7532d8c87d2bf17df54bb42d027",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"diff\",\"expr\":\"ky-nc\"}",
+     "call_id": "call_xZFg4GSbXkmM5T0VDYeYjJ9b",
+     "name": "vec_op",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7532d9887d2befa929743aa68dd",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_2hSQJrPlEz5so8Sl6BF3UN0R",
+     "output": "{\"register\":\"ncstate\",\"n\":4,\"norm\":92.2271,\"budget_left\":11980}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_mXKIVNWFWRrrGPT8TygSLUEz",
+     "output": "{\"register\":\"kystate\",\"n\":4,\"norm\":91.327,\"budget_left\":11976}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_xGQYT7volqpLUXyDIKxcxl4m",
+     "output": "{\"error\":\"give 1..16 cities\",\"budget_left\":11976}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_xZFg4GSbXkmM5T0VDYeYjJ9b",
+     "output": "{\"register\":\"diff\",\"norm\":43.725,\"budget_left\":11976}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"statediff\",\"expr\":\"kystate-ncstate\"}",
+     "call_id": "call_2kDmDilNn3KkCCuKxttXe9fI",
+     "name": "vec_op",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7573a1087d29f86f45ef92213e6",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"others\",\"cities\":[\"Chicago\",\"Miami\",\"Seattle\",\"Boston\",\"Austin\",\"Denver\",\"Atlanta\",\"Portland\",\"New York\",\"Los Angeles\",\"Detroit\",\"Milwaukee\",\"Nashville\",\"Birmingham\",\"Phoenix\",\"Baltimore\"],\"template\":\"fs1\",\"layer\":20}",
+     "call_id": "call_Lbo7a9g7lrgZXa43uTtDLqei",
+     "name": "cache_mean",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7573a2487d28544efb842de64e3",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_2kDmDilNn3KkCCuKxttXe9fI",
+     "output": "{\"register\":\"statediff\",\"norm\":45.7564,\"budget_left\":11976}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_Lbo7a9g7lrgZXa43uTtDLqei",
+     "output": "{\"register\":\"others\",\"n\":16,\"norm\":73.6709,\"budget_left\":11960}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"capdiff\",\"expr\":\"proj_out(diff,statediff)\"}",
+     "call_id": "call_pq8IRSacQSSftzwKh0oHtU4S",
+     "name": "vec_op",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea75b626c87d29e5d4655f338482e",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"key\",\"expr\":\"normalize(nc-others)\"}",
+     "call_id": "call_4VDHiLEmdQ85uurq4EPvDOZZ",
+     "name": "vec_op",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea75b627c87d2b364b236d359202c",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"fs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"diff\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"n_generic\":4}",
+     "call_id": "call_alDYXgE1V4yQiJiwivrsj2Cg",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea75b628887d2986918cdb8becd2c",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_pq8IRSacQSSftzwKh0oHtU4S",
+     "output": "{\"register\":\"capdiff\",\"norm\":15.4552,\"budget_left\":11960}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_4VDHiLEmdQ85uurq4EPvDOZZ",
+     "output": "{\"register\":\"key\",\"norm\":1.0,\"budget_left\":11960}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_alDYXgE1V4yQiJiwivrsj2Cg",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":6.495,\"flip_rate\":1.0,\"kl_generic\":0.0041,\"budget_left\":11944}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"key\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\",\"Chicago\",\"Miami\",\"Seattle\",\"Boston\",\"Atlanta\",\"Richmond\",\"Nashville\",\"Birmingham\"],\"template\":\"fs1\",\"layer\":20}",
+     "call_id": "call_muJG4DcT9QcBhpmuClxQ2UEh",
+     "name": "project",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea76594ac87d28cbb870f1e65b351",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"key\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\",\"Chicago\",\"Miami\",\"Seattle\",\"Boston\",\"Atlanta\",\"Richmond\",\"Nashville\",\"Birmingham\"],\"template\":\"zs1\",\"layer\":20}",
+     "call_id": "call_FAWGATbqw2VrpwiVOUIZP0vL",
+     "name": "project",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea76594c087d2a3f608d279f7a433",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"fs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"capdiff\",\"layer\":20,\"position\":\"city_last\",\"scale\":3,\"n_generic\":4}",
+     "call_id": "call_7gqtEV8uyOSF2YF2nW9ZctpM",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea76594cc87d2850ca3bd53ac1526",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"state_q\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"diff\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_qvuWfGOIKrExLzsSdQy6MSkC",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea76594d487d2ac95c3d53879a0cf",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_muJG4DcT9QcBhpmuClxQ2UEh",
+     "output": "{\"register\":\"key\",\"layer\":20,\"values\":{\"Charlotte\":28.456,\"Kannapolis\":42.624,\"Outer Banks\":46.379,\"Chapel Hill\":39.566,\"Paducah\":20.025,\"Louisville\":9.43,\"Middlesboro\":20.38,\"Corbin\":21.027,\"Chicago\":-6.587,\"Miami\":-8.152,\"Seattle\":-9.665,\"Boston\":-0.819,\"Atlanta\":-0.359,\"Richmond\":11.858,\"Nashville\":3.241,\"Birmingham\":5.481},\"mean\":13.93,\"sd\":18.204,\"budget_left\":11928}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_FAWGATbqw2VrpwiVOUIZP0vL",
+     "output": "{\"register\":\"key\",\"layer\":20,\"values\":{\"Charlotte\":20.514,\"Kannapolis\":33.112,\"Outer Banks\":39.275,\"Chapel Hill\":31.876,\"Paducah\":13.566,\"Louisville\":4.407,\"Middlesboro\":14.665,\"Corbin\":11.661,\"Chicago\":-4.214,\"Miami\":-5.366,\"Seattle\":-8.326,\"Boston\":-5.171,\"Atlanta\":-3.551,\"Richmond\":5.967,\"Nashville\":0.321,\"Birmingham\":-1.961},\"mean\":9.173,\"sd\":15.229,\"budget_left\":11912}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_7gqtEV8uyOSF2YF2nW9ZctpM",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"}],\"changed_rate\":0.0,\"kl_on_these_prompts\":0.272,\"flip_rate\":0.0,\"kl_generic\":0.0029,\"budget_left\":11904}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_qvuWfGOIKrExLzsSdQy6MSkC",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"North Carolina\",\"edited\":\"Kentucky\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"Kentucky\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"Kentucky\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"Kentucky\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":12.803,\"budget_left\":11896}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"opt\",\"layer\":20,\"position\":\"city_last\",\"dev_cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"templates\":[\"fs1\",\"zs1\"],\"steps\":100,\"kl_weight\":2,\"init\":\"capdiff\",\"lr\":0.04,\"max_norm\":65,\"extra_examples\":[{\"template\":\"state_q\",\"city\":\"Charlotte\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"state_q\",\"city\":\"Kannapolis\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"state_q\",\"city\":\"Outer Banks\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"state_q\",\"city\":\"Chapel Hill\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"country_q\",\"city\":\"Charlotte\",\"answer\":\"United States\",\"weight\":1},{\"template\":\"country_q\",\"city\":\"Kannapolis\",\"answer\":\"United States\",\"weight\":1},{\"template\":\"country_q\",\"city\":\"Outer Banks\",\"answer\":\"United States\",\"weight\":1},{\"template\":\"country_q\",\"city\":\"Chapel Hill\",\"answer\":\"United States\",\"weight\":1},{\"template\":\"zs1\",\"city\":\"Atlanta\",\"answer\":\"Atlanta\",\"weight\":1},{\"template\":\"zs1\",\"city\":\"Richmond\",\"answer\":\"Richmond\",\"weight\":1},{\"template\":\"zs1\",\"city\":\"Nashville\",\"answer\":\"Nashville\",\"weight\":1},{\"template\":\"zs1\",\"city\":\"Birmingham\",\"answer\":\"Montgomery\",\"weight\":1}]}",
+     "call_id": "call_er5sRy1atAN89Mg2nXunJhtg",
+     "name": "optimize_vector",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea76c081c87d2a60c82f38c34aac7",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_er5sRy1atAN89Mg2nXunJhtg",
+     "output": "{\"register\":\"opt\",\"norm\":65.0,\"history\":[{\"step\":0,\"loss\":8.758,\"p_target\":0.001,\"target_first_token_top_among_capitals\":0.0,\"extra_p_answer\":[0.999,0.992,0.999,0.998,0.111,0.073,0.358,0.198,0.126,0.111,0.384,0.005]},{\"step\":20,\"loss\":1.881,\"p_target\":0.586,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[0.976,0.875,0.969,0.973,0.218,0.099,0.355,0.152,0.134,0.057,0.489,0.047]},{\"step\":40,\"loss\":0.771,\"p_target\":0.848,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[0.998,0.995,0.986,0.998,0.588,0.329,0.519,0.363,0.631,0.193,0.8,0.337]},{\"step\":60,\"loss\":0.289,\"p_target\":0.92,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[1.0,0.999,0.99,1.0,0.918,0.658,0.77,0.771,0.859,0.687,0.934,0.549]},{\"step\":80,\"loss\":0.139,\"p_target\":0.961,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[1.0,0.999,0.996,1.0,0.978,0.857,0.898,0.932,0.922,0.75,0.969,0.78]},{\"step\":99,\"loss\":0.085,\"p_target\":0.977,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[1.0,0.999,0.997,1.0,0.986,0.918,0.933,0.966,0.946,0.861,0.974,0.864]}],\"note\":\"history metrics are from the forward pass before each update\",\"budget_left\":9496}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"template\":\"fs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\",\"Chicago\",\"Miami\",\"Seattle\",\"Boston\",\"Atlanta\",\"Richmond\",\"Nashville\",\"Birmingham\"],\"vector\":\"opt\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"n_generic\":8}",
+     "call_id": "call_EO3JFxODDjWFVfsTHaFXaSSI",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7a76fc887d2adea83ab4c87e984",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"zs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\",\"Chicago\",\"Miami\",\"Seattle\",\"Boston\",\"Atlanta\",\"Richmond\",\"Nashville\",\"Birmingham\"],\"edits\":[{\"register\":\"opt\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"scale_from\":{\"key\":\"key\",\"lo\":10,\"hi\":20}}],\"n_generic\":8}",
+     "call_id": "call_xki57sxNmVz7vNkLbA7yON9C",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7a76fdc87d2b25e0ae7d2c6dc9c",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"state_q\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_upFPrPKSOCoM3Svfu7C8COoC",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7a76fe487d2ae90e59d0196831e",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"statecomponent\",\"expr\":\"dot(opt,normalize(statediff))\"}",
+     "call_id": "call_xSwYtHkkDUbyQDVA3HT4oSyU",
+     "name": "vec_op",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7a76fec87d2a15644d5f3349a60",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_EO3JFxODDjWFVfsTHaFXaSSI",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Paducah\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Louisville\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Middlesboro\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Corbin\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Chicago\",\"clean\":\"Springfield\",\"edited\":\"Springfield\"},{\"city\":\"Miami\",\"clean\":\"Tallahassee\",\"edited\":\"Tallahassee\"},{\"city\":\"Seattle\",\"clean\":\"Olympia\",\"edited\":\"Olympia\"},{\"city\":\"Boston\",\"clean\":\"Salem\",\"edited\":\"Boston\"},{\"city\":\"Atlanta\",\"clean\":\"Atlanta\",\"edited\":\"Atlanta\"},{\"city\":\"Richmond\",\"clean\":\"Annapolis\",\"edited\":\"Frankfort\"},{\"city\":\"Nashville\",\"clean\":\"Nashville\",\"edited\":\"Frankfort\"},{\"city\":\"Birmingham\",\"clean\":\"Montgomery\",\"edited\":\"Montgomery\"}],\"changed_rate\":0.438,\"kl_on_these_prompts\":2.55,\"flip_rate\":0.625,\"kl_generic\":0.0102,\"budget_left\":9456}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_xki57sxNmVz7vNkLbA7yON9C",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Paducah\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Louisville\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Middlesboro\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Corbin\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Chicago\",\"clean\":\"Springfield\",\"edited\":\"Springfield\"},{\"city\":\"Miami\",\"clean\":\"Tallahassee\",\"edited\":\"Tallahassee\"},{\"city\":\"Seattle\",\"clean\":\"Olympia\",\"edited\":\"Olympia\"},{\"city\":\"Boston\",\"clean\":\"Springfield\",\"edited\":\"Springfield\"},{\"city\":\"Atlanta\",\"clean\":\"Atlanta\",\"edited\":\"Atlanta\"},{\"city\":\"Richmond\",\"clean\":\"Richmond\",\"edited\":\"Richmond\"},{\"city\":\"Nashville\",\"clean\":\"Nashville\",\"edited\":\"Nashville\"},{\"city\":\"Birmingham\",\"clean\":\"Montgomery\",\"edited\":\"Montgomery\"}],\"changed_rate\":0.25,\"kl_on_these_prompts\":1.157,\"flip_rate\":0.5,\"kl_generic\":0.0011,\"budget_left\":9416}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_upFPrPKSOCoM3Svfu7C8COoC",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"}],\"changed_rate\":0.0,\"kl_on_these_prompts\":0.006,\"budget_left\":9412}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_xSwYtHkkDUbyQDVA3HT4oSyU",
+     "output": "{\"value\":9.187248,\"note\":\"scalar result; nothing stored\",\"budget_left\":9412}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"optorth\",\"expr\":\"proj_out(opt,statediff)\"}",
+     "call_id": "call_1nurRHxLnZNGa0WfKXA1O8QQ",
+     "name": "vec_op",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7b2fd8087d2bfdbcd07aee59243",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"The city of {city} is in the state of\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"answers\":\"states\",\"top_k\":2}",
+     "call_id": "call_9pMINqUDJ1m8RRvl13o0H0JY",
+     "name": "run_prompts",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7b2fd9887d2972ab0cdc4590619",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"key\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\"],\"template\":\"state_q\",\"layer\":20}",
+     "call_id": "call_CBYsG3v9bt8i6sA8cazs2WDO",
+     "name": "project",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7b2fda087d29b3eb6f1ab57ada5",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"key\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\"],\"template\":\"country_q\",\"layer\":20}",
+     "call_id": "call_1QW4dvFV23ytH3fD8uWyruzg",
+     "name": "project",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7b2fda887d289c325723d39f90c",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_1nurRHxLnZNGa0WfKXA1O8QQ",
+     "output": "{\"register\":\"optorth\",\"norm\":64.3474,\"budget_left\":9412}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_9pMINqUDJ1m8RRvl13o0H0JY",
+     "output": "{\"results\":[{\"prompt\":\"The city of Charlotte is in the state of\",\"city\":\"Charlotte\",\"next_tokens\":[[\" North\",0.9155],[\" what\",0.0131]],\"top_states\":[[\"North Carolina\",-0.12],[\"South Dakota\",-5.84]]},{\"prompt\":\"The city of Kannapolis is in the state of\",\"city\":\"Kannapolis\",\"next_tokens\":[[\" North\",0.6756],[\" which\",0.1174]],\"top_states\":[[\"North Carolina\",-0.4],[\"South Carolina\",-4.77]]},{\"prompt\":\"The city of Outer Banks is in the state of\",\"city\":\"Outer Banks\",\"next_tokens\":[[\" North\",0.7866],[\" Virginia\",0.0392]],\"top_states\":[[\"North Carolina\",-0.26],[\"Virginia\",-3.24]]},{\"prompt\":\"The city of Chapel Hill is in the state of\",\"city\":\"Chapel Hill\",\"next_tokens\":[[\" North\",0.7022],[\" what\",0.0396]],\"top_states\":[[\"North Carolina\",-0.37],[\"New Hampshire\",-5.17]]}],\"note\":\"top_states: full-sequence log-prob ranking over the 50 states (the top entry is exact; lower ranks of pruned multi-token candidates use a first-token bound)\",\"budget_left\":9408}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_CBYsG3v9bt8i6sA8cazs2WDO",
+     "output": "{\"register\":\"key\",\"layer\":20,\"values\":{\"Charlotte\":27.05,\"Kannapolis\":38.58,\"Outer Banks\":44.37,\"Chapel Hill\":37.255,\"Paducah\":18.4,\"Louisville\":8.541,\"Middlesboro\":20.104,\"Corbin\":18.769},\"mean\":26.634,\"sd\":12.363,\"budget_left\":9400}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_1QW4dvFV23ytH3fD8uWyruzg",
+     "output": "{\"register\":\"key\",\"layer\":20,\"values\":{\"Charlotte\":25.215,\"Kannapolis\":38.168,\"Outer Banks\":43.355,\"Chapel Hill\":38.664,\"Paducah\":17.906,\"Louisville\":6.922,\"Middlesboro\":19.277,\"Corbin\":18.074},\"mean\":25.948,\"sd\":12.805,\"budget_left\":9392}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"template\":\"fs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"optorth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"n_generic\":0}",
+     "call_id": "call_beZ7XxnL13O6Et0xSZPT32X6",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7ba157887d281d984e03b69b01f",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"zs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"optorth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"n_generic\":0}",
+     "call_id": "call_jH9sWGtUaktp6Lfed9Alev21",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7ba158c87d28fe8646d092a0d75",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"The city of {city} is in the state of\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_7lcU0qR7NB97sPArbvDhtAn6",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7ba159487d29b6859f6823c9ed8",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"The state that {city} is in has the capital city of\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"n_generic\":0}",
+     "call_id": "call_7BcNsFiXH5SaLApxHJZ846d6",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7ba159c87d28a12c832e6eb4108",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_beZ7XxnL13O6Et0xSZPT32X6",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":2.507,\"flip_rate\":1.0,\"budget_left\":9388}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_jH9sWGtUaktp6Lfed9Alev21",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"}],\"changed_rate\":0.75,\"kl_on_these_prompts\":1.591,\"flip_rate\":0.75,\"budget_left\":9384}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_7lcU0qR7NB97sPArbvDhtAn6",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"Virginia\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"}],\"changed_rate\":0.25,\"kl_on_these_prompts\":0.563,\"budget_left\":9376}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_7BcNsFiXH5SaLApxHJZ846d6",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":3.404,\"flip_rate\":1.0,\"budget_left\":9368}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"opt\",\"top_k\":15}",
+     "call_id": "call_oR0qdU0gpIHSsFHwL5PZSARC",
+     "name": "vec_info",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7c3ce8887d2af5a85095490e594",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"The city of {city} is in the state of\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"optorth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_y3rWoOmnXD5H7hdfptNjJLn5",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7c3ce9c87d2a3fa5418fdf5254e",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"country_q\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Chicago\",\"Miami\",\"Seattle\",\"Birmingham\"],\"edits\":[{\"register\":\"opt\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"scale_from\":{\"key\":\"key\",\"lo\":10,\"hi\":20}}],\"n_generic\":8}",
+     "call_id": "call_gzAkqbyoo6CUqYzksSQRpvsi",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7c3ceac87d2bf1674a4e9361174",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_oR0qdU0gpIHSsFHwL5PZSARC",
+     "output": "{\"register\":\"opt\",\"norm\":65.0,\"cos\":{\"nc\":-0.109,\"ky\":-0.006,\"ncstate\":-0.088,\"kystate\":-0.018,\"diff\":0.197,\"statediff\":0.141,\"others\":-0.083,\"capdiff\":0.183,\"key\":-0.075,\"optorth\":0.99},\"unembed_top_tokens\":[\"kits\",\" AppModule\",\"_PORTS\",\" essay\",\" Essay\",\"rounded\",\"atte\",\"_MODULES\",\"achel\",\"\\u963b\\u6321\",\"usi\",\"Americ\",\"\\u5ce8\",\" rounded\",\"conciliation\"],\"budget_left\":9368}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_y3rWoOmnXD5H7hdfptNjJLn5",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"}],\"changed_rate\":0.0,\"kl_on_these_prompts\":0.525,\"budget_left\":9364}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_gzAkqbyoo6CUqYzksSQRpvsi",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Columbia\",\"edited\":\"Lincoln\"},{\"city\":\"Kannapolis\",\"clean\":\"Columbia\",\"edited\":\"Columbia\"},{\"city\":\"Outer Banks\",\"clean\":\"Boston\",\"edited\":\"Lincoln\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"},{\"city\":\"Chicago\",\"clean\":\"Columbia\",\"edited\":\"Columbia\"},{\"city\":\"Miami\",\"clean\":\"Columbia\",\"edited\":\"Columbia\"},{\"city\":\"Seattle\",\"clean\":\"Columbia\",\"edited\":\"Columbia\"},{\"city\":\"Birmingham\",\"clean\":\"Columbia\",\"edited\":\"Columbia\"}],\"changed_rate\":0.25,\"kl_on_these_prompts\":2.011,\"flip_rate\":0.0,\"kl_generic\":0.0011,\"budget_left\":9340}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"template\":\"zs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"optorth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1.3,\"n_generic\":0}",
+     "call_id": "call_7B0Xqq3t7QKV06k1E7j9fWHj",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7cd1bdc87d2bb6518cd6be0ab95",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"The city of {city} is in the state of\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"optorth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1.3,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_s2OxWTwfipnwZA2oxO9ieAkF",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7cd1bf087d2938a2f2b1b673f2b",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"state_q\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"optorth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1.3,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_jUOTxqJP36XcBgfgg7osksBR",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7cd1c0087d2aa813593226d8f66",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_7B0Xqq3t7QKV06k1E7j9fWHj",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":4.113,\"flip_rate\":1.0,\"budget_left\":9336}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_s2OxWTwfipnwZA2oxO9ieAkF",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"}],\"changed_rate\":0.0,\"kl_on_these_prompts\":0.698,\"budget_left\":9332}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_jUOTxqJP36XcBgfgg7osksBR",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"}],\"changed_rate\":0.0,\"kl_on_these_prompts\":0.01,\"budget_left\":9328}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"key\",\"cities\":[\"Columbia\",\"Charleston\",\"Greenville\",\"Roanoke\",\"Knoxville\",\"Memphis\",\"Savannah\",\"Augusta\",\"Lexington\",\"Newport\",\"Norfolk\",\"Jacksonville\",\"Wilmington\",\"Greensboro\",\"Asheville\",\"Durham\"],\"template\":\"zs1\",\"layer\":20}",
+     "call_id": "call_oKHzvJlnx2h0gnK5RMYBqze1",
+     "name": "project",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7d73d5c87d2be49a0858d563f9e",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_oKHzvJlnx2h0gnK5RMYBqze1",
+     "output": "{\"error\":\"not accessible\",\"budget_left\":9328}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"key\",\"cities\":[\"Columbia\",\"Charleston\",\"Greenville\",\"Roanoke\",\"Knoxville\",\"Memphis\",\"Savannah\",\"Augusta\",\"Lexington\",\"Newport\",\"Norfolk\",\"Jacksonville\"],\"template\":\"zs1\",\"layer\":20}",
+     "call_id": "call_MR1CILECIkvsetdhOSF1PFQ3",
+     "name": "project",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7dde8bc87d2b2c656e14f7df42c",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_MR1CILECIkvsetdhOSF1PFQ3",
+     "output": "{\"error\":\"not accessible\",\"budget_left\":9328}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"opt2\",\"layer\":20,\"position\":\"city_last\",\"dev_cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"templates\":[\"fs1\",\"zs1\",\"The state that {city} is in has the capital city of\"],\"steps\":100,\"kl_weight\":3,\"init\":\"optorth\",\"lr\":0.025,\"max_norm\":80,\"extra_examples\":[{\"template\":\"state_q\",\"city\":\"Charlotte\",\"answer\":\"North Carolina\",\"weight\":4},{\"template\":\"state_q\",\"city\":\"Kannapolis\",\"answer\":\"North Carolina\",\"weight\":4},{\"template\":\"state_q\",\"city\":\"Outer Banks\",\"answer\":\"North Carolina\",\"weight\":4},{\"template\":\"state_q\",\"city\":\"Chapel Hill\",\"answer\":\"North Carolina\",\"weight\":4},{\"template\":\"The city of {city} is in the state of\",\"city\":\"Charlotte\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"The city of {city} is in the state of\",\"city\":\"Kannapolis\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"The city of {city} is in the state of\",\"city\":\"Outer Banks\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"The city of {city} is in the state of\",\"city\":\"Chapel Hill\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"{city} is located in\",\"city\":\"Charlotte\",\"answer\":\"North Carolina\",\"weight\":2},{\"template\":\"{city} is located in\",\"city\":\"Kannapolis\",\"answer\":\"North Carolina\",\"weight\":2},{\"template\":\"{city} is located in\",\"city\":\"Outer Banks\",\"answer\":\"North Carolina\",\"weight\":2},{\"template\":\"{city} is located in\",\"city\":\"Chapel Hill\",\"answer\":\"North Carolina\",\"weight\":2},{\"template\":\"country_q\",\"city\":\"Charlotte\",\"answer\":\"United States\",\"weight\":2},{\"template\":\"country_q\",\"city\":\"Kannapolis\",\"answer\":\"United States\",\"weight\":2},{\"template\":\"country_q\",\"city\":\"Outer Banks\",\"answer\":\"United States\",\"weight\":2},{\"template\":\"country_q\",\"city\":\"Chapel Hill\",\"answer\":\"United States\",\"weight\":2},{\"template\":\"zs1\",\"city\":\"Atlanta\",\"answer\":\"Atlanta\",\"weight\":1},{\"template\":\"zs1\",\"city\":\"Richmond\",\"answer\":\"Richmond\",\"weight\":1},{\"template\":\"zs1\",\"city\":\"Nashville\",\"answer\":\"Nashville\",\"weight\":1},{\"template\":\"zs1\",\"city\":\"Birmingham\",\"answer\":\"Montgomery\",\"weight\":1}]}",
+     "call_id": "call_mX7p7NTSnwKV3BvFNMU8Ikuv",
+     "name": "optimize_vector",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7e4877c87d289716e065afa950b",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_mX7p7NTSnwKV3BvFNMU8Ikuv",
+     "output": "{\"error\":\"at most 16 extra_examples\",\"budget_left\":9328}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"opt2\",\"layer\":20,\"position\":\"city_last\",\"dev_cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"templates\":[\"fs1\",\"zs1\",\"The state that {city} is in has the capital city of\"],\"steps\":100,\"kl_weight\":3,\"init\":\"optorth\",\"lr\":0.025,\"max_norm\":80,\"extra_examples\":[{\"template\":\"state_q\",\"city\":\"Charlotte\",\"answer\":\"North Carolina\",\"weight\":4},{\"template\":\"state_q\",\"city\":\"Kannapolis\",\"answer\":\"North Carolina\",\"weight\":4},{\"template\":\"state_q\",\"city\":\"Outer Banks\",\"answer\":\"North Carolina\",\"weight\":4},{\"template\":\"state_q\",\"city\":\"Chapel Hill\",\"answer\":\"North Carolina\",\"weight\":4},{\"template\":\"The city of {city} is in the state of\",\"city\":\"Charlotte\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"The city of {city} is in the state of\",\"city\":\"Kannapolis\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"The city of {city} is in the state of\",\"city\":\"Outer Banks\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"The city of {city} is in the state of\",\"city\":\"Chapel Hill\",\"answer\":\"North Carolina\",\"weight\":3},{\"template\":\"{city} is located in\",\"city\":\"Charlotte\",\"answer\":\"North Carolina\",\"weight\":2},{\"template\":\"{city} is located in\",\"city\":\"Kannapolis\",\"answer\":\"North Carolina\",\"weight\":2},{\"template\":\"{city} is located in\",\"city\":\"Outer Banks\",\"answer\":\"North Carolina\",\"weight\":2},{\"template\":\"{city} is located in\",\"city\":\"Chapel Hill\",\"answer\":\"North Carolina\",\"weight\":2},{\"template\":\"country_q\",\"city\":\"Charlotte\",\"answer\":\"United States\",\"weight\":2},{\"template\":\"country_q\",\"city\":\"Kannapolis\",\"answer\":\"United States\",\"weight\":2},{\"template\":\"country_q\",\"city\":\"Outer Banks\",\"answer\":\"United States\",\"weight\":2},{\"template\":\"country_q\",\"city\":\"Chapel Hill\",\"answer\":\"United States\",\"weight\":2}]}",
+     "call_id": "call_CINPynnWgiZQ09jxK7QksSDA",
+     "name": "optimize_vector",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea7eed25887d295429475b5531b25",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_CINPynnWgiZQ09jxK7QksSDA",
+     "output": "{\"register\":\"opt2\",\"norm\":80.0,\"history\":[{\"step\":0,\"loss\":2.532,\"p_target\":0.423,\"target_first_token_top_among_capitals\":0.75,\"extra_p_answer\":[1.0,1.0,1.0,1.0,0.999,0.993,0.732,0.837,0.021,0.097,0.073,0.041,0.986,0.748,0.923,0.927]},{\"step\":20,\"loss\":0.588,\"p_target\":0.965,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[1.0,0.999,1.0,1.0,1.0,0.995,0.996,0.999,0.023,0.936,0.913,0.922,0.976,0.933,0.966,0.969]},{\"step\":40,\"loss\":0.499,\"p_target\":0.993,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[1.0,0.999,1.0,1.0,1.0,0.999,0.999,0.999,0.026,0.979,0.968,0.975,0.99,0.981,0.984,0.993]},{\"step\":60,\"loss\":0.474,\"p_target\":0.994,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[1.0,0.999,1.0,1.0,1.0,0.999,1.0,1.0,0.029,0.986,0.98,0.986,0.995,0.988,0.989,0.995]},{\"step\":80,\"loss\":0.456,\"p_target\":0.994,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[1.0,0.999,1.0,1.0,1.0,0.999,1.0,1.0,0.033,0.99,0.983,0.989,0.997,0.99,0.991,0.996]},{\"step\":99,\"loss\":0.433,\"p_target\":0.994,\"target_first_token_top_among_capitals\":1.0,\"extra_p_answer\":[1.0,1.0,1.0,1.0,1.0,0.999,1.0,0.999,0.039,0.993,0.983,0.99,0.997,0.99,0.991,0.996]}],\"note\":\"history metrics are from the forward pass before each update\",\"budget_left\":6128}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"name\":\"opt2orth\",\"expr\":\"proj_out(opt2,statediff)\"}",
+     "call_id": "call_537hLE162EXc00o8GsFR0eWm",
+     "name": "vec_op",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea8309f5487d28a6931bfc7f28e34",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"name\":\"opt2\",\"top_k\":5}",
+     "call_id": "call_sKAWysAr6c1DHSN6ujBamjAN",
+     "name": "vec_info",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea8309f6887d2ba3ce4b3d565117b",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"Q: What is the capital of the state where {city} is located?\\nA:\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"edits\":[{\"register\":\"opt2\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"scale_from\":{\"key\":\"key\",\"lo\":10,\"hi\":20}}],\"n_generic\":8}",
+     "call_id": "call_6bctDnV4bhoSolWG4SVDFXti",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea8309f7487d2834b9e828aa91d42",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"fs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\",\"Paducah\",\"Louisville\",\"Middlesboro\",\"Corbin\",\"Chicago\",\"Miami\",\"Seattle\",\"Boston\",\"Atlanta\",\"Richmond\",\"Nashville\",\"Birmingham\"],\"edits\":[{\"register\":\"opt2\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"scale_from\":{\"key\":\"key\",\"lo\":10,\"hi\":20}}],\"n_generic\":8}",
+     "call_id": "call_oiOGdGD9XapQMYYocnPh3sG5",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea8309f8087d29b518d227b19379a",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_537hLE162EXc00o8GsFR0eWm",
+     "output": "{\"register\":\"opt2orth\",\"norm\":79.9169,\"budget_left\":6128}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_sKAWysAr6c1DHSN6ujBamjAN",
+     "output": "{\"register\":\"opt2\",\"norm\":80.0,\"cos\":{\"nc\":-0.089,\"ky\":-0.04,\"ncstate\":-0.061,\"kystate\":-0.039,\"diff\":0.092,\"statediff\":0.046,\"others\":-0.101,\"capdiff\":0.139,\"key\":0.001,\"opt\":0.865,\"optorth\":0.867,\"opt2orth\":0.999},\"unembed_top_tokens\":[\"kits\",\" reason\",\"amon\",\"conciliation\",\"Cc\"],\"budget_left\":6128}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_6bctDnV4bhoSolWG4SVDFXti",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":4.997,\"flip_rate\":1.0,\"kl_generic\":0.0011,\"budget_left\":6112}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_oiOGdGD9XapQMYYocnPh3sG5",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Paducah\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Louisville\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Middlesboro\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Corbin\",\"clean\":\"Frankfort\",\"edited\":\"Frankfort\"},{\"city\":\"Chicago\",\"clean\":\"Springfield\",\"edited\":\"Springfield\"},{\"city\":\"Miami\",\"clean\":\"Tallahassee\",\"edited\":\"Tallahassee\"},{\"city\":\"Seattle\",\"clean\":\"Olympia\",\"edited\":\"Olympia\"},{\"city\":\"Boston\",\"clean\":\"Salem\",\"edited\":\"Salem\"},{\"city\":\"Atlanta\",\"clean\":\"Atlanta\",\"edited\":\"Atlanta\"},{\"city\":\"Richmond\",\"clean\":\"Annapolis\",\"edited\":\"Richmond\"},{\"city\":\"Nashville\",\"clean\":\"Nashville\",\"edited\":\"Nashville\"},{\"city\":\"Birmingham\",\"clean\":\"Montgomery\",\"edited\":\"Montgomery\"}],\"changed_rate\":0.312,\"kl_on_these_prompts\":2.311,\"flip_rate\":0.5,\"kl_generic\":0.0011,\"budget_left\":6088}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"template\":\"zs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt2orth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"n_generic\":0}",
+     "call_id": "call_wbZEfxMmbGWBPtZvzVUOhUXA",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea84463e487d28ced149fad8fc11b",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"The city of {city} is in the state of\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt2orth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_kKhPw4QewbTdDl943gjoUTyp",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea84463f887d2995111fa4c3a4ee6",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"state_q\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt2orth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_8BxZlFOyVuUpweNGTZKKV8BY",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea844640487d29de2ce410789361c",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"{city} lies in the US state of\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt2orth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1,\"answers\":\"states\",\"n_generic\":0}",
+     "call_id": "call_4BaZXMmasX1N9M9lQeS3wYqm",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea844641087d2a92f92edce46af6a",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_wbZEfxMmbGWBPtZvzVUOhUXA",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":5.132,\"flip_rate\":1.0,\"budget_left\":6084}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_kKhPw4QewbTdDl943gjoUTyp",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"}],\"changed_rate\":0.0,\"kl_on_these_prompts\":1.835,\"budget_left\":6080}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_8BxZlFOyVuUpweNGTZKKV8BY",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"}],\"changed_rate\":0.0,\"kl_on_these_prompts\":0.011,\"budget_left\":6076}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_4BaZXMmasX1N9M9lQeS3wYqm",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Virginia\",\"edited\":\"Virginia\"},{\"city\":\"Kannapolis\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Outer Banks\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"},{\"city\":\"Chapel Hill\",\"clean\":\"North Carolina\",\"edited\":\"North Carolina\"}],\"changed_rate\":0.0,\"kl_on_these_prompts\":0.414,\"budget_left\":6068}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"template\":\"zs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt2orth\",\"layer\":20,\"position\":\"city_last\",\"scale\":0.8,\"n_generic\":0}",
+     "call_id": "call_xHZPB4PdYQ0tFzprSFPFdEw6",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea84d5ff087d287f8fd702ee22988",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"Q: What is the capital of the state where {city} is located?\\nA:\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt2orth\",\"layer\":20,\"position\":\"city_last\",\"scale\":0.8,\"n_generic\":0}",
+     "call_id": "call_bDbjTafTnG39Kl8Pap9qF5a9",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea84d600487d2a5b88579baccc4ef",
+     "status": "completed"
+    },
+    {
+     "arguments": "{\"template\":\"fs1\",\"cities\":[\"Charlotte\",\"Kannapolis\",\"Outer Banks\",\"Chapel Hill\"],\"vector\":\"opt2orth\",\"layer\":20,\"position\":\"city_last\",\"scale\":0.8,\"n_generic\":0}",
+     "call_id": "call_5DqhzXDwFcMm6qRPE6uW2682",
+     "name": "eval_intervention",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea84d601487d2af057aa05cc221e0",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_xHZPB4PdYQ0tFzprSFPFdEw6",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"}],\"changed_rate\":0.75,\"kl_on_these_prompts\":2.179,\"flip_rate\":0.75,\"budget_left\":6064}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_bDbjTafTnG39Kl8Pap9qF5a9",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Raleigh\"}],\"changed_rate\":0.5,\"kl_on_these_prompts\":2.26,\"flip_rate\":0.5,\"budget_left\":6060}"
+    },
+    {
+     "type": "function_call_output",
+     "call_id": "call_5DqhzXDwFcMm6qRPE6uW2682",
+     "output": "{\"predictions\":[{\"city\":\"Charlotte\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Kannapolis\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Outer Banks\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"},{\"city\":\"Chapel Hill\",\"clean\":\"Raleigh\",\"edited\":\"Frankfort\"}],\"changed_rate\":1.0,\"kl_on_these_prompts\":3.313,\"flip_rate\":1.0,\"budget_left\":6056}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "arguments": "{\"edits\":[{\"register\":\"opt2orth\",\"layer\":20,\"position\":\"city_last\",\"scale\":1.1,\"scale_from\":{\"key\":\"key\",\"lo\":12,\"hi\":20}}]}",
+     "call_id": "call_hbXjukvdFaNlSs44zKtMFUNl",
+     "name": "submit",
+     "type": "function_call",
+     "id": "fc_04ba788572e90b88006abea85845d087d29496a597c8512657",
+     "status": "completed"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "function_call_output",
+     "call_id": "call_hbXjukvdFaNlSs44zKtMFUNl",
+     "output": "{\"status\":\"submitted\",\"n_edits\":1,\"budget_left\":6056}"
+    }
+   ]
+  }
+ ],
+ "turns": 19,
+ "stop_reason": "completed",
+ "end": "submitted",
+ "served_models": [
+  "gpt-6.1-sol"
+ ],
+ "usage": {
+  "input_tokens": 12751,
+  "output_tokens": 5460,
+  "cache_read_input_tokens": 140825,
+  "cache_creation_input_tokens": 0,
+  "reasoning_tokens": 1187
+ },
+ "cost_usd": 0.0942,
+ "secs": 277.0
+}

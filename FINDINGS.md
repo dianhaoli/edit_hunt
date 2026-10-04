@@ -198,94 +198,190 @@ not shown to the agent.
 - All: ≥ 10 held-out items per instance; decoy held-out cities (refusals currently reveal which cities are
   private); leakage measured against the clean prediction at grade time.
 
-## 11. Breadth screen: which task families make good RL tasks (gemma-2-2b; Fig. 5, `results/screen/ranking.json`)
-Brief: screen RAVEL-style families (Huang et al. 2024) for tasks where a trained reference passes, zero-effort
-shortcuts fail. Score = Cause × Iso (strict product) at the entity's last token (RAVEL) or the final token (pointer
-families), Entity split unless noted. Code `edithunt/ravel/`; log in LAB_NOTEBOOK ("Breadth screen").
-**Rule (brief):** ref = best MDAS; short = best of full-vector / mean-diff / SAE (Gemma Scope 16k, 5 or 50 latents
-by L1 probe) / random-16 / DAS; good = ref ≥ 0.5 and ref − short ≥ 0.2; kept if MDAS passes ≥ 3/4 seeds on fresh pools.
+## 11. T2 as RAVEL-style RL env (T2_keepstate v2; Qwen2.5-1.5B; no agent spend)
+**Framing.** T2 is rebuilt as an RL-environment version of RAVEL (Huang et al., ACL 2024) with MIB's RAVEL-track
+convention (fixed intervention site: the entity's last token at a layer given per instance). Entity = a US city;
+attribute to change = its state's capital (Cause, held-out cities x held-out wordings); attributes that must not
+change = the city's state (Iso_state: held-out state question AND a hidden postal-abbreviation readout) and other
+states' cities' capitals (Iso_other: >= 12 private cities sampled at grade time from a large pool, compared with
+the clean prediction, bf16 near-ties < 0.1 nats dropped). Code: `edithunt/env/ravel.py` (grader v2; v1 kept),
+tools give a generic "not accessible" refusal and the private set includes decoy cities. >= 10 held-out source
+cities per instance required an extended city list (`data.CITIES_EXTRA`, T2 v2 only).
 
-**Validity (Stage 1).** Kept: US cities (state, capital, abbr), verbs (past tense, singular), Nobel (field, gender),
-**city_pop** (800 most populous RAVEL cities: country 0.96, continent 0.94, language 0.88), and the two pointer
-families added mid-screen at the user's request: **bind** (in-context binding, "Pete loves jam, Ann loves pie, … So
-Ann loves") and **mcqa** (MIB's colour MCQA). Failed: random RAVEL cities (no attribute ≥ 0.8; many are obscure),
-physical objects (Size/Texture: the model copies the last few-shot demo), occupations (industry 0.66, location 0.72).
+**1. The plan's reward did not discriminate.** With Disentangle = (Cause + Iso)/2, a zero edit scores exactly 0.5
+(Cause 0, Iso 1) and "flip everything" scores ~0.5 (Cause 1, Iso 0). First 4 pairs, L6-20: null 0.50, random
+0.44-0.47, mean-diff 0.43-0.52, naive gradient 0.04-0.63, plan's oracle 0.56. Pass >= 0.5 passes the null edit.
+We switched to the product reward **R = Cause x Iso_state x Iso_other x (1 - min(1, KL_mean))**: null = 0.
 
-| family: target | MDAS ref (layer, k) | best DAS | best untrained shortcut | gap (brief) | gap vs untrained | MDAS seeds ≥0.5 (Entity / Context) |
-|---|---|---|---|---|---|---|
-| city_pop: Language | 0.58 (L15, 128) | 0.33 | 0.27 mean-diff | **0.24 (good)** | 0.31 | **0/4** (0.46–0.48) / 4/4 (0.59–0.64) |
-| city_pop: Continent | 0.68 (L15, 128) | 0.62 | 0.47 mean-diff | 0.07 | 0.22 | 4/4 (0.71–0.73) / 4/4 |
-| bind: position P | 0.96 (L15, 128) | 0.93 | 0.70 mean-diff | 0.03 | 0.25 | 4/4 (0.94–0.95) / 4/4 (0.66–0.77) |
-| nobel: Gender | 0.61 (L10, 128) | 0.52 | 0.50 mean-diff | 0.09 | 0.11 | 2/4 / 4/4 |
-| nobel: Field | 0.79 (L10, 16) | 0.79 | 0.76 mean-diff | 0.01 | 0.03 | 4/4 / 4/4 |
-| mcqa: letter X | 0.98 (L17, 16) | 0.94 | 0.97 mean-diff | 0.02 | 0.02 | 4/4 / 4/4 |
-| city_pop: Country | 0.46 | 0.35 | 0.38 | 0.09 | 0.09 | — |
-| us_cities: capital / abbr / state | 0.37 / 0.27 / 0.24 | ≤0.23 | ≤0.11 | ≤0.13 | 0.15–0.26 | — (ref < 0.5) |
-| bind: name Q | 0.19 | 0.13 | 0.07 | 0.06 | 0.13 | — |
-| mcqa: content O; verb: past / singular | ≤0.03 | ≤0.20 | ≤0.02 | < 0 | ≈0 | — |
+**2. A single additive vector cannot isolate (structural).** The plan's oracle (norm-capped vector, target NLL +
+keep-state + keep-own-capital, 150 steps) reached Cause ~0.4-0.56, Iso_state ~0.7, Iso_other ~0.6. Loosening the
+norm cap changed nothing (the trained norm stays 1.23-1.38 x |mean-diff|, the cap never binds); heavier keep terms
+or extra state wordings raise Iso_state to 0.86-0.93 but drop Cause to 0.12-0.16. Iso_other stays 0.5-0.7 in every
+variant: one fixed vector added to every city moves other states' cities too. RAVEL avoids this by construction
+(interchange interventions depend on the base entity).
 
-**Verdict under the brief's rule: no candidate survives.** The only "good" one on seed 0 (city_pop Language) scores
-0.46–0.48 on fresh held-out cities over 4 seeds (it passes on held-out templates, 0.59–0.64). Where MDAS is strong
-(bind P, city_pop Continent, mcqa X, Nobel Field), Cause-only DAS is nearly as good: Iso comes almost for free, so the
-MDAS "keep the other attributes" term adds little.
-**Under a looser reading (DAS needs training, so it is not a zero-effort shortcut)**, two robust candidates appear:
-**bind P** (0.95 vs mean-diff 0.70; 4/4 seeds, both splits) and **city_pop Continent** (0.72 vs mean-diff 0.47; 4/4).
-Both would test "train a subspace from interchange data" rather than "add an Iso regulariser".
-**Inseparable pairs (every method < 0.5):** US state ↔ capital ↔ abbr (the two-hop pair: best MDAS 0.24–0.37; MDAS holds
-Iso ≈ 0.8–0.9 but moves the target on only 30–41% of held-out cities), verb past tense ↔ singular (both follow from the
-verb's identity), city country ↔ language (0.46 / 0.58-then-0.47, as RAVEL reported), bind name Q, mcqa content O.
-**Caveats:** layers were chosen by depth (25/45/65%) from a full-vector sweep; for the final-token pointer families the
-variables only arrive at L15+ (bind) / L17+ (mcqa), so only one of the three layers was informative there. Training
-was cut to 150 steps (300 gave the same result on the one run tested). Nobel Gender has only 24 women (16 held out).
-One seed for the Stage 3 table; the seed check uses fresh pools. KL is not in the screen score (Stage 5 grader only).
+**3. A gated (conditional) edit is the existence proof.** x <- x + clamp((k.x - b)/w, 0, 1) v at the city's last
+token: k = unit(mean dev source - mean accessible other-state cities), the ramp b..b+w placed 30%-60% of the way
+between the two group means (other states project ~0, source cities ~25), only v trained (a learned threshold
+overfit to the 4 dev cities: held-out activations 2-6 vs dev ~20, Cause 0). Isolation becomes ~perfect everywhere
+(Iso_state >= 0.71, Iso_other >= 0.94, mostly 1.00 over 16 runs); Cause is the limit and is pair- and
+layer-dependent (Alabama->Maryland L20 0.92-0.96, Indiana->New Mexico L8-16 0.89-0.95, California->Idaho <= 0.52).
 
-**Gap hunt (after the screen; `edithunt/ravel/gap_hunt.py`, `gap_check.py`, `results/screen/gap_{hunt,check}.json`).**
-MDAS can only beat DAS where DAS leaks into the other attributes. city_pop Language is such a case, so it was re-run
-with full-strength training (300 steps, 1,200 pairs per prompt attribute) at L11–15; bind name Q at L16–19.
-- **city_pop Language at L12, MDAS k=128 passes: 4/4 seeds on both splits, scored on fresh pools.** Entity
-  0.52–0.56 (Cause 0.57–0.64, Iso 0.87–0.91); Context 0.64–0.66. Best shortcut on the same pools: SAE-50 0.22
-  (DAS k16 0.18, DAS k128 0.13, mean-diff 0.12, full 0.04). Gap ≈ 0.32 → **meets the brief's "good" rule.**
-  Every shortcut flips the language (Cause 0.74–0.89) but drags the country/continent along (Iso 0.03–0.25); only an
-  explicit "keep the other attributes" objective holds them (Iso ~0.9). L13 gives the same picture (MDAS 0.60, shortcuts ≤0.18).
-  Caveat: the Entity margin over the 0.5 line is thin (0.02–0.06); the gap to the shortcuts is wide.
-- bind name Q stays inseparable at L16–19 (MDAS ≤ 0.16).
+**Fit on dev data only (step 2).** The gate direction k, threshold b and ramp w come from the 4 public dev cities
+(fs1, zs1) and accessible keep cities of 8 other states (disjoint from the Iso pool states); v is trained on the
+dev cities (target capital), the visible STATE_Q on dev cities (keep state) and the keep cities (keep own
+capital). Held-out source cities, private wordings (ho_fs, ho_zs, STATE_Q_HO, abbreviation readout) and the Iso
+pool are never used; `train_gated` asserts this at run time (`held-out leak`).
 
-**Per-layer gaps and boosted reference (`edithunt/ravel/boost.py`, `results/screen/boost.json`).** A task instance
-fixes the layer, so careful-vs-lazy is compared at the same layer. Reference = MDAS k=256, 600 steps, 2,400 pairs;
-DAS given the same budget. All numbers on fresh pools (Entity seed 2 / Context seed 3), 4 MDAS seeds, 2 DAS seeds.
+**Grader fix (step 1, decided before any agent run).** The country term now counts binary KL on P(US) only where
+the edit LOWERS P(US), over held-out cities whose name is not also a well-known non-US place (`data.AMBIG_NONUS`).
+Reason: on Colorado->Idaho L20 the gated edit (Cause 0.87, Iso 1/1) had KL_mean 0.63, all from the country probe
+(1.26; generic 0.002), because it moved Colorado cities from P(US) 0.63 to 0.93 (Durango, Pueblo are also Mexican
+places), i.e. toward the correct answer. All 123 earlier runs were regenerated (122/123 reproduce Cause/Iso
+exactly; 1 random-vector run differs by 0.06 on Iso_other) and re-graded (`results/suite/t2_ravel/regrade_summary.json`):
 
-| task (city_pop, 555 well-known cities) | MDAS ref, Entity / Context | DAS (same budget) | best untrained shortcut | gap |
+| method (runs) | KL old -> new | mean R old -> new | max R old -> new | R >= 0.6 old -> new |
 |---|---|---|---|---|
-| **Continent @ L10** (keep country, language) | **0.80–0.86 / 0.74–0.77** (Cause 0.90–0.93, Iso 0.89–0.93) | 0.24–0.28 (Cause 0.95, Iso 0.28) | mean-diff 0.42 | **≈0.40** |
-| **Language @ L12** (keep country, continent) | **0.65–0.68 / 0.72–0.76** (Cause 0.75–0.77, Iso 0.85–0.88) | 0.13 (Cause 0.87, Iso 0.15) | SAE-50 0.22 | **≈0.45** |
+| gated oracle (27) | 0.202 -> 0.096 | 0.46 -> 0.53 | 0.86 -> 0.91 | 8 -> 12 |
+| additive oracle (14) | 0.224 -> 0.162 | 0.17 -> 0.19 | 0.34 -> 0.36 | 0 -> 0 |
+| naive gradient capped (16) | 0.242 -> 0.178 | 0.07 -> 0.08 | 0.28 -> 0.34 | 0 -> 0 |
+| naive gradient uncapped (15) | 0.412 -> 0.359 | 0.01 -> 0.01 | 0.07 -> 0.07 | 0 -> 0 |
+| mean-diff (17) | 0.047 -> 0.024 | 0.01 -> 0.01 | 0.03 -> 0.03 | 0 -> 0 |
+| random (17) / null (17) | 0.03 / 0 | 0.00 | 0.00 | 0 |
 
-Both pass 4/4 seeds on both splits with clear margin over the 0.5 line, and every shortcut fails in the same way:
-it moves the target but drags the other attributes along. More training makes DAS leak *more* (Continent DAS 0.43 at
-150 steps → 0.25 at 600), so the gap is not an artefact of under-training the baseline. Keep-weight 2 did not help.
-**These two tasks (one family, one tool set, two difficulty levels) are the recommended Stage-5 candidates.**
+**Recipe choice on dev data only.** Default gated (150 steps, fs1+zs1) vs boosted (300 steps, + fs2/zs2), scored
+leave-one-dev-city-out (held dev city's capital and visible state answer, unused accessible other-state cities,
+KL on agent-visible generic sentences): 16 comparisons (4 tuning pairs x L8/12/16/20), boosted better 0, default
+better 7, tied 9; mean proxy 0.377 vs 0.260 (boosted raises KL). Fixed recipe: default gated.
 
-## 12. Stage 5: city environment, script-saturation and learnability tests (gemma-2-2b; `results/screen/env/`)
-Environment `edithunt/ravel/env.py`: change a city's Language (layer 12) or Continent (layer 10) via an interchange
-featurizer while keeping its other attributes; generic tools (run_prompts, interchange, train_subspace with example
-recipes and a held-out report, submit); private held-out cities + wordings, alias/decoy refusals; grade = Cause × Iso
-× KL hinge, pass ≥ 0.5. Six validated instances (reference 4/4 seeds each). Then, at the user's request, the test
-became: **does a fixed script saturate the reward?** (cf. AUDIT_T2V2 §8.2).
+**Validity bar.** Instance valid = oracle R >= 0.6 on >= 2 of 3 seeds at its layer (fixed before step-3 oracle
+results; the best of 82 shortcut runs is 0.34). 0.5 and 0.7 reported for sensitivity.
 
-| question | result |
-|---|---|
-| Lazy scripts (library: full, SAE, DAS k ∈ {1,2,4,8,16,256}) | **Continent fails**: DAS (no keep examples) reaches 0.50 at k = 8 (0.49 at k = 4) → its gap is a hyperparameter gap. **Language holds**: every lazy script ≤ 0.18. |
-| Ceiling (cross-fitted, privileged data + held-out templates, 2× volume) | Language reference / ceiling = 0.91, 0.88, 0.94, 0.82, 0.88, 0.88 → **the MDAS-via-tools script is at ~89 % of the ceiling**; headroom 0.05–0.11. |
-| Noise | Reference SD over seeds 0.014–0.027, bootstrap over private cities 0.036–0.047 (~0.05 combined); margin over the pass line 0.06–0.15; headroom ≈ 1.5 SD. Soft score (probability of the expected value) is slightly less noisy and preserves the ordering. |
-| KL guard | Inert: damaging edits possible via the tools have KL ≤ 0.05 (reference up to 0.66) and fail on Iso anyway. |
-| Axes where the recipe should break | Multilingual same-country pairs (India/Canada/Nigeria): script and privileged ceiling drop together (ratio ~0.87) → no room. Transcontinental: unavailable (RAVEL gives each country one continent). Hidden downstream readouts (country capital, currency): ratio falls to 0.77, but a privileged ceiling with the *same facts in other wording* recovers little (hidden 0.61/0.56 vs exact-wording 0.71/0.67), so most of that headroom is knowing the grader's exact prompts. Scripts that guess the facts (agent wording) do not close it either. Layer choice / second model / other entity types: not run. |
-| **Learnability (gpt-6-luna, 6 samples × 2 Language instances, $1.43)** | Scores 0.32–0.53; pass 0/6 and 2/6 (pass@1 ≈ 0.17); run SD 0.05–0.07 ≈ grading noise. **Keep examples used in 12/12 runs**; the score tracks training volume (the passes are the largest runs: 2,600–3,000 examples, 600 steps, k 64–128). |
+**Step 3: validation on fresh pairs** (`experiments/t2_validate.py`, `results/suite/t2_ravel/validate_summary.json`).
+20 pairs were drawn (none of them a tuning pair; 9 candidates skipped for < 4 usable target/dev cities, mostly
+West Virginia / Georgia targets and Missouri as source). Shortcuts ran on all 20 pairs x L{8,12,16,20}; the oracle
+(default gated recipe, 3 seeds, seed = which accessible keep cities + init noise) ran on 10 of them (the user chose
+to stop after half: the answer was clear). Seeds agree closely (e.g. 0.70/0.70/0.68).
 
-**Verdict.** The Language task is honest (lazy scripts fail, the grader is sound) but, as an RL environment, it teaches
-one recipe plus "spend the whole training budget": luna already knows the recipe, a fixed script is at ~89 % of a
-privileged ceiling, and the remaining reward spread is the size of the grading noise. It is usable as an eval /
-calibration unit ("can the agent run DAS/MDAS correctly"), not as a stand-alone training environment. Continent is not
-valid (small-k DAS passes). None of the tested axes (multilingual pairs, hidden readouts as built) opens learnable room
-above the recipe. Recommended next directions, in order: (1) planted mechanisms with per-instance ground truth
-(AUDIT_T2V2 §8.5), where the right action depends on facts learned by experimenting; (2) a budget squeeze with no
-gradient training, testing whether analysis-only routes separate agents; (3) a large, varied private pool of downstream
-readouts sampled per instance (the small hidden set tested here was mostly wording-specific).
+| layer | valid @0.6 (oracle R >= 0.6 on >= 2/3 seeds) | oracle mean R / Cause / Iso_state / Iso_other / KL (all 30 runs) |
+|---|---|---|
+| 8 | 2/10 | 0.35 / 0.40 / 0.90 / 0.96 / 0.06 |
+| 12 | 0/10 | 0.27 / 0.31 / 0.88 / 0.98 / 0.13 |
+| 16 | 4/10 | 0.53 / 0.66 / 0.93 / 0.95 / 0.16 |
+| 20 | 5/10 | 0.63 / 0.79 / 0.93 / 0.93 / 0.09 |
+| all | **11/40 = 27.5% (Wilson 95% CI 16-43%)**; @0.5: 19/40, @0.7: 9/40 | |
+
+On the 11 valid instances the oracle averages R 0.69-0.84 (Cause 0.77-0.93, Iso ~0.95, KL <= 0.03) and **every
+shortcut passes 0** (null, random, mean-diff, naive gradient capped and uncapped). Over all 400 shortcut runs (20
+pairs) none reaches 0.6; the best is 0.51 (naive capped gradient, Oregon->Idaho L12: Cause 0.88, Iso_state 0.86,
+Iso_other 0.73), which is why the bar is 0.6 and not 0.5. Shortcut profiles: mean-diff flips (Cause ~0.8) but moves
+the state (Iso_state 0.00) and other cities (Iso_other ~0.35); naive gradient flips everything (Cause 0.9-1.0) and
+breaks both Iso terms; random/null change nothing (Cause 0).
+
+**Verdict.** The task is possible (an offline gated edit solves it with near-perfect isolation, and no shortcut
+comes close), but the oracle validates only ~28% of instances (50% at L20), below the 60% target. The bottleneck
+is Cause: held-out source cities that the dev-fitted edit does not flip. Validity is pair-dependent more than
+seed-dependent (e.g. Minnesota->Tennessee, North Carolina->Virginia pass at L16-20; Colorado->New Jersey fails at
+every layer). If T2 v2 is used now, use only validated (pair, layer) instances and prefer L16-20.
+
+**Why Cause is limited (option 3; diagnosed on the 4 tuning pairs only, never on validation pairs).**
+Per held-out item, the gate value and the effect with the gate forced open (`experiments/t2_cause_diag.py`):
+- *Late layers: the push works, the gate does not open.* At L20, forcing the gate open gives Cause 0.96-1.00 on all
+  4 pairs (California->Idaho: Cause 0.50, gate fully open on only 9/42 items, 1.00 if forced open).
+- *Early/mid layers: the push itself does not generalise.* Alabama L8/12 and Colorado L8-16: Cause ~0.4-0.5 even
+  with the gate open (the layer effect seen throughout).
+So at late layers the bottleneck is recognising held-out source cities from 4 dev cities. Dev-only attempts to
+improve the detector, none of which helped:
+
+| detector (fit on dev + accessible cities only) | held-out dev city opens | unused other-state cities stay closed |
+|---|---|---|
+| mean-difference key, current ramp (30-60% of the gap) | 0.38 | 0.91 |
+| same, ramp 10-30% / 5-20% | 0.95 / 0.99 | 0.54 / 0.40 |
+| mean-difference key, threshold at others' mean + 2-4 sd | 0.33 | 0.96 |
+| LDA key (shrunk covariance of other-state cities) | 1.00 | 0.55-0.80 (overfits the fit half) |
+| multi-class state probe (logistic, 3 source examples) | 0.01-0.31 | 0.99-1.00 |
+| logit lens: source state's name top among 50 states | 0.00-0.16 (the state is not readable as a word at the city token) | |
+
+Effect-based check of lower ramps with v trained (`experiments/t2_ramp_effect.py`, leave-one-dev-city-out, 16
+comparisons each): ramp 30-60% proxy 0.585 (cause 0.69, other 0.96); 20-45% 0.569 (0.81, 0.87); 15-35% 0.551
+(0.84, 0.80). Lower thresholds trade isolation for Cause about one for one, so the ramp is unchanged.
+**Conclusion:** with one edit site and a detector fitted from 4 public dev cities, ~28% of instances validate
+(~50% at L20). Raising it needs more information about the source state than 4 cities give: more public dev
+cities per source (needs >= 18 usable cities per state, i.e. more data), or validating instances per (pair, layer)
+and keeping only those (what step 3 does).
+
+**Tool path (step 4 implemented, 2026-10-01).** Two generic primitives, enabled only for T2 v2 instances
+(`allow_scale_from`): a read-only `project(register, cities, template, layer)` tool (dot of a register with the
+residual), and an optional `scale_from {key, lo, hi}` on additive edits (eval_intervention, optimize_vector,
+submit; grader `check`): the edit becomes vector * clamp((key.h - lo)/(hi - lo), 0, 1). A reference that builds the
+gated edit only through agent tools (`tasks.ref_ravel_gated`: cache_mean -> vec_op key -> project for the ramp ->
+optimize_vector with scale_from, 16 extra examples -> submit; 3,648 of 12,000 forward passes) reaches R 0.49-0.91
+(mean 0.74) on the 11 oracle-validated instances vs the offline oracle's 3-seed mean 0.65-0.93 (mean 0.80); it
+passes 10/11 (fails Wisconsin->Mississippi L8, 0.49). The largest gaps (NC->Kentucky L20 0.70 vs 0.93, NC->Virginia
+L20 0.61 vs 0.74) come with lower Iso_state (0.75, 0.67); a plausible but untested cause is the tool's 16-example cap
+(oracle: 36 keep prompts). The 10 instances passing both are saved as the pilot set
+(`results/suite/instances/T2_keepstate_v2`). **Agent pass criterion (fixed before any agent run):** pass = agent R >=
+0.9 x the tool-path reference's R on that instance; the continuous R and R / R_ref are reported alongside. `verify_references.py`: 51/51 references reproduce (41 earlier tasks
+unchanged; 10 T2 v2 within bf16 tolerance).
+
+**Agent audit on the 10-instance pilot set (2026-10-01).** Settings and pass rule fixed before the runs. Product
+reward R per instance; "ceiling" = best honestly achievable legal edit (below).
+
+| instance | tool ref | fair oracle (3 seeds) | ceiling | gpt-6.1-sol (2 runs) | Sonnet 5.5 |
+|---|---|---|---|---|---|
+| Minnesota->Nebraska L8 | 0.62 | 0.69 | 0.87 | 0.29, 0.11 | 0.28 |
+| Minnesota->Tennessee L16 | 0.88 | 0.88 | 0.92 | 0.74, 0.74 | 0.51 |
+| Minnesota->Tennessee L20 | 0.88 | 0.91 | 0.84 | 0.61, 0.69 | 0.08 |
+| North Carolina->Kentucky L16 | 0.78 | 0.82 | 0.88 | 0.36, 0.83 | 0.00 |
+| North Carolina->Kentucky L20 | 0.70 | 0.93 | 0.97 | 0.79, 0.82 | 0.00 |
+| North Carolina->Virginia L16 | 0.91 | 0.87 | 0.96 | 0.00, 0.89 | 0.21 |
+| North Carolina->Virginia L20 | 0.61 | 0.74 | 0.81 | 0.28, 0.32 | 0.00 |
+| Pennsylvania->California L20 | 0.66 | 0.65 | 0.62 | 0.56, 0.28 | 0.00 |
+| Wisconsin->Mississippi L16 | 0.75 | 0.78 | 0.98 | 0.84, 0.62 | 0.00 |
+| Wisconsin->Mississippi L20 | 0.87 | 0.84 | 0.90 | 0.00, 0.76 | 0.30 |
+| mean | 0.76 | 0.81 | 0.88 | 0.53 | 0.14 |
+
+| agent (budget) | pass (R >= 0.9 x tool ref, pre-registered) | mean R | mean % of ceiling | gated edit submitted | out of turns/budget |
+|---|---|---|---|---|---|
+| gpt-6.1-sol ($0.25, 40 turns, effort medium) | 5/20 (Wilson 11-47%) | 0.53 | 60% | 17/20 | 2 (40 turns) |
+| Sonnet 5.5 ($0.10, 25 turns, effort medium) | 0/10 (0-28%) | 0.14 | 15% | 2/10 | 5 ($0.10 cap) |
+
+- Sonnet ran at the suite's earlier $0.10 / 25-turn setting; 5/10 episodes hit the cost cap before submitting, 4 of
+  them mid-way through building a gate, so its number mixes skill and budget. Sol ran with a larger budget chosen
+  after that pilot (and before its own runs); the two agents are not compared at equal budgets.
+- Agents discover the conditional edit without being told (sol 17/20 gated submissions, Sonnet 2/10). Typical
+  failure: a gate that is too strict (perfect Iso, Cause ~0.3), or training the push without the gate and
+  attaching the gate only at submission.
+- Run-to-run variance is large (NC->Virginia L16: 0.00 then 0.89).
+- Two sol episodes crashed with a sporadic `CUDA error: unknown error` (shared GPU with another session's 8.7 GB job)
+  and were re-run; the ledger charged the crashed attempts the worst case ($0.25 + margin each).
+- Spend: OpenAI ~$2.2 for the audit (cap raised to $50 on 2026-10-01); Anthropic $0.90 for the Sonnet pilot
+  ($3.91 of the $4.30 cap).
+
+**Ceiling oracle** (`ravel.train_ceiling`, `experiments/t2_ceiling.py`). Same legal edit format (one gated edit at the
+fixed site, passed through the submission `check`), but trained with privileged data an agent never sees: dev + half
+of the held-out source cities on all capital wordings (incl. ho_fs/ho_zs), STATE_Q + STATE_Q_HO + the abbreviation
+readout for keep-state, ~42 private pool cities excluding the grader's 16-city Iso sample (target = their clean top
+capital), KL on the agent-visible generic sentences; gate key/threshold/width learned end-to-end or fixed (chosen by
+the training half's own grade), 300 steps. 2-fold cross-fitting: graded only on the held-out half it never trained
+on; ceiling = mean over the two halves. It is the best found, not a proven maximum, and is noisier (half-size
+evaluation sets): on 2 instances it came out slightly below the fair oracle. Pennsylvania->California has a low
+ceiling (~0.62-0.66) under every method.
+
+**Proposed for the next runs (not applied; to be fixed before any new agent run):** pass = R >= 0.8 x ceiling; equal
+budgets across agents; more instances (oracle shard 1 paused at 0 rows); drop or flag low-ceiling instances.
+
+**Step 4 (design; implemented as above): how an agent builds a gated edit from primitive tools.** No named "gated"
+option; instead two generic primitives that also cover ordinary steering:
+1. A read-only `project(register, template, cities, layer)` tool returning k.h at the city's last token (h = the
+   residual after `layer`), so the agent can see how a candidate key separates source cities from others and pick
+   a threshold. The key itself is built with existing tools (cache_mean on dev source vs other-state cities,
+   vec_op difference).
+2. An optional input-dependent scale on any additive edit: `scale_from = {key: register, lo: float, hi: float}`
+   meaning scale = clamp((k.h - lo)/(hi - lo), 0, 1) (constant scale when absent). The same field in
+   `optimize_vector` lets the agent train v with the gate fixed. Wide lo/hi gives a linear rank-one (ROME-like)
+   edit v (k.h); a constant key gives the current additive edit, so the primitive is not a disguised solution.
+Grader: validate the key's shape/finiteness and lo < hi; KL is measured as now, so a gate that opens on unrelated
+text is penalised. Rejected alternatives: firing only on a listed set of cities (the agent would tell the grader
+which cities are the source; it must generalise to held-out cities from activations), and an MLP weight edit
+(linear in h; isolation then needs centring so other cities read ~0, weaker than a clamp).

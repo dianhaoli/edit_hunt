@@ -1,0 +1,280 @@
+{
+ "id": "easy-Louisiana-Tennessee-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Louisiana",
+ "target": "Tennessee",
+ "source_capital": "Baton Rouge",
+ "target_capital": "Nashville",
+ "dev_source": [
+  "Ruston",
+  "Shreveport",
+  "Natchitoches",
+  "Lake Charles"
+ ],
+ "dev_target": [
+  "Knoxville",
+  "Clarksville",
+  "Pigeon Forge",
+  "Memphis"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "New Orleans",
+  "Houma",
+  "Thibodaux"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "New Orleans",
+   "ho_fs"
+  ],
+  [
+   "New Orleans",
+   "ho_zs"
+  ],
+  [
+   "Houma",
+   "ho_fs"
+  ],
+  [
+   "Houma",
+   "ho_zs"
+  ],
+  [
+   "Thibodaux",
+   "ho_fs"
+  ],
+  [
+   "Thibodaux",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Ruston",
+   "Shreveport",
+   "Natchitoches",
+   "Lake Charles",
+   "Thibodaux",
+   "New Orleans",
+   "Houma"
+  ],
+  "target": [
+   "Knoxville",
+   "Clarksville",
+   "Pigeon Forge",
+   "Memphis",
+   "Chattanooga",
+   "Murfreesboro",
+   "Gatlinburg"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 6,
+   "flip": {
+    "k": 6,
+    "n": 6,
+    "rate": 1.0,
+    "ci95": [
+     0.6096569663469354,
+     0.9999999999999999
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 6,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3903430336530645
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.8491122126579285,
+    "edited": 0.9126925468444824
+   },
+   "leak": {
+    "k": 8,
+    "n": 13,
+    "rate": 0.6153846153846154,
+    "ci95": [
+     0.35522480972268555,
+     0.8229055341876319
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 13,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.22810184305529166
+    ]
+   },
+   "kl_country": {
+    "mean": 0.033395614475011826,
+    "sd": 0.024022424593567848,
+    "n": 3,
+    "ci95": [
+     0.006211681995871413,
+     0.06057954695415224
+    ],
+    "max": 0.060871291905641556
+   },
+   "kl_generic": {
+    "mean": 0.01050412468612194,
+    "sd": 0.013003965839743614,
+    "n": 40,
+    "ci95": [
+     0.006474153920597772,
+     0.01453409545164611
+    ],
+    "max": 0.06623941659927368
+   },
+   "F": 1.0,
+   "kl_mean": 0.021949869580566883,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9780501304194331,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 30.04621696472168
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Fargo",
+   "ho_zs"
+  ],
+  [
+   "Grand Forks",
+   "ho_fs"
+  ],
+  [
+   "Grand Forks",
+   "ho_zs"
+  ],
+  [
+   "Minot",
+   "ho_fs"
+  ],
+  [
+   "Minot",
+   "ho_zs"
+  ],
+  [
+   "Williston",
+   "ho_zs"
+  ],
+  [
+   "Omaha",
+   "ho_fs"
+  ],
+  [
+   "Omaha",
+   "ho_zs"
+  ],
+  [
+   "Grand Island",
+   "ho_zs"
+  ],
+  [
+   "Kearney",
+   "ho_fs"
+  ],
+  [
+   "Kearney",
+   "ho_zs"
+  ],
+  [
+   "Scottsbluff",
+   "ho_fs"
+  ],
+  [
+   "Scottsbluff",
+   "ho_zs"
+  ]
+ ]
+}

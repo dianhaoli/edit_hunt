@@ -1,0 +1,266 @@
+{
+ "id": "hard-Oregon-Tennessee-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "hard",
+ "source": "Oregon",
+ "target": "Tennessee",
+ "source_capital": "Salem",
+ "target_capital": "Nashville",
+ "dev_source": [
+  "Corvallis",
+  "Bend",
+  "Ashland",
+  "Astoria"
+ ],
+ "dev_target": [
+  "Pigeon Forge",
+  "Murfreesboro",
+  "Memphis",
+  "Chattanooga"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 8,
+  "positions": [
+   "city_last",
+   "city_all",
+   "final"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": true,
+  "leak_weight": 0.5
+ },
+ "test_cities": [
+  "Eugene",
+  "Medford",
+  "Beaverton"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Eugene",
+   "ho_fs"
+  ],
+  [
+   "Eugene",
+   "ho_zs"
+  ],
+  [
+   "Medford",
+   "ho_fs"
+  ],
+  [
+   "Medford",
+   "ho_zs"
+  ],
+  [
+   "Beaverton",
+   "ho_fs"
+  ],
+  [
+   "Beaverton",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Corvallis",
+   "Bend",
+   "Ashland",
+   "Astoria",
+   "Eugene",
+   "Beaverton",
+   "Medford"
+  ],
+  "target": [
+   "Pigeon Forge",
+   "Murfreesboro",
+   "Memphis",
+   "Chattanooga",
+   "Gatlinburg",
+   "Clarksville",
+   "Knoxville"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 5,
+   "n": 6,
+   "rate": 0.8333333333333334,
+   "ci95": [
+    0.43649056343635395,
+    0.9699474141282697
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 6,
+   "flip": {
+    "k": 5,
+    "n": 6,
+    "rate": 0.8333333333333334,
+    "ci95": [
+     0.43649056343635395,
+     0.9699474141282697
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 6,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3903430336530645
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 2,
+     "n": 3,
+     "rate": 0.6666666666666666,
+     "ci95": [
+      0.2076549551264879,
+      0.9385096847238394
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "flip_eff": {
+    "k": 0,
+    "n": 6,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3903430336530645
+    ]
+   },
+   "p_us": {
+    "clean": 0.4094425141811371,
+    "edited": 0.5850301384925842
+   },
+   "leak": {
+    "k": 1,
+    "n": 7,
+    "rate": 0.14285714285714285,
+    "ci95": [
+     0.02567895594897479,
+     0.51313450331903
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 7,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.35433884297520657
+    ]
+   },
+   "kl_country": {
+    "mean": 0.366847425699234,
+    "sd": 0.4261566400527954,
+    "n": 3,
+    "ci95": [
+     -0.11539420996956462,
+     0.8490890613680326
+    ],
+    "max": 0.8588829040527344
+   },
+   "kl_generic": {
+    "mean": 0.013213692232966423,
+    "sd": 0.01288535539060831,
+    "n": 40,
+    "ci95": [
+     0.009220479226451438,
+     0.01720690523948141
+    ],
+    "max": 0.06062525883316994
+   },
+   "F": 0.0,
+   "kl_mean": 0.19003055896610022,
+   "kl_budget": 1.0,
+   "leak_weight": 0.5,
+   "reward": 0.0,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 30.25583267211914
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   2,
+   5,
+   8
+  ]
+ },
+ "leak_items": [
+  [
+   "Macon",
+   "ho_zs"
+  ],
+  [
+   "Valdosta",
+   "ho_zs"
+  ],
+  [
+   "Tulsa",
+   "ho_fs"
+  ],
+  [
+   "Tulsa",
+   "ho_zs"
+  ],
+  [
+   "Norman",
+   "ho_zs"
+  ],
+  [
+   "Stillwater",
+   "ho_zs"
+  ],
+  [
+   "Lawton",
+   "ho_zs"
+  ]
+ ]
+}

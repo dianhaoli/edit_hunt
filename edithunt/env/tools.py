@@ -184,6 +184,7 @@ class ToolEnv:
         # guards compare normalised text (unicode/zero-width/case/spacing/punctuation), so spelling variants
         # ("Los  Angeles", "Los-Angeles", "LosAngeles", "Ames" + zero-width) and near-copies of templates are refused
         self._held = {_letters(c) for c in held}
+        self._held_plain = {_plain(c) for c in held}  # for the near-copy check (typos inside an abbreviated word)
         self._held_re = [re.compile(r"(?<![a-z0-9])" + " ?".join(map(re.escape, _norm(c).split())) + r"(?![a-z0-9])")
                          for c in held]
         private_tpls = list(inst.test_templates.values()) + [STATE_Q_HO] + [t for t, _ in READOUTS.values()]
@@ -198,10 +199,14 @@ class ToolEnv:
             from ..data import CITY2STATE_EXT
             self._all_cities = sorted(CITY2STATE_EXT, key=len, reverse=True)
         # no target capital in tasks where it is unknown (erase) or secret (detective)
-        self.tgt_cap = inst.target_capital if self.task not in ("detective", "erase") and inst.target_capital else None
+        self.tgt_cap = inst.target_capital if self.task not in ("detective", "erase", "undo") and inst.target_capital else None
         pl = getattr(inst, "extra", {}).get("plant")
         self.plant = None
-        if pl:
+        self.plant_gate = None  # [(layer, key, lo, width, vector)]: gated plants at every position (undo family)
+        if pl and pl.get("kind") == "gate_all":
+            self.plant_gate = [(g["layer"], *(torch.tensor(g[x], dtype=torch.float32) for x in ("key", "b", "w", "vector")))
+                               for g in pl["gates"]]
+        elif pl:
             self.plant = (pl["layer"], torch.tensor(pl["vector"], dtype=torch.float32), set(CITIES_OF(pl["source"])))
 
     # ---------------- plumbing
@@ -211,6 +216,7 @@ class ToolEnv:
 
     def call(self, name: str, args: dict) -> str:
         fn = getattr(self, "t_" + name, None)
+        self._skip_count = 0
         try:
             if fn is None or name not in self.tools:
                 raise ToolError(f"unknown tool {name!r}")
@@ -231,6 +237,8 @@ class ToolEnv:
             if isinstance(e, torch.cuda.OutOfMemoryError):
                 torch.cuda.empty_cache()
             out = {"error": f"internal error in {name}: {type(e).__name__}: {str(e)[:200]}"}
+        if getattr(self, "_skip_count", 0):
+            out["skipped_not_accessible"] = self._skip_count  # private cities dropped from this call (skip_private)
         out["budget_left"] = self.budget - self.used
         if self.call_budget is not None:
             out["tool_calls_left"] = self.call_budget - self.calls
@@ -261,7 +269,15 @@ class ToolEnv:
             raise ToolError(f"give 1..{MAX_PROMPTS} cities")
         if not all(isinstance(c, str) for c in cs):
             raise ToolError("cities must be strings")
-        bad = [c for c in cs if _letters(c) in self._held]
+        bad = [c for c in cs if _letters(c) in self._held or (self._generic and (
+               any(len(h) >= 6 and _near(_letters(c), h) for h in self._held) or
+               any(len(h) >= 6 and _near(_plain(c), h) for h in self._held_plain)))]
+        if bad and self.inst.constraints.get("skip_private"):  # T8 v0.2: drop private cities, report a count
+            cs = [c for c in cs if c not in bad]
+            self._skip_count = getattr(self, "_skip_count", 0) + len(bad)
+            if not cs:
+                self._refuse("none of these cities is accessible")
+            return list(cs)
         if bad:
             self._refuse(f"held-out cities are not accessible: {bad}")
         return list(cs)
@@ -309,8 +325,13 @@ class ToolEnv:
         return out
 
     def _plant_ivs(self, encs, model: str = "planted") -> list:
-        """The planted edit (detective task) for these prompts, if any."""
-        if self.plant is None or model == "clean":
+        """The planted edit (detective task; undo family: gated plants at every position) for these prompts, if any."""
+        if model == "clean":
+            return []
+        if self.plant_gate is not None:
+            pos = pos_rule(encs, "all")
+            return [Intervention(L, pos, "gate", (k, b, w, v)) for L, k, b, w, v in self.plant_gate]
+        if self.plant is None:
             return []
         L, v, src = self.plant
         pos = [[e.city_last] if e.city in src and e.city_last >= 0 else [] for e in encs]
@@ -319,7 +340,7 @@ class ToolEnv:
     def _model(self, model: str) -> str:
         if model not in ("planted", "clean"):
             raise ToolError("model must be 'planted' or 'clean'")
-        if model == "clean" and self.plant is not None and "clean_access" not in self.inst.constraints.get("features", []):
+        if model == "clean" and (self.plant is not None or self.plant_gate is not None) and "clean_access" not in self.inst.constraints.get("features", []):
             raise ToolError("only the planted model is available in this task")
         return model
 
@@ -570,7 +591,7 @@ class ToolEnv:
             out["flip_rate"] = _r(sum(p == self.tgt_cap for p in pred) / len(pred), 3)
         if ge:
             ref = [encs[i % len(encs)] for i in range(len(ge))]
-            lg = self.S.logp_final(ge, build_ivs(E, ge, ref), bs=self.bs)
+            lg = self.S.logp_final(ge, self._plant_ivs(ge) + build_ivs(E, ge, ref), bs=self.bs)
             out["kl_generic"] = _r(kl(torch.stack([c[1] for c in gclean]), lg).mean(), 4)
         return out
 
@@ -649,7 +670,7 @@ class ToolEnv:
                 loss = loss - (xw * px).sum() / max(1, len(xencs))
                 rec["px"] = px
             if ge:
-                lg, *_ = self.S.forward(ge, [ivv(edit_positions(pos, ge, ref))], grad=True)
+                lg, *_ = self.S.forward(ge, self._plant_ivs(ge) + [ivv(edit_positions(pos, ge, ref))], grad=True)
                 loss = loss + kl_weight * kl(gclean, lg).mean()
             opt.zero_grad(); loss.backward(); opt.step()
             if maxn is not None:
@@ -704,15 +725,47 @@ class ToolEnv:
         return {"status": "submitted"}
 
 
+# Place-name abbreviations (AUDIT_T2V2 M3, 2026-10-02: "Saint Cloud" reached the private "St. Cloud"). Applied to
+# both the private names and the agent's text, so only equality under the canonical form matters.
+_ALIAS_SUB = [("sainte", "ste"), ("saint", "st"), ("fort", "ft"), ("mount", "mt"), ("point", "pt")]
+_ALIAS_WORD = {"north": "n", "south": "s", "east": "e", "west": "w"}
+_DIR_PREFIX = re.compile(r"\b(north|south|east|west)(?=[a-z])")
+
+
 def _norm(s: str) -> str:
     """Canonical text for the held-out guards: NFKC, no format chars (zero-width), lower case, every run of
-    non-alphanumerics -> one space."""
+    non-alphanumerics -> one space, place-name abbreviations canonicalised (Saint/St, Fort/Ft, Mount/Mt, Point/Pt
+    anywhere; North/N etc. as a word or a compact word prefix)."""
     s = "".join(ch for ch in unicodedata.normalize("NFKC", s) if unicodedata.category(ch) != "Cf")
-    return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
+    s = re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
+    for a, b in _ALIAS_SUB:
+        s = s.replace(a, b)
+    s = _DIR_PREFIX.sub(lambda m: _ALIAS_WORD[m.group(1)], s)
+    return " ".join(_ALIAS_WORD.get(w, w) for w in s.split())
 
 
 def _letters(s: str) -> str:
     return _norm(s).replace(" ", "")
+
+
+def _plain(s: str) -> str:
+    """Letters only, no abbreviation canonicalisation."""
+    s = "".join(ch for ch in unicodedata.normalize("NFKC", s) if unicodedata.category(ch) != "Cf")
+    return re.sub(r"[^a-z0-9]+", "", s.lower())
+
+
+def _near(a: str, b: str) -> bool:
+    """Edit distance <= 1 (one substitution, insertion or deletion) between canonical letter strings."""
+    if a == b:
+        return True
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) > len(b):
+        a, b = b, a
+    i = 0
+    while i < len(a) and a[i] == b[i]:
+        i += 1
+    return a[i + (len(a) == len(b)):] == b[i + 1:]
 
 
 def _drop_empty(args: dict) -> dict:

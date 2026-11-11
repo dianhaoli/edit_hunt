@@ -77,7 +77,7 @@ class Instance:
     public_extra: dict = field(default_factory=dict)  # task-specific public data
 
     def public(self) -> dict:
-        if self.task in ("detective", "handoff", "erase"):
+        if self.task in ("detective", "handoff", "erase", "undo"):
             return {"id": self.id, "model": self.model, "task": self.task, "suite_task": self.suite_task,
                     "constraints": self.constraints, "public_extra": self.public_extra}
         return {k: getattr(self, k) for k in PUBLIC_KEYS} | {"task": self.task, "suite_task": self.suite_task,

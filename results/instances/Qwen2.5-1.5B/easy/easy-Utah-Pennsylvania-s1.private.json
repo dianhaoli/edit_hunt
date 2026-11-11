@@ -1,0 +1,265 @@
+{
+ "id": "easy-Utah-Pennsylvania-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Utah",
+ "target": "Pennsylvania",
+ "source_capital": "Salt Lake City",
+ "target_capital": "Harrisburg",
+ "dev_source": [
+  "Moab",
+  "St. George",
+  "Provo",
+  "Orem"
+ ],
+ "dev_target": [
+  "Scranton",
+  "Hershey",
+  "Gettysburg",
+  "Philadelphia"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Ogden",
+  "Park City",
+  "Logan"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Ogden",
+   "ho_zs"
+  ],
+  [
+   "Park City",
+   "ho_zs"
+  ],
+  [
+   "Logan",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Moab",
+   "St. George",
+   "Provo",
+   "Orem"
+  ],
+  "target": [
+   "Scranton",
+   "Hershey",
+   "Gettysburg",
+   "Philadelphia",
+   "Pittsburgh",
+   "Allentown",
+   "Erie"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 0,
+     "n": 0,
+     "rate": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7674158215522766,
+    "edited": 0.8996896147727966
+   },
+   "leak": {
+    "k": 11,
+    "n": 13,
+    "rate": 0.8461538461538461,
+    "ci95": [
+     0.5776482949136899,
+     0.9567427368172621
+    ]
+   },
+   "leak_to_target": {
+    "k": 4,
+    "n": 13,
+    "rate": 0.3076923076923077,
+    "ci95": [
+     0.12680497161618087,
+     0.5763111218666236
+    ]
+   },
+   "kl_country": {
+    "mean": 0.09688178449869156,
+    "sd": 0.11319441348314285,
+    "n": 3,
+    "ci95": [
+     -0.031209752688006936,
+     0.22497332168539005
+    ],
+    "max": 0.22228293120861053
+   },
+   "kl_generic": {
+    "mean": 0.013788610696792603,
+    "sd": 0.028094923123717308,
+    "n": 40,
+    "ci95": [
+     0.0050819038164812355,
+     0.02249531757710397
+    ],
+    "max": 0.1398434340953827
+   },
+   "F": 1.0,
+   "kl_mean": 0.05533519759774208,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9446648024022579,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 31.404525756835938
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Nashua",
+   "ho_fs"
+  ],
+  [
+   "Nashua",
+   "ho_zs"
+  ],
+  [
+   "Keene",
+   "ho_fs"
+  ],
+  [
+   "Keene",
+   "ho_zs"
+  ],
+  [
+   "Laconia",
+   "ho_fs"
+  ],
+  [
+   "Laconia",
+   "ho_zs"
+  ],
+  [
+   "Derry",
+   "ho_fs"
+  ],
+  [
+   "Myrtle Beach",
+   "ho_fs"
+  ],
+  [
+   "Hilton Head",
+   "ho_fs"
+  ],
+  [
+   "Spartanburg",
+   "ho_fs"
+  ],
+  [
+   "Spartanburg",
+   "ho_zs"
+  ],
+  [
+   "Rock Hill",
+   "ho_fs"
+  ],
+  [
+   "Rock Hill",
+   "ho_zs"
+  ]
+ ]
+}

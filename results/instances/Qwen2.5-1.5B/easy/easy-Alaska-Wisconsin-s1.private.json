@@ -1,0 +1,290 @@
+{
+ "id": "easy-Alaska-Wisconsin-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Alaska",
+ "target": "Wisconsin",
+ "source_capital": "Juneau",
+ "target_capital": "Madison",
+ "dev_source": [
+  "Wasilla",
+  "Anchorage",
+  "Ketchikan",
+  "Sitka"
+ ],
+ "dev_target": [
+  "Appleton",
+  "Kenosha",
+  "Eau Claire",
+  "Oshkosh"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Fairbanks",
+  "Nome",
+  "Kodiak",
+  "Homer"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Fairbanks",
+   "ho_fs"
+  ],
+  [
+   "Fairbanks",
+   "ho_zs"
+  ],
+  [
+   "Nome",
+   "ho_fs"
+  ],
+  [
+   "Nome",
+   "ho_zs"
+  ],
+  [
+   "Kodiak",
+   "ho_fs"
+  ],
+  [
+   "Kodiak",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Wasilla",
+   "Anchorage",
+   "Ketchikan",
+   "Sitka",
+   "Kodiak",
+   "Nome",
+   "Fairbanks"
+  ],
+  "target": [
+   "Appleton",
+   "Kenosha",
+   "Eau Claire",
+   "Oshkosh",
+   "Milwaukee",
+   "La Crosse",
+   "Green Bay",
+   "Racine"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 6,
+   "n": 6,
+   "rate": 1.0,
+   "ci95": [
+    0.6096569663469354,
+    0.9999999999999999
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 6,
+   "flip": {
+    "k": 6,
+    "n": 6,
+    "rate": 1.0,
+    "ci95": [
+     0.6096569663469354,
+     0.9999999999999999
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 6,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.3903430336530645
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.750943124294281,
+    "edited": 0.6515812873840332
+   },
+   "leak": {
+    "k": 14,
+    "n": 15,
+    "rate": 0.9333333333333333,
+    "ci95": [
+     0.7018292244757601,
+     0.9881334113938051
+    ]
+   },
+   "leak_to_target": {
+    "k": 9,
+    "n": 15,
+    "rate": 0.6,
+    "ci95": [
+     0.357464427565077,
+     0.8017577191740534
+    ]
+   },
+   "kl_country": {
+    "mean": 0.07721563428640366,
+    "sd": 0.08278218656778336,
+    "n": 3,
+    "ci95": [
+     -0.016461228403666817,
+     0.17089249697647413
+    ],
+    "max": 0.1719178557395935
+   },
+   "kl_generic": {
+    "mean": 0.01702386699616909,
+    "sd": 0.03974005952477455,
+    "n": 40,
+    "ci95": [
+     0.004708294956171385,
+     0.029339439036166794
+    ],
+    "max": 0.2394452691078186
+   },
+   "F": 1.0,
+   "kl_mean": 0.04711975064128637,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9528802493587136,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 34.83656311035156
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Pawtucket",
+   "ho_fs"
+  ],
+  [
+   "Pawtucket",
+   "ho_zs"
+  ],
+  [
+   "Cranston",
+   "ho_zs"
+  ],
+  [
+   "Woonsocket",
+   "ho_fs"
+  ],
+  [
+   "Woonsocket",
+   "ho_zs"
+  ],
+  [
+   "Narragansett",
+   "ho_fs"
+  ],
+  [
+   "Narragansett",
+   "ho_zs"
+  ],
+  [
+   "Sioux Falls",
+   "ho_fs"
+  ],
+  [
+   "Sioux Falls",
+   "ho_zs"
+  ],
+  [
+   "Rapid City",
+   "ho_fs"
+  ],
+  [
+   "Rapid City",
+   "ho_zs"
+  ],
+  [
+   "Deadwood",
+   "ho_fs"
+  ],
+  [
+   "Deadwood",
+   "ho_zs"
+  ],
+  [
+   "Sturgis",
+   "ho_fs"
+  ],
+  [
+   "Sturgis",
+   "ho_zs"
+  ]
+ ]
+}

@@ -1,0 +1,269 @@
+{
+ "id": "easy-Mississippi-Alaska-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Mississippi",
+ "target": "Alaska",
+ "source_capital": "Jackson",
+ "target_capital": "Juneau",
+ "dev_source": [
+  "Hattiesburg",
+  "Biloxi",
+  "Natchez",
+  "Vicksburg"
+ ],
+ "dev_target": [
+  "Anchorage",
+  "Nome",
+  "Fairbanks",
+  "Wasilla"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Gulfport",
+  "Tupelo"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Gulfport",
+   "ho_zs"
+  ],
+  [
+   "Tupelo",
+   "ho_fs"
+  ],
+  [
+   "Tupelo",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Hattiesburg",
+   "Biloxi",
+   "Natchez",
+   "Vicksburg",
+   "Tupelo"
+  ],
+  "target": [
+   "Anchorage",
+   "Nome",
+   "Fairbanks",
+   "Wasilla",
+   "Kodiak",
+   "Ketchikan",
+   "Sitka"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.8874437808990479,
+    "edited": 0.36979788541793823
+   },
+   "leak": {
+    "k": 1,
+    "n": 14,
+    "rate": 0.07142857142857142,
+    "ci95": [
+     0.012721886112291636,
+     0.3146926955395781
+    ]
+   },
+   "leak_to_target": {
+    "k": 1,
+    "n": 14,
+    "rate": 0.07142857142857142,
+    "ci95": [
+     0.012721886112291636,
+     0.3146926955395781
+    ]
+   },
+   "kl_country": {
+    "mean": 0.7897179126739502,
+    "sd": 0.8728806376457214,
+    "n": 2,
+    "ci95": [
+     -0.42003293069567493,
+     1.9994687560435753
+    ],
+    "max": 1.4069377183914185
+   },
+   "kl_generic": {
+    "mean": 0.01645720936357975,
+    "sd": 0.021359940990805626,
+    "n": 40,
+    "ci95": [
+     0.009837695070241282,
+     0.023076723656918218
+    ],
+    "max": 0.10194426774978638
+   },
+   "F": 1.0,
+   "kl_mean": 0.403087561018765,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.596912438981235,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 37.61516571044922
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Albuquerque",
+   "ho_fs"
+  ],
+  [
+   "Albuquerque",
+   "ho_zs"
+  ],
+  [
+   "Las Cruces",
+   "ho_fs"
+  ],
+  [
+   "Las Cruces",
+   "ho_zs"
+  ],
+  [
+   "Taos",
+   "ho_fs"
+  ],
+  [
+   "Taos",
+   "ho_zs"
+  ],
+  [
+   "Hilo",
+   "ho_fs"
+  ],
+  [
+   "Hilo",
+   "ho_zs"
+  ],
+  [
+   "Lahaina",
+   "ho_fs"
+  ],
+  [
+   "Lahaina",
+   "ho_zs"
+  ],
+  [
+   "Kailua",
+   "ho_fs"
+  ],
+  [
+   "Kailua",
+   "ho_zs"
+  ],
+  [
+   "Kona",
+   "ho_fs"
+  ],
+  [
+   "Kona",
+   "ho_zs"
+  ]
+ ]
+}

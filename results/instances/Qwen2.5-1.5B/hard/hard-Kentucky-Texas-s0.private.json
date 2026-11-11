@@ -1,0 +1,277 @@
+{
+ "id": "hard-Kentucky-Texas-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "hard",
+ "source": "Kentucky",
+ "target": "Texas",
+ "source_capital": "Frankfort",
+ "target_capital": "Austin",
+ "dev_source": [
+  "Berea",
+  "Owensboro",
+  "Paducah",
+  "Louisville"
+ ],
+ "dev_target": [
+  "Lubbock",
+  "Corpus Christi",
+  "Amarillo",
+  "Houston"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 8,
+  "positions": [
+   "city_last",
+   "city_all",
+   "final"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": true,
+  "leak_weight": 0.5
+ },
+ "test_cities": [
+  "Elizabethtown",
+  "Hopkinsville"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Elizabethtown",
+   "ho_zs"
+  ],
+  [
+   "Hopkinsville",
+   "ho_fs"
+  ],
+  [
+   "Hopkinsville",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Berea",
+   "Owensboro",
+   "Paducah",
+   "Louisville",
+   "Hopkinsville",
+   "Elizabethtown"
+  ],
+  "target": [
+   "Lubbock",
+   "Corpus Christi",
+   "Amarillo",
+   "Houston",
+   "Dallas",
+   "Waco",
+   "Plano",
+   "Galveston",
+   "Fort Worth",
+   "El Paso",
+   "Laredo",
+   "San Antonio"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "flip_eff": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "p_us": {
+    "clean": 0.7276297807693481,
+    "edited": 0.5708780288696289
+   },
+   "leak": {
+    "k": 7,
+    "n": 12,
+    "rate": 0.5833333333333334,
+    "ci95": [
+     0.3195073356553728,
+     0.8067425380947535
+    ]
+   },
+   "leak_to_target": {
+    "k": 3,
+    "n": 12,
+    "rate": 0.25,
+    "ci95": [
+     0.08894003962896138,
+     0.53231033912066
+    ]
+   },
+   "kl_country": {
+    "mean": 0.09488620609045029,
+    "sd": 0.13344678282737732,
+    "n": 2,
+    "ci95": [
+     -0.09006159903649305,
+     0.2798340112173936
+    ],
+    "max": 0.18924732506275177
+   },
+   "kl_generic": {
+    "mean": 0.010437441989779472,
+    "sd": 0.021671567112207413,
+    "n": 40,
+    "ci95": [
+     0.003721353760881693,
+     0.01715353021867725
+    ],
+    "max": 0.13665811717510223
+   },
+   "F": 0.0,
+   "kl_mean": 0.05266182404011488,
+   "kl_budget": 1.0,
+   "leak_weight": 0.5,
+   "reward": 0.0,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 26.991086959838867
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   2,
+   5,
+   8
+  ]
+ },
+ "leak_items": [
+  [
+   "Bangor",
+   "ho_fs"
+  ],
+  [
+   "Bangor",
+   "ho_zs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_fs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_zs"
+  ],
+  [
+   "Lewiston",
+   "ho_zs"
+  ],
+  [
+   "Kennebunkport",
+   "ho_fs"
+  ],
+  [
+   "Kennebunkport",
+   "ho_zs"
+  ],
+  [
+   "Provo",
+   "ho_fs"
+  ],
+  [
+   "Provo",
+   "ho_zs"
+  ],
+  [
+   "Ogden",
+   "ho_zs"
+  ],
+  [
+   "Moab",
+   "ho_zs"
+  ],
+  [
+   "Park City",
+   "ho_zs"
+  ]
+ ]
+}

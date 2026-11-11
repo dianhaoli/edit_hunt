@@ -1,0 +1,285 @@
+{
+ "id": "easy-Virginia-Pennsylvania-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Virginia",
+ "target": "Pennsylvania",
+ "source_capital": "Richmond",
+ "target_capital": "Harrisburg",
+ "dev_source": [
+  "Williamsburg",
+  "Charlottesville",
+  "Blacksburg",
+  "Lynchburg"
+ ],
+ "dev_target": [
+  "Hershey",
+  "Allentown",
+  "Erie",
+  "Scranton"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Norfolk",
+  "Roanoke",
+  "Newport News",
+  "Chesapeake"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Norfolk",
+   "ho_zs"
+  ],
+  [
+   "Roanoke",
+   "ho_zs"
+  ],
+  [
+   "Newport News",
+   "ho_zs"
+  ],
+  [
+   "Chesapeake",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Williamsburg",
+   "Charlottesville",
+   "Blacksburg",
+   "Lynchburg",
+   "Norfolk",
+   "Roanoke",
+   "Newport News"
+  ],
+  "target": [
+   "Hershey",
+   "Allentown",
+   "Erie",
+   "Scranton",
+   "Philadelphia",
+   "Gettysburg",
+   "Pittsburgh"
+  ]
+ },
+ "reference": {
+  "layer": 14,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 0,
+     "n": 0,
+     "rate": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "ho_zs": {
+     "k": 4,
+     "n": 4,
+     "rate": 1.0,
+     "ci95": [
+      0.5100999795960008,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "state_clean_correct": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.6758346557617188,
+    "edited": 0.6355819702148438
+   },
+   "leak": {
+    "k": 4,
+    "n": 16,
+    "rate": 0.25,
+    "ci95": [
+     0.10181901984237346,
+     0.49498768929398645
+    ]
+   },
+   "leak_to_target": {
+    "k": 1,
+    "n": 16,
+    "rate": 0.0625,
+    "ci95": [
+     0.01111905730833121,
+     0.2832926836802987
+    ]
+   },
+   "kl_country": {
+    "mean": 0.011858955025672913,
+    "sd": 0.009985629469156265,
+    "n": 4,
+    "ci95": [
+     0.0020730381458997724,
+     0.021644871905446054
+    ],
+    "max": 0.026209242641925812
+   },
+   "kl_generic": {
+    "mean": 0.002855295781046152,
+    "sd": 0.004478700924664736,
+    "n": 40,
+    "ci95": [
+     0.001467331984743162,
+     0.0042432595773491425
+    ],
+    "max": 0.027998575940728188
+   },
+   "F": 1.0,
+   "kl_mean": 0.007357125403359532,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9926428745966405,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 14,
+     "position": "city_last",
+     "norm": 26.091135025024414
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Boulder",
+   "ho_fs"
+  ],
+  [
+   "Boulder",
+   "ho_zs"
+  ],
+  [
+   "Aspen",
+   "ho_fs"
+  ],
+  [
+   "Aspen",
+   "ho_zs"
+  ],
+  [
+   "Fort Collins",
+   "ho_fs"
+  ],
+  [
+   "Fort Collins",
+   "ho_zs"
+  ],
+  [
+   "Pueblo",
+   "ho_fs"
+  ],
+  [
+   "Pueblo",
+   "ho_zs"
+  ],
+  [
+   "Birmingham",
+   "ho_fs"
+  ],
+  [
+   "Birmingham",
+   "ho_zs"
+  ],
+  [
+   "Huntsville",
+   "ho_fs"
+  ],
+  [
+   "Huntsville",
+   "ho_zs"
+  ],
+  [
+   "Mobile",
+   "ho_fs"
+  ],
+  [
+   "Mobile",
+   "ho_zs"
+  ],
+  [
+   "Tuscaloosa",
+   "ho_fs"
+  ],
+  [
+   "Tuscaloosa",
+   "ho_zs"
+  ]
+ ]
+}

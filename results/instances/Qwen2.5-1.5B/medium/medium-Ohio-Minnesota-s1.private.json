@@ -1,0 +1,246 @@
+{
+ "id": "medium-Ohio-Minnesota-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "medium",
+ "source": "Ohio",
+ "target": "Minnesota",
+ "source_capital": "Columbus",
+ "target_capital": "Saint Paul",
+ "dev_source": [
+  "Akron",
+  "Sandusky",
+  "Toledo",
+  "Youngstown"
+ ],
+ "dev_target": [
+  "Duluth",
+  "Bemidji",
+  "Minneapolis",
+  "Mankato"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 15,
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 1.0
+ },
+ "test_cities": [
+  "Cleveland",
+  "Cincinnati",
+  "Dayton"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Cleveland",
+   "ho_zs"
+  ],
+  [
+   "Cincinnati",
+   "ho_fs"
+  ],
+  [
+   "Cincinnati",
+   "ho_zs"
+  ],
+  [
+   "Dayton",
+   "ho_fs"
+  ],
+  [
+   "Dayton",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Akron",
+   "Sandusky",
+   "Toledo",
+   "Youngstown",
+   "Cincinnati",
+   "Dayton",
+   "Cleveland"
+  ],
+  "target": [
+   "Duluth",
+   "Bemidji",
+   "Minneapolis",
+   "Mankato",
+   "St. Cloud",
+   "Eden Prairie"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 5,
+   "n": 5,
+   "rate": 1.0,
+   "ci95": [
+    0.5655085052479191,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 5,
+   "flip": {
+    "k": 5,
+    "n": 5,
+    "rate": 1.0,
+    "ci95": [
+     0.5655085052479191,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 5,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.43449149475208104
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.9178264737129211,
+    "edited": 0.7981348037719727
+   },
+   "leak": {
+    "k": 3,
+    "n": 6,
+    "rate": 0.5,
+    "ci95": [
+     0.18761280689940868,
+     0.8123871931005913
+    ]
+   },
+   "leak_to_target": {
+    "k": 1,
+    "n": 6,
+    "rate": 0.16666666666666666,
+    "ci95": [
+     0.03005258587173032,
+     0.563509436563646
+    ]
+   },
+   "kl_country": {
+    "mean": 0.07474426180124283,
+    "sd": 0.10622980445623398,
+    "n": 3,
+    "ci95": [
+     -0.045466078348342445,
+     0.1949546019508281
+    ],
+    "max": 0.1968982070684433
+   },
+   "kl_generic": {
+    "mean": 0.015986114740371704,
+    "sd": 0.025343403220176697,
+    "n": 40,
+    "ci95": [
+     0.0081321127124629,
+     0.02384011676828051
+    ],
+    "max": 0.1232307106256485
+   },
+   "F": 1.0,
+   "kl_mean": 0.045365188270807266,
+   "kl_budget": 1.0,
+   "leak_weight": 1.0,
+   "reward": 0.47731740586459637,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 32.0052604675293
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   5,
+   10,
+   15
+  ]
+ },
+ "leak_items": [
+  [
+   "St. Louis",
+   "ho_fs"
+  ],
+  [
+   "St. Louis",
+   "ho_zs"
+  ],
+  [
+   "Brattleboro",
+   "ho_zs"
+  ],
+  [
+   "Bennington",
+   "ho_zs"
+  ],
+  [
+   "Middlebury",
+   "ho_fs"
+  ],
+  [
+   "Middlebury",
+   "ho_zs"
+  ]
+ ]
+}

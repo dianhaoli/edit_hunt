@@ -117,6 +117,8 @@ class Subject:
         P = self._shared_prefix(encs)
         if P and capture and any(p < P for ps in capture.values() for row in ps for p in row):
             P = 0  # a capture inside the shared prefix needs the full forward (the cached prefix has no residuals)
+        if P and any(p < P for iv in interventions for ps in iv.positions for p in ps):
+            P = 0  # an intervention inside the shared prefix (position rule "all") needs the full forward
         ids, mask, pos, offs = self._batch(encs, P)
         for iv in interventions:
             assert all(p >= P for ps in iv.positions for p in ps), "intervention inside shared prefix"
@@ -240,4 +242,6 @@ def pos_rule(encs: list[Enc], rule: str) -> list[list[int]]:
         return [list(e.city_span) for e in encs]
     if rule == "final":
         return [[e.final] for e in encs]
+    if rule == "all":  # every token (activation-gated edits / plants that act wherever their key matches)
+        return [list(range(len(e.ids))) for e in encs]
     raise ValueError(rule)

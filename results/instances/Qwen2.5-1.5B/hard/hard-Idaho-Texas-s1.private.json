@@ -1,0 +1,289 @@
+{
+ "id": "hard-Idaho-Texas-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "hard",
+ "source": "Idaho",
+ "target": "Texas",
+ "source_capital": "Boise",
+ "target_capital": "Austin",
+ "dev_source": [
+  "Sun Valley",
+  "Ketchum",
+  "Coeur d'Alene",
+  "Twin Falls"
+ ],
+ "dev_target": [
+  "Laredo",
+  "Galveston",
+  "Dallas",
+  "Corpus Christi"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 8,
+  "positions": [
+   "city_last",
+   "city_all",
+   "final"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": true,
+  "leak_weight": 0.5
+ },
+ "test_cities": [
+  "Pocatello",
+  "Nampa"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Pocatello",
+   "ho_fs"
+  ],
+  [
+   "Pocatello",
+   "ho_zs"
+  ],
+  [
+   "Nampa",
+   "ho_fs"
+  ],
+  [
+   "Nampa",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Sun Valley",
+   "Ketchum",
+   "Coeur d'Alene",
+   "Twin Falls",
+   "Pocatello",
+   "Nampa"
+  ],
+  "target": [
+   "Laredo",
+   "Galveston",
+   "Dallas",
+   "Corpus Christi",
+   "San Antonio",
+   "Amarillo",
+   "Waco",
+   "Plano",
+   "Lubbock",
+   "Fort Worth",
+   "El Paso",
+   "Houston"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "flip_eff": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "p_us": {
+    "clean": 0.9094085097312927,
+    "edited": 0.8771307468414307
+   },
+   "leak": {
+    "k": 13,
+    "n": 14,
+    "rate": 0.9285714285714286,
+    "ci95": [
+     0.6853073044604219,
+     0.9872781138877085
+    ]
+   },
+   "leak_to_target": {
+    "k": 11,
+    "n": 14,
+    "rate": 0.7857142857142857,
+    "ci95": [
+     0.5241027622679172,
+     0.9242875166308363
+    ]
+   },
+   "kl_country": {
+    "mean": 0.015956737101078033,
+    "sd": 0.01701020635664463,
+    "n": 2,
+    "ci95": [
+     -0.007618206136687199,
+     0.039531680338843266
+    ],
+    "max": 0.02798476815223694
+   },
+   "kl_generic": {
+    "mean": 0.014939337968826294,
+    "sd": 0.02039811760187149,
+    "n": 40,
+    "ci95": [
+     0.008617895831841506,
+     0.021260780105811082
+    ],
+    "max": 0.11301592737436295
+   },
+   "F": 0.0,
+   "kl_mean": 0.015448037534952164,
+   "kl_budget": 1.0,
+   "leak_weight": 0.5,
+   "reward": 0.0,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 36.00552749633789
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   2,
+   5,
+   8
+  ]
+ },
+ "leak_items": [
+  [
+   "Louisville",
+   "ho_fs"
+  ],
+  [
+   "Louisville",
+   "ho_zs"
+  ],
+  [
+   "Paducah",
+   "ho_fs"
+  ],
+  [
+   "Paducah",
+   "ho_zs"
+  ],
+  [
+   "Owensboro",
+   "ho_fs"
+  ],
+  [
+   "Owensboro",
+   "ho_zs"
+  ],
+  [
+   "Birmingham",
+   "ho_fs"
+  ],
+  [
+   "Birmingham",
+   "ho_zs"
+  ],
+  [
+   "Huntsville",
+   "ho_fs"
+  ],
+  [
+   "Huntsville",
+   "ho_zs"
+  ],
+  [
+   "Mobile",
+   "ho_fs"
+  ],
+  [
+   "Mobile",
+   "ho_zs"
+  ],
+  [
+   "Tuscaloosa",
+   "ho_fs"
+  ],
+  [
+   "Tuscaloosa",
+   "ho_zs"
+  ]
+ ]
+}

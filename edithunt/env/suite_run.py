@@ -98,6 +98,8 @@ def main():
     ap.add_argument("--cap", type=float, default=None, help="override the provider's cumulative cap ($)")
     ap.add_argument("--bs", type=int, default=16)
     ap.add_argument("--run_tag", default="", help="suffix for repeated runs of the same instance (e.g. r2)")
+    ap.add_argument("--system_extra", default="", help="appended to the system prompt (red-team runs)")
+    ap.add_argument("--only", default="", help="comma list of instance ids (default: first n per task)")
     a = ap.parse_args()
     prov = provider_of(a.model)
     cap = a.cap if a.cap is not None else CAPS[prov]
@@ -106,8 +108,11 @@ def main():
     client = make_client(a.model)
     S = None
     out_root = ROOT / "results" / "suite" / "runs" / a.model
+    only = {x for x in a.only.split(",") if x}
     for task, p, bb in items:
         inst = load_instance(p)
+        if only and inst.id not in only:
+            continue
         out = out_root / task / f"{inst.id}{'.bb' if bb else ''}{'.' + a.run_tag if a.run_tag else ''}.json"
         if out.exists():
             continue
@@ -122,7 +127,8 @@ def main():
             break
         cost = a.max_cost  # worst case unless the episode returns (covers Ctrl-C / unknown partial spend)
         try:
-            rec = episode(S, inst, a.model, client, bb, a.max_turns, 16000, a.effort or None, a.max_cost, a.bs)
+            rec = episode(S, inst, a.model, client, bb, a.max_turns, 16000, a.effort or None, a.max_cost, a.bs,
+                          system_extra=a.system_extra)
             cost = rec["cost_usd"]
             out.parent.mkdir(parents=True, exist_ok=True)
             tmp = out.with_suffix(".tmp")

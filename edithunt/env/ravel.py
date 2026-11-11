@@ -117,14 +117,53 @@ def _grouped(S, items, edits, cands, bs, templates):
 
 
 # ------------------------------------------------------------------ grader v2
-def iso_sample(inst, iso_seed: int = 0, n: int = N_ISO) -> list[str]:
+def iso_sample(inst, iso_seed: int = 0, n: int | None = N_ISO) -> list[str]:
+    """n=None: the whole private pool (grader v2.1)."""
     pool = inst.extra["iso_pool"]
+    if n is None:
+        return list(pool)
     return random.Random(f"{inst.id}-iso-{iso_seed}").sample(pool, min(n, len(pool)))
 
 
+def version(inst) -> str:
+    return inst.extra.get("grader", "v2")
+
+
+TAU = 1.0  # soft Cause temperature (nats), pre-registered 2026-10-02
+
+
+def _soft(sc1: torch.Tensor, idx: list[int], tau: float = TAU) -> torch.Tensor:
+    return torch.sigmoid(_margins(sc1, idx) / tau)
+
+
+def _pratio(sc0: torch.Tensor, sc1: torch.Tensor, idx: list[int]) -> torch.Tensor:
+    """min(1, p_edited / p_clean) of candidate idx[i] (softmax over the candidate set)."""
+    if not len(sc0):
+        return torch.zeros(0)
+    r = torch.arange(len(sc0))
+    lp0, lp1 = sc0.log_softmax(1)[r, idx], sc1.log_softmax(1)[r, idx]
+    return (lp1 - lp0).clamp(max=0).exp()
+
+
+def _expkl(sc0: torch.Tensor, sc1: torch.Tensor) -> torch.Tensor:
+    """exp(-KL(p0 || p1)) per row over the candidate set."""
+    if not len(sc0):
+        return torch.zeros(0)
+    l0, l1 = sc0.log_softmax(1), sc1.log_softmax(1)
+    return torch.exp(-(l0.exp() * (l0 - l1)).sum(1).clamp(min=0))
+
+
 def grade_ravel(S: Subject, inst, sub: dict | None, bs: int = 16, enforce: bool = True, edits=None,
-                iso_seed: int = 0, n_iso: int = N_ISO, n_generic: int = 40) -> dict:
-    """`edits` (internal, offline references): pre-built grader edits, e.g. a DAS swap, bypassing `sub`."""
+                iso_seed: int = 0, n_iso: int | None | str = "default", n_generic: int = 40,
+                detail: bool = False) -> dict:
+    """`edits` (internal, offline references): pre-built grader edits, e.g. a DAS swap, bypassing `sub`.
+    Grader v2.1 (inst.extra['grader'] == 'v2.1'): reward = the product Cause * Iso_state * Iso_other * KL factor (the
+    describe text says the same) and Iso_other over the whole private pool. v2 instances keep v2 behaviour (reward =
+    averaged Disentangle, 16-city Iso draw) so stored v2 records reproduce. Soft metrics (pre-registered 2026-10-02,
+    LAB_NOTEBOOK) are reported for both; detail=True adds per-item values for offline resampling."""
+    ver = version(inst)
+    if n_iso == "default":
+        n_iso = None if ver == "v2.1" else N_ISO
     if edits is None:
         edits, why = parse(S, inst, sub, enforce)
         if edits is None:
@@ -179,10 +218,21 @@ def grade_ravel(S: Subject, inst, sub: dict | None, bs: int = 16, enforce: bool 
     f_keep = [f and unchanged[c] for f, (c, _) in zip(cause, items)]
     lw = inst.constraints.get("leak_weight", 0.5)
     old = R(f_keep) * (1 - lw * (1 - Io)) * klf
-    res = {"valid": True, "grader": "v2",
+    # soft metrics (pre-registered 2026-10-02; reported, not the reward)
+    okeep = [i for i in range(len(oitems)) if keep[i]]
+    cs = _soft(c1, [ti] * len(items))
+    ss = (_pratio(s0, s1, [si] * len(cities)) * _pratio(a0, a1, [ai] * len(cities)))[st_items] if st_items else torch.zeros(0)
+    os_ = _expkl(o0, o1)[okeep] if okeep else torch.zeros(0)
+    soft = {"Cause": _mean(cs) if len(cs) else 0.0, "Iso_state": _mean(ss) if len(ss) else 0.0,
+            "Iso_other": _mean(os_) if len(os_) else 0.0}
+    soft["reward"] = soft["Cause"] * soft["Iso_state"] * soft["Iso_other"] * klf
+    soft["tau"] = TAU
+    mult = Cause * Is * Io * klf
+    res = {"valid": True, "grader": ver,
            "Cause": rate(cause), "Iso_state": rate(iso_state), "Iso_other": rate(iso_other),
            "Iso": Iso, "Disentangle": D, "kl_mean": km, "kl_budget": kb, "kl_factor": klf,
-           "reward": D * klf, "reward_product": old, "reward_mult": Cause * Is * Io * klf,
+           "reward": mult if ver == "v2.1" else D * klf, "reward_avg": D * klf, "reward_product": old,
+           "reward_mult": mult, "soft": soft, "n_iso_cities": len(oc),
            "kl_country_fixed": {"mean": kc_mean, "n": len(cc), "excluded_ambiguous": sorted(set(cities) - set(cc)),
                                 "p_us_clean": pu0.mean().item() if len(cc) else None,
                                 "p_us_edited": pu1.mean().item() if len(cc) else None},
@@ -194,13 +244,21 @@ def grade_ravel(S: Subject, inst, sub: dict | None, bs: int = 16, enforce: bool 
            "Iso_state_parts": {"state_q_ho": rate(kept_q[st_items].tolist()), "abbr": rate(kept_a[st_items].tolist())},
            "iso_other_to_target": rate(to_tgt), "iso_other_dropped_near_ties": len(oitems) - len(iso_other),
            "iso_cities": oc, "layer": inst.constraints.get("layer"),
-           "formula": "reward = (Cause + (Iso_state + Iso_other)/2)/2 * (1 - min(1, KL_mean/kl_budget))",
+           "formula": ("reward = Cause * Iso_state * Iso_other * (1 - min(1, KL_mean/kl_budget))" if ver == "v2.1" else
+                       "reward = (Cause + (Iso_state + Iso_other)/2)/2 * (1 - min(1, KL_mean/kl_budget))"),
            "edits": edit_summary(edits) if not any(len(e) > 3 and e[3] == "swap" for e in edits) else
            [{"layer": e[0], "position": e[1], "kind": e[3] if len(e) > 3 else "add"} for e in edits]}
     # v1 aliases
     res |= {"flip": res["Cause"], "F": Cause, "F_keep": rate(f_keep), "state_kept": res["Iso_state"],
             "leak": {"rate": 1 - Io, "n": len(iso_other)}, "kl_country": se_["kl_country"],
             "kl_generic": se_["kl_generic"], "p_us": se_["p_us"]}
+    if detail:  # per-item values for offline resampling (bootstrap by city)
+        res["items"] = {
+            "cause": [[c, tk, bool(f), float(m)] for (c, tk), f, m in zip(items, cause, _margins(c1, [ti] * len(items)).tolist())],
+            "iso_state": [[cities[i], bool(kept_q[i] and kept_a[i]), float(ss[j])] for j, i in enumerate(st_items)],
+            "iso_other": [[oitems[i][0], oitems[i][1], bool(o1[i].argmax() == top0[i]), float(os_[j])]
+                          for j, i in enumerate(okeep)],
+            "kl_factor": klf}
     return res
 
 
@@ -278,7 +336,20 @@ def make_pair(S: Subject, source: str, target: str, seed: int = 0, bs: int = 16)
                 state_ok=[c for c in test if V[c]["state_q_ho"] and V[c]["abbr"]])
 
 
-def make_instance(S: Subject, P: dict, layer: int) -> Instance:
+def to_v21(inst) -> Instance:
+    """v2 instance -> grader v2.1 copy (AUDIT_T2V2 fixes; same cities, splits and pool). New id (suffix -v21)."""
+    import copy
+    x = copy.deepcopy(inst)
+    x.id = inst.id + "-v21"
+    x.constraints = {k: v for k, v in inst.constraints.items() if k not in ("leak_weight", "preserve_state")}
+    x.extra["grader"] = "v2.1"
+    x.extra["from_v2"] = inst.id
+    return x
+
+
+def make_instance(S: Subject, P: dict, layer: int, ver: str = "v2") -> Instance:
+    if ver == "v2.1":
+        return to_v21(make_instance(S, P, layer, "v2"))
     cons = CONS | {"layer": layer, "max_layer": layer}
     iid = re.sub(r"\s+", "_", f"T2_keepstate-{P['source']}-{P['target']}-L{layer}-s{P['seed']}")
     return Instance(iid, S.name, "ravel", P["source"], P["target"], CAPITALS[P["source"]], CAPITALS[P["target"]],

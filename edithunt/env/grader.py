@@ -41,7 +41,7 @@ from ..metrics import binary_kl, kl, p_us, rate
 from ..model import Enc, Subject, pos_rule
 
 CAPS = list(CAPITALS.values())
-POSITIONS = ("city_last", "city_all", "final")
+POSITIONS = ("city_last", "city_all", "final", "all")
 GENERIC_TOOLS = GENERIC_SENTENCES[:10]   # visible to agent tools
 GENERIC_GRADER = GENERIC_SENTENCES[10:]  # used only by the grader
 Edit = tuple  # (layer, position, vec[d] already multiplied by scale) or (layer, position, (U, center), "proj")
@@ -118,6 +118,8 @@ def edit_positions(rule: str, encs: list[Enc], ref: list[Enc] | None = None) -> 
     for g, r in zip(encs, ref):
         if rule == "final":
             out.append([g.final]); continue
+        if rule == "all":
+            out.append(list(range(len(g.ids)))); continue
         p = min(g.final, round(r.city_last / max(1, r.final) * g.final))
         k = len(r.city_span) if rule == "city_all" else 1
         out.append(list(range(max(0, p - k + 1), p + 1)))

@@ -1,0 +1,284 @@
+{
+ "id": "easy-Oregon-Tennessee-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Oregon",
+ "target": "Tennessee",
+ "source_capital": "Salem",
+ "target_capital": "Nashville",
+ "dev_source": [
+  "Beaverton",
+  "Medford",
+  "Bend",
+  "Astoria"
+ ],
+ "dev_target": [
+  "Murfreesboro",
+  "Knoxville",
+  "Pigeon Forge",
+  "Gatlinburg"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Eugene",
+  "Corvallis",
+  "Ashland"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Eugene",
+   "ho_fs"
+  ],
+  [
+   "Eugene",
+   "ho_zs"
+  ],
+  [
+   "Corvallis",
+   "ho_fs"
+  ],
+  [
+   "Corvallis",
+   "ho_zs"
+  ],
+  [
+   "Ashland",
+   "ho_fs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Beaverton",
+   "Medford",
+   "Bend",
+   "Astoria",
+   "Ashland",
+   "Corvallis",
+   "Eugene"
+  ],
+  "target": [
+   "Murfreesboro",
+   "Knoxville",
+   "Pigeon Forge",
+   "Gatlinburg",
+   "Clarksville",
+   "Chattanooga",
+   "Memphis"
+  ]
+ },
+ "reference": {
+  "layer": 14,
+  "flip": {
+   "k": 5,
+   "n": 5,
+   "rate": 1.0,
+   "ci95": [
+    0.5655085052479191,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 5,
+   "flip": {
+    "k": 5,
+    "n": 5,
+    "rate": 1.0,
+    "ci95": [
+     0.5655085052479191,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 5,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.43449149475208104
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.6709958910942078,
+    "edited": 0.8131306171417236
+   },
+   "leak": {
+    "k": 2,
+    "n": 15,
+    "rate": 0.13333333333333333,
+    "ci95": [
+     0.0373604698913593,
+     0.3788249920651624
+    ]
+   },
+   "leak_to_target": {
+    "k": 2,
+    "n": 15,
+    "rate": 0.13333333333333333,
+    "ci95": [
+     0.0373604698913593,
+     0.3788249920651624
+    ]
+   },
+   "kl_country": {
+    "mean": 0.08085372298955917,
+    "sd": 0.04727081209421158,
+    "n": 3,
+    "ci95": [
+     0.027361763458244835,
+     0.1343456825208735
+    ],
+    "max": 0.1339634209871292
+   },
+   "kl_generic": {
+    "mean": 0.003107782220467925,
+    "sd": 0.003988597076386213,
+    "n": 40,
+    "ci95": [
+     0.0018717031803211599,
+     0.0043438612606146905
+    ],
+    "max": 0.019428720697760582
+   },
+   "F": 1.0,
+   "kl_mean": 0.04198075260501355,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9580192473949865,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 14,
+     "position": "city_last",
+     "norm": 31.195985794067383
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Birmingham",
+   "ho_fs"
+  ],
+  [
+   "Birmingham",
+   "ho_zs"
+  ],
+  [
+   "Huntsville",
+   "ho_fs"
+  ],
+  [
+   "Huntsville",
+   "ho_zs"
+  ],
+  [
+   "Mobile",
+   "ho_fs"
+  ],
+  [
+   "Mobile",
+   "ho_zs"
+  ],
+  [
+   "Tuscaloosa",
+   "ho_fs"
+  ],
+  [
+   "Tuscaloosa",
+   "ho_zs"
+  ],
+  [
+   "Jersey City",
+   "ho_fs"
+  ],
+  [
+   "Jersey City",
+   "ho_zs"
+  ],
+  [
+   "Hoboken",
+   "ho_fs"
+  ],
+  [
+   "Hoboken",
+   "ho_zs"
+  ],
+  [
+   "Atlantic City",
+   "ho_fs"
+  ],
+  [
+   "Atlantic City",
+   "ho_zs"
+  ],
+  [
+   "Princeton",
+   "ho_zs"
+  ]
+ ]
+}

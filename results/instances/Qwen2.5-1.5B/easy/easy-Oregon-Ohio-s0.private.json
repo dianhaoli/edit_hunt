@@ -1,0 +1,264 @@
+{
+ "id": "easy-Oregon-Ohio-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Oregon",
+ "target": "Ohio",
+ "source_capital": "Salem",
+ "target_capital": "Columbus",
+ "dev_source": [
+  "Astoria",
+  "Ashland",
+  "Beaverton",
+  "Medford"
+ ],
+ "dev_target": [
+  "Youngstown",
+  "Akron",
+  "Cleveland",
+  "Dayton"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Eugene",
+  "Bend",
+  "Corvallis"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Eugene",
+   "ho_fs"
+  ],
+  [
+   "Eugene",
+   "ho_zs"
+  ],
+  [
+   "Bend",
+   "ho_fs"
+  ],
+  [
+   "Corvallis",
+   "ho_fs"
+  ],
+  [
+   "Corvallis",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Astoria",
+   "Ashland",
+   "Beaverton",
+   "Medford",
+   "Bend",
+   "Corvallis",
+   "Eugene"
+  ],
+  "target": [
+   "Youngstown",
+   "Akron",
+   "Cleveland",
+   "Dayton",
+   "Sandusky",
+   "Cincinnati",
+   "Toledo"
+  ]
+ },
+ "reference": {
+  "layer": 14,
+  "flip": {
+   "k": 5,
+   "n": 5,
+   "rate": 1.0,
+   "ci95": [
+    0.5655085052479191,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 5,
+   "flip": {
+    "k": 5,
+    "n": 5,
+    "rate": 1.0,
+    "ci95": [
+     0.5655085052479191,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 5,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.43449149475208104
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.5212363600730896,
+    "edited": 0.718117892742157
+   },
+   "leak": {
+    "k": 5,
+    "n": 10,
+    "rate": 0.5,
+    "ci95": [
+     0.23658959361548731,
+     0.7634104063845126
+    ]
+   },
+   "leak_to_target": {
+    "k": 4,
+    "n": 10,
+    "rate": 0.4,
+    "ci95": [
+     0.16817758120350967,
+     0.6873304525498135
+    ]
+   },
+   "kl_country": {
+    "mean": 0.11277005821466446,
+    "sd": 0.09706780314445496,
+    "n": 3,
+    "ci95": [
+     0.002927498555474986,
+     0.22261261787385395
+    ],
+    "max": 0.2198556661605835
+   },
+   "kl_generic": {
+    "mean": 0.0029099457897245884,
+    "sd": 0.003144120564684272,
+    "n": 40,
+    "ci95": [
+     0.0019355727319120364,
+     0.0038843188475371406
+    ],
+    "max": 0.013590547256171703
+   },
+   "F": 1.0,
+   "kl_mean": 0.057840002002194524,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9421599979978055,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 14,
+     "position": "city_last",
+     "norm": 28.98271942138672
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Wichita",
+   "ho_fs"
+  ],
+  [
+   "Lawrence",
+   "ho_fs"
+  ],
+  [
+   "Dodge City",
+   "ho_fs"
+  ],
+  [
+   "Overland Park",
+   "ho_fs"
+  ],
+  [
+   "Louisville",
+   "ho_fs"
+  ],
+  [
+   "Louisville",
+   "ho_zs"
+  ],
+  [
+   "Paducah",
+   "ho_fs"
+  ],
+  [
+   "Paducah",
+   "ho_zs"
+  ],
+  [
+   "Owensboro",
+   "ho_fs"
+  ],
+  [
+   "Owensboro",
+   "ho_zs"
+  ]
+ ]
+}

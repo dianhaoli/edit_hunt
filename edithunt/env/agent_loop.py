@@ -112,8 +112,43 @@ TOOLS = [TOOL_SCHEMAS[n] for n in ("describe_task", "run_prompts", "logit_lens",
                                    "eval_intervention", "optimize_vector", "submit")]
 
 
+def _strip_scale_from(t: dict) -> dict:
+    """Schema without the scale_from field/note (tasks that do not allow it; AUDIT_T2V2 m9, 2026-10-02)."""
+    import copy
+    t = copy.deepcopy(t)
+    t["description"] = t["description"].replace(_SCALE_FROM_NOTE, "").replace(
+        " With scale_from (where allowed), the vector is trained with that fixed input-dependent scale applied (see "
+        "eval_intervention).", "")
+    props = t["input_schema"]["properties"]
+    props.pop("scale_from", None)
+    if "edits" in props:
+        props["edits"]["items"]["properties"].pop("scale_from", None)
+    return t
+
+
+def _with_all_position(t: dict) -> dict:
+    """Schema whose position enums also allow 'all' (tasks with constraints positions including 'all')."""
+    import copy
+    t = copy.deepcopy(t)
+    def walk(x):
+        if isinstance(x, dict):
+            if x.get("enum") == _POS["enum"]:
+                x["enum"] = _POS["enum"] + ["all"]
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+    walk(t["input_schema"])
+    return t
+
+
 def tools_for(env) -> list[dict]:
-    return [TOOL_SCHEMAS[n] for n in TOOL_SCHEMAS if n in env.tools]
+    allow = bool(env.inst.constraints.get("allow_scale_from"))
+    out = [TOOL_SCHEMAS[n] if allow else _strip_scale_from(TOOL_SCHEMAS[n]) for n in TOOL_SCHEMAS if n in env.tools]
+    if "all" in env.inst.constraints.get("positions", []):
+        out = [_with_all_position(t) for t in out]
+    return out
 
 
 SYSTEM = """You are working on an interpretability task on a small open-weights language model (the subject), using \
@@ -185,13 +220,25 @@ def provider_of(model: str) -> str:
     return "openai" if model.startswith(("gpt", "o3", "o4")) else "anthropic"
 
 
+def _with_turns(env, out: str, left: int) -> str:
+    """Append turns_left to a tool result (instances with constraints show_turns; T8 v0.2)."""
+    if not env.inst.constraints.get("show_turns"):
+        return out
+    try:
+        d = json.loads(out)
+        d["turns_left"] = left
+        return json.dumps(d, separators=(",", ":"))
+    except json.JSONDecodeError:
+        return out
+
+
 def _first_msg(env) -> str:
     return "Task (output of describe_task):\n" + env.call("describe_task", {})
 
 
 def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_tokens: int = 16000,
                 effort: str | None = None, fallbacks: bool = True, max_nudges: int = 2,
-                max_cost: float | None = None) -> dict:
+                max_cost: float | None = None, system: str = SYSTEM) -> dict:
     messages = [{"role": "user", "content": _first_msg(env)}]
     tools = tools_for(env)
     usage = {"input_tokens": 0, "output_tokens": 0, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}
@@ -199,7 +246,7 @@ def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_token
     served = set()
     for turn in range(max_turns):
         # auto-caching: the history is append-only, so each turn reads the previous turns from cache
-        kw = dict(model=model, max_tokens=max_tokens, system=SYSTEM, tools=tools, messages=messages,
+        kw = dict(model=model, max_tokens=max_tokens, system=system, tools=tools, messages=messages,
                   cache_control={"type": "ephemeral"})
         if effort:
             kw["output_config"] = {"effort": effort}
@@ -229,7 +276,7 @@ def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_token
             continue
         results = []
         for b in uses:
-            out = env.call(b.name, b.input)
+            out = _with_turns(env, env.call(b.name, b.input), max_turns - turn - 1)
             results.append({"type": "tool_result", "tool_use_id": b.id, "content": out,
                             "is_error": out.startswith('{"error"')})
         messages.append({"role": "user", "content": results})
@@ -248,7 +295,8 @@ def run_episode(client, env: ToolEnv, model: str, max_turns: int = 40, max_token
 
 
 def run_episode_openai(client, env: ToolEnv, model: str, max_turns: int = 40, max_tokens: int = 16000,
-                       effort: str | None = None, max_nudges: int = 2, max_cost: float | None = None) -> dict:
+                       effort: str | None = None, max_nudges: int = 2, max_cost: float | None = None,
+                       system: str = SYSTEM) -> dict:
     """Same loop over the OpenAI Responses API (function tools + reasoning; turns chained with
     previous_response_id; prompt caching is automatic)."""
     # strict=False: optional properties stay optional (strict schemas make the model fill every field)
@@ -260,7 +308,7 @@ def run_episode_openai(client, env: ToolEnv, model: str, max_turns: int = 40, ma
     nudges, stop, end, prev, t0 = 0, None, "max_turns", None, time.time()
     served = set()
     for turn in range(max_turns):
-        kw = dict(model=model, instructions=SYSTEM, input=new_input, tools=tools, max_output_tokens=max_tokens)
+        kw = dict(model=model, instructions=system, input=new_input, tools=tools, max_output_tokens=max_tokens)
         if effort:
             kw["reasoning"] = {"effort": effort}
         if prev:
@@ -295,7 +343,7 @@ def run_episode_openai(client, env: ToolEnv, model: str, max_turns: int = 40, ma
         for c in calls:
             try:
                 args = json.loads(c.arguments or "{}")
-                out = env.call(c.name, args if isinstance(args, dict) else {})
+                out = _with_turns(env, env.call(c.name, args if isinstance(args, dict) else {}), max_turns - turn - 1)
             except json.JSONDecodeError as e:
                 out = json.dumps({"error": f"arguments are not valid JSON: {e}"})
             new_input.append({"type": "function_call_output", "call_id": c.call_id, "output": out})
@@ -316,31 +364,38 @@ def make_client(model: str):
     load_dotenv(ROOT / ".env")
     if provider_of(model) == "openai":
         import openai
-        return openai.OpenAI(api_key=os.environ["OPENAI_KEY"])
+        # max_retries: two concurrent long-context workers hit the 500k tokens/min limit (429, retry-after ~3 s), 2026-10-02
+        return openai.OpenAI(api_key=os.environ["OPENAI_KEY"], max_retries=10)
     import anthropic
     return anthropic.Anthropic(api_key=os.environ["ANT_KEY"])
 
 
 def episode(S, inst, model: str, client=None, blackbox: bool = False, max_turns: int = 25, max_tokens: int = 16000,
-            effort: str | None = "medium", max_cost: float | None = 0.10, bs: int = 16, dry_run: bool = False) -> dict:
-    """One full episode on a suite instance: env with the task's tool subset -> agent loop -> grade -> record."""
+            effort: str | None = "medium", max_cost: float | None = 0.10, bs: int = 16, dry_run: bool = False,
+            system_extra: str = "") -> dict:
+    """One full episode on a suite instance: env with the task's tool subset -> agent loop -> grade -> record.
+    system_extra: appended to the system prompt (red-team runs, 2026-10-02); recorded in the config."""
     from .tasks import make_env
     env = make_env(S, inst, bs, blackbox=blackbox)
+    env.max_turns = max_turns  # describe states the turn cap where the instance shows turns (T8 v0.2)
+    system = SYSTEM + ("\n\n" + system_extra if system_extra else "")
     if dry_run:
-        ep = run_episode(FakeClient(), env, model, max_turns, max_tokens, None, False, max_cost=None)
+        ep = run_episode(FakeClient(), env, model, max_turns, max_tokens, None, False, max_cost=None, system=system)
     elif provider_of(model) == "openai":
-        ep = run_episode_openai(client, env, model, max_turns, max_tokens, effort, max_cost=max_cost)
+        ep = run_episode_openai(client, env, model, max_turns, max_tokens, effort, max_cost=max_cost, system=system)
     else:
-        ep = run_episode(client, env, model, max_turns, max_tokens, effort, True, max_cost=max_cost)
+        ep = run_episode(client, env, model, max_turns, max_tokens, effort, True, max_cost=max_cost, system=system)
     g = grade(S, inst, env.submission, bs)
     return {"instance": inst.id, "suite_task": getattr(inst, "suite_task", ""), "tier": inst.tier,
             "agent_model": "dry_run" if dry_run else model, "blackbox": blackbox,
-            "config": {"max_turns": max_turns, "max_tokens": max_tokens, "effort": effort, "max_cost": max_cost},
+            "config": {"max_turns": max_turns, "max_tokens": max_tokens, "effort": effort, "max_cost": max_cost,
+                       "system_extra": system_extra},
             "budget_used": env.used, "budget_total": env.budget, "tool_calls": env.calls,
             "call_budget": env.call_budget, "tool_log": env.log,
             "submission": {k: v for k, v in (env.submission or {}).items() if k != "edits"},
             "submission_edits": [{k: v for k, v in e.items() if k not in ("vector", "basis", "center")}
                                  for e in (env.submission or {}).get("edits", [])],
+            "submission_full": env.submission,  # vectors included, so the episode can be re-graded (AUDIT_T2V2 m7)
             "grade": g, **ep}
 
 

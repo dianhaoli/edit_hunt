@@ -1,0 +1,268 @@
+{
+ "id": "easy-Oregon-Nevada-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Oregon",
+ "target": "Nevada",
+ "source_capital": "Salem",
+ "target_capital": "Carson City",
+ "dev_source": [
+  "Beaverton",
+  "Corvallis",
+  "Bend",
+  "Eugene"
+ ],
+ "dev_target": [
+  "Laughlin",
+  "Henderson",
+  "Elko",
+  "Sparks"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Medford",
+  "Ashland",
+  "Astoria"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Medford",
+   "ho_fs"
+  ],
+  [
+   "Medford",
+   "ho_zs"
+  ],
+  [
+   "Ashland",
+   "ho_fs"
+  ],
+  [
+   "Astoria",
+   "ho_fs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Beaverton",
+   "Corvallis",
+   "Bend",
+   "Eugene",
+   "Medford",
+   "Astoria",
+   "Ashland"
+  ],
+  "target": [
+   "Laughlin",
+   "Henderson",
+   "Elko",
+   "Sparks",
+   "Las Vegas",
+   "Lake Tahoe",
+   "Reno"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.6323701739311218,
+    "edited": 0.7261732220649719
+   },
+   "leak": {
+    "k": 3,
+    "n": 12,
+    "rate": 0.25,
+    "ci95": [
+     0.08894003962896138,
+     0.53231033912066
+    ]
+   },
+   "leak_to_target": {
+    "k": 2,
+    "n": 12,
+    "rate": 0.16666666666666666,
+    "ci95": [
+     0.04696414761482223,
+     0.44803635738467273
+    ]
+   },
+   "kl_country": {
+    "mean": 0.030445419251918793,
+    "sd": 0.04310834780335426,
+    "n": 3,
+    "ci95": [
+     -0.01833626851691094,
+     0.07922710702074853
+    ],
+    "max": 0.07993757724761963
+   },
+   "kl_generic": {
+    "mean": 0.006587195210158825,
+    "sd": 0.005629267077893019,
+    "n": 40,
+    "ci95": [
+     0.004842667268851667,
+     0.008331723151465983
+    ],
+    "max": 0.022187765687704086
+   },
+   "F": 1.0,
+   "kl_mean": 0.01851630723103881,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9814836927689612,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 28.76690101623535
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Nashua",
+   "ho_fs"
+  ],
+  [
+   "Nashua",
+   "ho_zs"
+  ],
+  [
+   "Keene",
+   "ho_fs"
+  ],
+  [
+   "Keene",
+   "ho_zs"
+  ],
+  [
+   "Laconia",
+   "ho_fs"
+  ],
+  [
+   "Laconia",
+   "ho_zs"
+  ],
+  [
+   "Derry",
+   "ho_fs"
+  ],
+  [
+   "Provo",
+   "ho_fs"
+  ],
+  [
+   "Provo",
+   "ho_zs"
+  ],
+  [
+   "Ogden",
+   "ho_zs"
+  ],
+  [
+   "Moab",
+   "ho_zs"
+  ],
+  [
+   "Park City",
+   "ho_zs"
+  ]
+ ]
+}

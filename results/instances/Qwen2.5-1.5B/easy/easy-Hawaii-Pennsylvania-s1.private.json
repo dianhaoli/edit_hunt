@@ -1,0 +1,258 @@
+{
+ "id": "easy-Hawaii-Pennsylvania-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Hawaii",
+ "target": "Pennsylvania",
+ "source_capital": "Honolulu",
+ "target_capital": "Harrisburg",
+ "dev_source": [
+  "Lihue",
+  "Kona",
+  "Kailua",
+  "Lahaina"
+ ],
+ "dev_target": [
+  "Pittsburgh",
+  "Gettysburg",
+  "Scranton",
+  "Hershey"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Hilo",
+  "Waikiki"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Hilo",
+   "ho_fs"
+  ],
+  [
+   "Hilo",
+   "ho_zs"
+  ],
+  [
+   "Waikiki",
+   "ho_fs"
+  ],
+  [
+   "Waikiki",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Lihue",
+   "Kona",
+   "Kailua",
+   "Lahaina",
+   "Waikiki",
+   "Hilo"
+  ],
+  "target": [
+   "Pittsburgh",
+   "Gettysburg",
+   "Scranton",
+   "Hershey",
+   "Erie",
+   "Philadelphia",
+   "Allentown"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7752264738082886,
+    "edited": 0.871281087398529
+   },
+   "leak": {
+    "k": 9,
+    "n": 10,
+    "rate": 0.9,
+    "ci95": [
+     0.5958436145024278,
+     0.9821242504842788
+    ]
+   },
+   "leak_to_target": {
+    "k": 9,
+    "n": 10,
+    "rate": 0.9,
+    "ci95": [
+     0.5958436145024278,
+     0.9821242504842788
+    ]
+   },
+   "kl_country": {
+    "mean": 0.03567150607705116,
+    "sd": 0.021678796038031578,
+    "n": 2,
+    "ci95": [
+     0.005626227651604879,
+     0.06571678450249745
+    ],
+    "max": 0.05100072920322418
+   },
+   "kl_generic": {
+    "mean": 0.023891007527709007,
+    "sd": 0.03587409853935242,
+    "n": 40,
+    "ci95": [
+     0.01277350920952103,
+     0.03500850584589699
+    ],
+    "max": 0.19527973234653473
+   },
+   "F": 1.0,
+   "kl_mean": 0.029781256802380085,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9702187431976199,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 40.48879623413086
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "St. Louis",
+   "ho_fs"
+  ],
+  [
+   "St. Louis",
+   "ho_zs"
+  ],
+  [
+   "Sioux Falls",
+   "ho_fs"
+  ],
+  [
+   "Sioux Falls",
+   "ho_zs"
+  ],
+  [
+   "Rapid City",
+   "ho_fs"
+  ],
+  [
+   "Rapid City",
+   "ho_zs"
+  ],
+  [
+   "Deadwood",
+   "ho_fs"
+  ],
+  [
+   "Deadwood",
+   "ho_zs"
+  ],
+  [
+   "Sturgis",
+   "ho_fs"
+  ],
+  [
+   "Sturgis",
+   "ho_zs"
+  ]
+ ]
+}

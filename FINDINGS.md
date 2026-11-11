@@ -324,7 +324,7 @@ L20 0.61 vs 0.74) come with lower Iso_state (0.75, 0.67); a plausible but untest
 0.9 x the tool-path reference's R on that instance; the continuous R and R / R_ref are reported alongside. `verify_references.py`: 51/51 references reproduce (41 earlier tasks
 unchanged; 10 T2 v2 within bf16 tolerance).
 
-**Agent audit on the 10-instance pilot set (2026-10-01).** Settings and pass rule fixed before the runs. Product
+**Agent audit on the 10-instance pilot set (2026-10-01).** *[2026-10-02 correction: these agent numbers are invalid. The task text stated the averaged reward while the product reward was graded (AUDIT_T2V2 C1). Re-run on the fixed v2.1 in §12.2.]* Settings and pass rule fixed before the runs. Product
 reward R per instance; "ceiling" = best honestly achievable legal edit (below).
 
 | instance | tool ref | fair oracle (3 seeds) | ceiling | gpt-6.1-sol (2 runs) | Sonnet 5.5 |
@@ -385,3 +385,125 @@ Grader: validate the key's shape/finiteness and lo < hi; KL is measured as now, 
 text is penalised. Rejected alternatives: firing only on a listed set of cities (the agent would tell the grader
 which cities are the source; it must generalise to held-out cities from activations), and an MLP weight edit
 (linear in h; isolation then needs centring so other cities read ~0, weaker than a clamp).
+
+## 12. T2 v2.1 (audit fixes), decision experiments, and a planted-edit family T8 (2026-10-02)
+Brief: AUDIT_T2V2.md. Hypotheses, bars and classification rules were written in LAB_NOTEBOOK (2026-10-02) before
+the data; deviations are marked. Everything is GPU-only except the agent arms in §12.5 (OpenAI, within the ledger cap;
+the user approved +$20 for T8).
+
+### 12.1 Correctness fixes, verified before any new agent run
+T2 v2 records and instances are unchanged; the fixed version is grader "v2.1" on copies
+(`results/suite/instances/T2_keepstate_v21`).
+- **C1**: the task text and the graded `reward` are both Cause x Iso_state x Iso_other x KL factor (averaged value kept as
+  `reward_avg`). **M3**: guards canonicalise St/Saint, Ft/Fort, Mt/Mount, Pt/Point, N/S/E/W (word and compact forms) and
+  refuse a city within edit distance 1 of a private one. **Iso**: the whole private pool (60 cities), not a fixed 16-city
+  draw. **m6**: gate scalar in float32. **m7**: records keep the submitted vectors. **m9**: scale_from schema only where
+  allowed.
+- Checks: `tests/test_t2v21.py` (5,240 city and 4,120 prompt variants of private cities refused, public cities
+  accessible, texts/schemas); `verify_references` 50/51 (all 41 other-task references exact); Sonnet replay 53/55
+  identical. Both remaining differences come from the float32 gate on T2 v2 instances, which moves R by up to +0.08 on
+  a fragile instance (the audit's unmeasured m6). Semantic aliases ("the Twin Cities") cannot be guarded by string
+  matching; the most they can buy is the ceiling oracle's edge over the fair oracle (0.88 vs 0.81).
+
+### 12.2 T2 v2.1: is there room above the recipe? (pre-registered levers)
+| lever | test | result | verdict |
+|---|---|---|---|
+| recipe solvability | opt_keep100 through the tools, v2.1 grader, 10 pilot instances | 10/10 pass the agent bar (0.8 x 3-seed reference); mean R 0.81 vs reference 0.79 | confirmed (audit M1) |
+| soft metrics | 521 stored edits re-graded with per-item outputs | bootstrap noise -35% (0.080 -> 0.052), separation up (10.0 -> 12.7); ordering rule failed (median Spearman 0.69, from ties at 0) | not adopted; reported as `soft` |
+| grader noise vs headroom | bootstrap by city, 11 valid instances | noise ~0.08 R per instance > recipe-to-ceiling headroom ~0.06 | headroom < noise |
+| agent picks the layer | oracle rows, 10 pairs x 4 layers | "always L20" loses 0.03 vs the best layer | no |
+| hidden downstream readouts | 5 private state readouts (clean acc. 0.85-0.99) | mean-diff moves 88-100% of them; the recipe's edit (never trained on them) keeps 89-100% | no |
+| hard negatives | Iso_other on neighbouring states | gate opens 4x more on neighbours (0.22 vs 0.05); script R would fall ~0.13 | no (< 0.2 bar) |
+| budget squeeze | gated keep recipe at 5-100 steps | 176 fwd R 0.03, 296 fwd 0.14, 536 fwd 0.75 (1 instance), 2,456 fwd 0.81 | open: a cliff between ~300 and ~540 forward passes; the 4x-lr short runs that would close it were not run (GPU went to agents) |
+| frontier agent, corrected text | gpt-6.1-sol, $0.30 / 40 turns, 10 instances | run 1: 5/10 pass, mean R 0.70 (0.53 under the wrong text); failure audit: 6 pass, **4 within 2 bootstrap SD of the bar, 1 low-ceiling instance, 0 skill failures** | saturated at reference level |
+**Verdict: T2 is a warm-up family.** A fixed procedure solves it, the remaining room is below grader noise, none of
+the tested levers makes the right method instance-dependent, and a frontier agent sits at reference level, where
+pass/fail is grader noise.
+
+### 12.3 Planted-edit family T8_undo (new: `edithunt/env/undo.py`, task "T8_undo")
+Design (avoids T4's holes): an activation-gated push at every position of a hidden layer; the key is a state's
+direction, so the plant fires on the model's own representation, not a city list. The agent gets only the planted
+model (no clean access). Reward = restoration = 1 - sum KL(original || fixed) / sum KL(original || planted) over private
+prompts (affected cities x 9 contexts, other cities, generic text). Null = 0, exact undo = 1; detection alone earns
+nothing. Plant types: state (mean-diff push), hop2 (capital only, trained), spread (push split over 3 layers), two
+(two states at two layers).
+- **The proxy is broken** (H5, pre-registered): patching the visible answers back to the truth (the T2 recipe aimed at
+  restoration) recovers 0.00-0.43 (0.00-0.32 on the 8 v0.2 instances); inverting the mechanism recovers 0.83-0.99. The
+  patch moves the model toward the truth, not toward the original model, which the agent cannot query.
+- **Not script-proof.** Four short model-diffing scripts each solve some single-plant variant once written: residual
+  update anomaly vs control states (v1), a scale-free ratio (v2), target-aware cumulative range (v3), and the
+  behavioural patch as baseline. Each variant beat the library until one more procedure was added (v3 for spread).
+  Two-plant instances defeat one-shot scripts (0.41-0.49 vs solver 0.87-0.94): 1 of 8 v0.2 instances survives the
+  strict filter (best script <= 0.5 x solver). Generator with the filter built in: `edithunt/env/generator.py`.
+- Every script that works is a genuine interpretability procedure, and which one works depends on the plant. So the
+  family rewards choosing the investigation; but its variant space must keep growing (generator + library loop) or a
+  policy will memorise the procedures.
+
+### 12.4 Agents on T8 (gpt-6.1-sol; no method hint in the task text)
+- v0.1, 60 turns: 0/4, all ended at the hidden turn cap without submitting. Failure audit (replay + grading the
+  agent's own evaluated candidates): 2 are **environment failures** (its last candidates scored 0.93 and 0.90, at the
+  correct layers, when the cap hit), 1 is ambiguous, 2 are skill gaps.
+- v0.1, 150 turns: **1/4 pass**, mean restoration 0.57. On hop2 L8 the agent scored 0.961 (solver 0.983, best script
+  0.93) with one self-derived edit: layer 8, its estimated write direction, gated on that same direction. It found the
+  layer from residual-update anomalies against control cities and mapped where the plant fires, including Ontario
+  border towns. Misses: spread 0.144 (localised to L16; plant at L8-10), state L16 0.563, two-plant 0.593 (above every
+  library script, below the bar).
+- Environment issues found by the audit and fixed in **T8 v0.2**: the hidden turn cap (now stated, with turns_left in
+  every result); refusal friction (14-30 refused batches per episode; private cities are now skipped per call with a
+  count); answer-bearing instance ids (now opaque).
+
+### 12.5 T8 v0.2 agent pilot
+Same 4 plant types on two state pairs (8 instances, opaque ids). Fixes from the v0.1 audit: turn cap stated and
+turns_left in every result, private cities skipped per call with a count, opaque ids. sol, 150 turns, $0.90 cap, 2 runs.
+| instance | solver | best library script | sol run 1 | sol run 2 |
+|---|---|---|---|---|
+| MN->TN hop2 L8 | 0.983 | 0.93 (v1, v3) | 0.921 pass | 0.978 pass |
+| NC->KY hop2 L8 | 0.965 | 0.88 (v3; v1/v2 0.06) | 0.928 pass | 0.762 (held a 0.964 candidate) |
+| NC->KY spread L8 | 0.956 | 0.82 (v3) | 0 cost cap (held 0.783) | 0.796 pass |
+| NC->KY state L16 | 0.905 | 0.85 | 0 cost cap (held 0.768) | 0 cost cap (best 0.665) |
+| MN->TN state L16 | 0.841 | 0.90 | 0 cost cap (held 0.910) | 0 cost cap (held 0.931) |
+| MN->TN two L8 | 0.867 | 0.49 | 0 cost cap (best 0.609) | 0.514 |
+| NC->KY two L8 (only filter-kept) | 0.935 | 0.42 | 0.298 | 0 cost cap (best 0.384) |
+| MN->TN spread L8 | 0.911 | 0.84 (v3) | 0.027 | 0 (best 0.478) |
+- **Pass 4/16** (pass@2 > 0 on 3/8 instances). The failure audit (replay, re-grade, grade the agent's own evaluated
+  candidates) splits the 12 misses into **4 environment failures** (the $0.90 cost cap, still hidden in v0.2, stopped
+  the agent while it held a passing candidate) and **8 skill gaps**. The skill gaps concentrate on the hard variants:
+  both two-plant instances (4/4 runs never undo both plants) and MN spread (2/2, wrong layer or direction). The one
+  other skill miss is selection: the agent submitted 0.762 while holding a 0.964 candidate, because without the
+  original model it cannot score its own candidates directly. Grader consistent (every submission re-grades exactly;
+  0 replay mismatches); no refusal friction; no OOM taints.
+- What the agent does (no hint in the task text): behavioural sweep -> residual-update anomaly of affected vs control
+  cities across layers -> layer -> write-direction estimate consistent across contexts -> a gate keyed on that direction
+  -> inverse at every position. It beats the library on some instances (NC->KY hop2: 0.93 vs v1/v2 0.06) and loses on
+  others (spread: v3 0.84 vs agent 0.03).
+- Weaker model, equal token budget (P2, gpt-6-luna, partial): 0/2, both stopped by the cost cap after ~63 turns with
+  no submission. Luna used ~2x sol's reasoning tokens and leaned on `optimize_vector` (22 calls: the behavioural route
+  that fails here) where sol leaned on `cache_mean` + `vec_op` (model diffing). n = 2; still running at write-up time.
+- Spend: OpenAI ledger $27.70 of the $32 stop the plan set (user-approved +$20 for T8; the ledger is conservative:
+  ~$2.40 of worst-case charges for crashed or killed episodes). Anthropic unchanged ($3.91).
+
+### 12.6 Criteria (brief), as measured
+| criterion (brief) | T2 v2.1 | T8 (v0.2) |
+|---|---|---|
+| 1 solvable (bar fixed in advance) | yes: 3-seed reference 0.79; ceiling ~0.88 | yes: privileged inverse 0.84-0.98 within the agent's format |
+| 2 not script-solvable | no: opt_keep100 passes 10/10 | no against the 4-script library (1/8 kept); yes against the T2 recipe (patch <= 0.32) |
+| 3 learnable (pass@1 low, pass@k > 0) | no signal: agent at reference level, every miss within grader noise or low-ceiling | partly: pass@1 4/16, pass@2 > 0 on 3/8; two-plant and MN spread 0/2 with no near-solutions (pass@16 unknown) |
+| 4 headroom > noise | no: ~0.06 vs ~0.08 | yes: restoration bootstrap SD 0.004-0.05; agent-solver gaps 0.0-0.9 |
+| 5 stronger > weaker at equal budget | not measured on v2.1 (arm dropped: misses are noise) | direction yes (sol 2/2 vs luna 0/2 on the same instances), n = 2 |
+
+### 12.7 Next steps
+1. **T8 v0.3 before more agent spend:** show the cost budget too (or set the cap so turns bind first); the cost cap,
+   not skill, stopped 4/16 runs with a passing answer in hand. Then pass@8-16 on the 3 two-plant/spread instances
+   where the agent never got close, to see whether there is any learning signal at all (criterion 3's 1-2 successes).
+2. **Grow T8's variant space through the generator, not by hand:** plants written into MLP weights (rank-one; the
+   gated inverse is then approximate), plants keyed on non-state features, plants at other positions (final token),
+   3+ plants, other subject models (gemma-2-2b, Qwen 3B). Add every procedure a policy finds to the library and
+   regenerate. Keep instances where the library fails and the privileged inverse succeeds.
+3. **Make selection part of the skill on purpose:** the agent cannot score candidates without the original model.
+   Consider giving a small, noisy budget of "original-model" queries (e.g. 5 prompts), which turns choosing among
+   candidates into an experimental-design problem.
+4. **Keep T2 v2.1 as a warm-up/calibration unit** (fixed, verified, cheap), not as a training target. Report the
+   scripted library next to every agent number.
+5. Unfinished here: the T2 budget-squeeze curve (H3) between ~300 and ~540 forward passes (4x-lr short runs queued
+   after the agent arms); the T8 red-team arm (P3; likely stopped by the ledger cap); the transfer test (T2 or
+   single-plant transcripts in context on multi-plant instances) is the cheapest next probe of generalisation.

@@ -1,0 +1,264 @@
+{
+ "id": "easy-New_Jersey-Louisiana-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "New Jersey",
+ "target": "Louisiana",
+ "source_capital": "Trenton",
+ "target_capital": "Baton Rouge",
+ "dev_source": [
+  "Asbury Park",
+  "Paterson",
+  "Princeton",
+  "Atlantic City"
+ ],
+ "dev_target": [
+  "Shreveport",
+  "Houma",
+  "Thibodaux",
+  "New Orleans"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Jersey City",
+  "Hoboken",
+  "Camden"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Jersey City",
+   "ho_fs"
+  ],
+  [
+   "Jersey City",
+   "ho_zs"
+  ],
+  [
+   "Hoboken",
+   "ho_fs"
+  ],
+  [
+   "Hoboken",
+   "ho_zs"
+  ],
+  [
+   "Camden",
+   "ho_fs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Asbury Park",
+   "Paterson",
+   "Princeton",
+   "Atlantic City",
+   "Jersey City",
+   "Hoboken",
+   "Camden"
+  ],
+  "target": [
+   "Shreveport",
+   "Houma",
+   "Thibodaux",
+   "New Orleans",
+   "Ruston",
+   "Natchitoches",
+   "Lake Charles"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 5,
+   "n": 5,
+   "rate": 1.0,
+   "ci95": [
+    0.5655085052479191,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 5,
+   "flip": {
+    "k": 5,
+    "n": 5,
+    "rate": 1.0,
+    "ci95": [
+     0.5655085052479191,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 5,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.43449149475208104
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.6644825339317322,
+    "edited": 0.7664216160774231
+   },
+   "leak": {
+    "k": 6,
+    "n": 10,
+    "rate": 0.6,
+    "ci95": [
+     0.3126695474501864,
+     0.8318224187964902
+    ]
+   },
+   "leak_to_target": {
+    "k": 2,
+    "n": 10,
+    "rate": 0.2,
+    "ci95": [
+     0.056680947980693314,
+     0.5098431532792765
+    ]
+   },
+   "kl_country": {
+    "mean": 0.1321767121553421,
+    "sd": 0.20223139226436615,
+    "n": 3,
+    "ci95": [
+     -0.0966696514190101,
+     0.3610230757296943
+    ],
+    "max": 0.365309476852417
+   },
+   "kl_generic": {
+    "mean": 0.010656639002263546,
+    "sd": 0.01654912903904915,
+    "n": 40,
+    "ci95": [
+     0.005528010778831512,
+     0.01578526722569558
+    ],
+    "max": 0.10109850764274597
+   },
+   "F": 1.0,
+   "kl_mean": 0.07141667557880282,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9285833244211972,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 32.05121612548828
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Morgantown",
+   "ho_zs"
+  ],
+  [
+   "Wheeling",
+   "ho_zs"
+  ],
+  [
+   "Parkersburg",
+   "ho_fs"
+  ],
+  [
+   "Parkersburg",
+   "ho_zs"
+  ],
+  [
+   "Beckley",
+   "ho_fs"
+  ],
+  [
+   "Beckley",
+   "ho_zs"
+  ],
+  [
+   "Brattleboro",
+   "ho_zs"
+  ],
+  [
+   "Bennington",
+   "ho_zs"
+  ],
+  [
+   "Middlebury",
+   "ho_fs"
+  ],
+  [
+   "Middlebury",
+   "ho_zs"
+  ]
+ ]
+}

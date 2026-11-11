@@ -1,0 +1,269 @@
+{
+ "id": "easy-North_Carolina-Tennessee-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "North Carolina",
+ "target": "Tennessee",
+ "source_capital": "Raleigh",
+ "target_capital": "Nashville",
+ "dev_source": [
+  "Outer Banks",
+  "Chapel Hill",
+  "Cary",
+  "Winston-Salem"
+ ],
+ "dev_target": [
+  "Clarksville",
+  "Chattanooga",
+  "Knoxville",
+  "Pigeon Forge"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Charlotte",
+  "Greensboro",
+  "Asheville",
+  "Boone"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Charlotte",
+   "ho_zs"
+  ],
+  [
+   "Greensboro",
+   "ho_zs"
+  ],
+  [
+   "Asheville",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Outer Banks",
+   "Chapel Hill",
+   "Cary",
+   "Winston-Salem",
+   "Asheville",
+   "Charlotte",
+   "Greensboro"
+  ],
+  "target": [
+   "Clarksville",
+   "Chattanooga",
+   "Knoxville",
+   "Pigeon Forge",
+   "Memphis",
+   "Murfreesboro",
+   "Gatlinburg"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 0,
+     "n": 0,
+     "rate": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7043888568878174,
+    "edited": 0.7268034815788269
+   },
+   "leak": {
+    "k": 6,
+    "n": 13,
+    "rate": 0.46153846153846156,
+    "ci95": [
+     0.2320575430148814,
+     0.7085656756816796
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 13,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.22810184305529166
+    ]
+   },
+   "kl_country": {
+    "mean": 0.004771106410771608,
+    "sd": 0.007468103431165218,
+    "n": 3,
+    "ci95": [
+     -0.003679848180814037,
+     0.013222061002357254
+    ],
+    "max": 0.013384833931922913
+   },
+   "kl_generic": {
+    "mean": 0.006060798652470112,
+    "sd": 0.0104042524471879,
+    "n": 40,
+    "ci95": [
+     0.0028364874141896526,
+     0.00928510989075057
+    ],
+    "max": 0.05638974532485008
+   },
+   "F": 1.0,
+   "kl_mean": 0.00541595253162086,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9945840474683791,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 25.539810180664062
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Eugene",
+   "ho_fs"
+  ],
+  [
+   "Eugene",
+   "ho_zs"
+  ],
+  [
+   "Bend",
+   "ho_fs"
+  ],
+  [
+   "Medford",
+   "ho_fs"
+  ],
+  [
+   "Medford",
+   "ho_zs"
+  ],
+  [
+   "Corvallis",
+   "ho_fs"
+  ],
+  [
+   "Corvallis",
+   "ho_zs"
+  ],
+  [
+   "Morgantown",
+   "ho_zs"
+  ],
+  [
+   "Wheeling",
+   "ho_zs"
+  ],
+  [
+   "Parkersburg",
+   "ho_fs"
+  ],
+  [
+   "Parkersburg",
+   "ho_zs"
+  ],
+  [
+   "Beckley",
+   "ho_fs"
+  ],
+  [
+   "Beckley",
+   "ho_zs"
+  ]
+ ]
+}

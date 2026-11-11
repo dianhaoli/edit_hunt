@@ -52,6 +52,9 @@ SPECS = {
     "T6_handoff": dict(task="handoff", call_budget=25, tools=REPORT_TOOLS,
                        blackbox_tools=["describe_task", "run_prompts", "submit_report"]),
     "T7_minimal": dict(task="minimal", tier="minimal", tools=EDIT_TOOLS),
+    # planted-edit undo (env/undo.py): planted model only, no clean access, no target capital
+    "T8_undo": dict(task="undo", tools=["describe_task", "run_prompts", "logit_lens", "cache_mean", "project", "vec_op",
+                                        "vec_info", "eval_intervention", "optimize_vector", "submit"]),
 }
 
 
@@ -74,6 +77,9 @@ def describe(env) -> dict:
             "constraints": i.constraints}
     if env.call_budget is not None:
         base["tool_call_budget"] = env.call_budget
+    if i.constraints.get("show_turns") and getattr(env, "max_turns", None):
+        base["turn_budget"] = (f"at most {env.max_turns} turns (assistant responses, each may contain several tool calls); "
+                               "every tool result reports turns_left. Submit before you run out: no submission scores 0.")
     t = i.task
     if t in ("edit", "consistency", "minimal", "ravel"):
         base |= {"source": i.source, "target": i.target, "source_capital": i.source_capital,
@@ -101,17 +107,28 @@ def describe(env) -> dict:
                                    "register, lo, hi}: the edited residual h then gets register * scale * "
                                    "clamp((dot(key, h) - lo) / (hi - lo), 0, 1). The project tool reports dot(register, "
                                    "h) for given cities.")
-        base["reward"] = ("Cause = fraction of held-out (source city, wording) items whose top answer among the 50 capitals "
-                          "is the target capital. Iso_state = fraction of held-out source cities whose held-out state "
-                          "question AND hidden state readout still give " + i.source + ". Iso_other = fraction of "
-                          "private cities of other states (sampled at grading time, held-out wordings) whose top capital "
-                          "is unchanged. Iso = (Iso_state + Iso_other) / 2. Disentangle = (Cause + Iso) / 2. "
-                          "KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in "
-                          "the United States (country prompt), counted only where your edit lowers that probability, over "
-                          "held-out cities whose name is not also a well-known non-US place, and (b) the KL divergence "
-                          "(clean || edited) of the next-token distribution on unrelated sentences, with the edit applied "
-                          "at a comparable token."
-                          " reward = Disentangle * (1 - min(1, KL_mean / kl_budget)).")
+        _kl2 = ("KL_mean = average of (a) the binary KL of the model's probability that a held-out city is in "
+                "the United States (country prompt), counted only where your edit lowers that probability, over "
+                "held-out cities whose name is not also a well-known non-US place, and (b) the KL divergence "
+                "(clean || edited) of the next-token distribution on unrelated sentences, with the edit applied "
+                "at a comparable token.")
+        if i.extra.get("grader") == "v2.1":  # AUDIT_T2V2 C1 fix: the text states the reward that is graded
+            base["task"] = base["task"].replace("hidden state-level readouts that you cannot see or query",
+                                                "a state-level readout whose wording is private")
+            base["reward"] = ("Cause = fraction of held-out (source city, wording) items whose top answer among the 50 "
+                              "capitals is the target capital. Iso_state = fraction of held-out source cities whose held-out "
+                              "state question AND private state readout both still give " + i.source + ". Iso_other = "
+                              "fraction of private (city, held-out wording) items of cities of other states whose top "
+                              "capital is unchanged. " + _kl2 +
+                              " reward = Cause * Iso_state * Iso_other * (1 - min(1, KL_mean / kl_budget)). An edit that "
+                              "changes nothing scores 0.")
+        else:  # grader v2 (kept for the record: this text did not match the graded product reward, AUDIT_T2V2 C1)
+            base["reward"] = ("Cause = fraction of held-out (source city, wording) items whose top answer among the 50 capitals "
+                              "is the target capital. Iso_state = fraction of held-out source cities whose held-out state "
+                              "question AND hidden state readout still give " + i.source + ". Iso_other = fraction of "
+                              "private cities of other states (sampled at grading time, held-out wordings) whose top capital "
+                              "is unchanged. Iso = (Iso_state + Iso_other) / 2. Disentangle = (Cause + Iso) / 2. " + _kl2 +
+                              " reward = Disentangle * (1 - min(1, KL_mean / kl_budget)).")
     elif t == "consistency":
         base["task"] = (f"Make the model treat held-out cities in {i.source} as if they were in {i.target}: the capital "
                         f"question, the question 'which US state is <city> in?', and further hidden state-level "
@@ -160,6 +177,26 @@ def describe(env) -> dict:
                            if clean else "You can only query the planted model."))
         base["reward"] = ("reward = 0.4 * [source correct] + 0.4 * [target correct] + 0.2 * [|layer error| <= 2]. "
                           "Submit with submit_report(report={source, target, layer}).")
+    elif t == "undo":
+        base |= {"templates": env.templates, "positions": _POSITIONS | {"all": "every token (the gate decides where it acts)"},
+                 "known_cities": {s: CITIES[s] for s in STATES}}
+        base["task"] = ("Someone planted an edit in this model: at one or more layers, an input-dependent vector is added to "
+                        "the residual stream (it fires on some inputs and not on others) and changes what the model "
+                        "believes about some cities. You only have the edited model; the original is not available. Find "
+                        "the planted edit and undo it: submit edits that make the model behave like the original model "
+                        "again, everywhere. Some cities and prompt wordings are private to the grader; tools answer 'not "
+                        "accessible' for them" + (" (cities are skipped and counted in skipped_not_accessible)"
+                                                   if i.constraints.get("skip_private") else "") + ".")
+        base["edit_format"] = ("Additive edit {register, layer, position, scale}, optionally with scale_from {key: register, "
+                               "lo, hi}: the edited residual h gets register * scale * clamp((dot(key, h) - lo) / (hi - lo), "
+                               "0, 1). position 'all' applies it at every token (scale_from then decides where it acts). "
+                               "The project tool reports dot(register, h) for given cities.")
+        base["reward"] = ("restoration = 1 - (sum over private prompts of KL(original || edited model with your edits)) / "
+                          "(sum over the same prompts of KL(original || edited model)), clipped at 0, KL over the full "
+                          "next-token distribution at the last token. The private prompts are cities of many states in many "
+                          "contexts (questions about their capital, state, abbreviation, country, and free text) and "
+                          "unrelated sentences. Submitting nothing useful scores 0; an exact undo scores 1; changing prompts "
+                          "the plant did not affect lowers the score.")
     elif t == "handoff":
         pe = i.public_extra
         base |= {"example_pair": pe, "templates": env.templates, "positions": _POSITIONS}
@@ -318,7 +355,13 @@ def _grade_ravel(S, inst, sub, bs=16, enforce=True):
     return grade_ravel(S, inst, sub, bs, enforce)
 
 
-GRADERS = {"consistency": grade_consistency, "minimal": grade_minimal, "erase": grade_erase, "ravel": _grade_ravel}
+def _grade_undo(S, inst, sub, bs=16, enforce=True):
+    from .undo import grade_undo
+    return grade_undo(S, inst, sub, bs, enforce)
+
+
+GRADERS = {"consistency": grade_consistency, "minimal": grade_minimal, "erase": grade_erase, "ravel": _grade_ravel,
+           "undo": _grade_undo}
 
 
 # ------------------------------------------------------------------ reference solvers (through the tools)
@@ -503,9 +546,14 @@ def ref_handoff(env, **_):
     _call(env, "submit_report", report={"layer": hi})
 
 
+def ref_undo(env, **_):
+    from .undo import script_detect
+    script_detect(env)
+
+
 REFERENCES = {"T1_easy": ref_meandiff, "T2_keepstate": ref_keepstate, "T3_consistency": ref_meandiff,
               "T4_detective": ref_detective, "T5_erase": ref_erase, "T6_handoff": ref_handoff,
-              "T7_minimal": ref_minimal}
+              "T7_minimal": ref_minimal, "T8_undo": ref_undo}
 
 
 def make_env(S: Subject, inst, bs: int = 16, blackbox: bool = False):

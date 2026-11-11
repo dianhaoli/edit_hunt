@@ -1,0 +1,277 @@
+{
+ "id": "medium-Hawaii-Pennsylvania-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "medium",
+ "source": "Hawaii",
+ "target": "Pennsylvania",
+ "source_capital": "Honolulu",
+ "target_capital": "Harrisburg",
+ "dev_source": [
+  "Kona",
+  "Kailua",
+  "Waikiki",
+  "Lihue"
+ ],
+ "dev_target": [
+  "Hershey",
+  "Scranton",
+  "Pittsburgh",
+  "Gettysburg"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 15,
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 1.0
+ },
+ "test_cities": [
+  "Hilo",
+  "Lahaina"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Hilo",
+   "ho_fs"
+  ],
+  [
+   "Hilo",
+   "ho_zs"
+  ],
+  [
+   "Lahaina",
+   "ho_fs"
+  ],
+  [
+   "Lahaina",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Kona",
+   "Kailua",
+   "Waikiki",
+   "Lihue",
+   "Hilo",
+   "Lahaina"
+  ],
+  "target": [
+   "Hershey",
+   "Scranton",
+   "Pittsburgh",
+   "Gettysburg",
+   "Erie",
+   "Philadelphia",
+   "Allentown"
+  ]
+ },
+ "reference": {
+  "layer": 5,
+  "flip": {
+   "k": 4,
+   "n": 4,
+   "rate": 1.0,
+   "ci95": [
+    0.5100999795960008,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 4,
+   "flip": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "ci95": [
+     0.5100999795960008,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 4,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.48990002040399916
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.8685925006866455,
+    "edited": 0.8671033978462219
+   },
+   "leak": {
+    "k": 9,
+    "n": 15,
+    "rate": 0.6,
+    "ci95": [
+     0.357464427565077,
+     0.8017577191740534
+    ]
+   },
+   "leak_to_target": {
+    "k": 6,
+    "n": 15,
+    "rate": 0.4,
+    "ci95": [
+     0.19824228082594664,
+     0.642535572434923
+    ]
+   },
+   "kl_country": {
+    "mean": 0.0005964608862996101,
+    "sd": 0.00033760021324269474,
+    "n": 2,
+    "ci95": [
+     0.00012857086207629967,
+     0.0010643509105229207
+    ],
+    "max": 0.0008351802825927734
+   },
+   "kl_generic": {
+    "mean": 0.017662569880485535,
+    "sd": 0.023302583023905754,
+    "n": 40,
+    "ci95": [
+     0.01044102458385536,
+     0.02488411517711571
+    ],
+    "max": 0.11604376137256622
+   },
+   "F": 1.0,
+   "kl_mean": 0.009129515383392572,
+   "kl_budget": 1.0,
+   "leak_weight": 1.0,
+   "reward": 0.396348193846643,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 5,
+     "position": "city_last",
+     "norm": 36.08432388305664
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   5,
+   10,
+   15
+  ]
+ },
+ "leak_items": [
+  [
+   "Omaha",
+   "ho_fs"
+  ],
+  [
+   "Omaha",
+   "ho_zs"
+  ],
+  [
+   "Grand Island",
+   "ho_zs"
+  ],
+  [
+   "Kearney",
+   "ho_fs"
+  ],
+  [
+   "Kearney",
+   "ho_zs"
+  ],
+  [
+   "Scottsbluff",
+   "ho_fs"
+  ],
+  [
+   "Scottsbluff",
+   "ho_zs"
+  ],
+  [
+   "Milwaukee",
+   "ho_fs"
+  ],
+  [
+   "Milwaukee",
+   "ho_zs"
+  ],
+  [
+   "Green Bay",
+   "ho_fs"
+  ],
+  [
+   "Green Bay",
+   "ho_zs"
+  ],
+  [
+   "Kenosha",
+   "ho_fs"
+  ],
+  [
+   "Kenosha",
+   "ho_zs"
+  ],
+  [
+   "Oshkosh",
+   "ho_fs"
+  ],
+  [
+   "Oshkosh",
+   "ho_zs"
+  ]
+ ]
+}

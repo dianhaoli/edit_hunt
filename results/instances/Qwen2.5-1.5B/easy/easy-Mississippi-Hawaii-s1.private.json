@@ -1,0 +1,276 @@
+{
+ "id": "easy-Mississippi-Hawaii-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Mississippi",
+ "target": "Hawaii",
+ "source_capital": "Jackson",
+ "target_capital": "Honolulu",
+ "dev_source": [
+  "Biloxi",
+  "Natchez",
+  "Vicksburg",
+  "Hattiesburg"
+ ],
+ "dev_target": [
+  "Kona",
+  "Waikiki",
+  "Lihue",
+  "Hilo"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Gulfport",
+  "Tupelo"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Gulfport",
+   "ho_zs"
+  ],
+  [
+   "Tupelo",
+   "ho_fs"
+  ],
+  [
+   "Tupelo",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Biloxi",
+   "Natchez",
+   "Vicksburg",
+   "Hattiesburg",
+   "Tupelo"
+  ],
+  "target": [
+   "Kona",
+   "Waikiki",
+   "Lihue",
+   "Hilo",
+   "Lahaina",
+   "Kailua"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.8874437808990479,
+    "edited": 0.6100177764892578
+   },
+   "leak": {
+    "k": 16,
+    "n": 16,
+    "rate": 1.0,
+    "ci95": [
+     0.8063865817272802,
+     1.0
+    ]
+   },
+   "leak_to_target": {
+    "k": 12,
+    "n": 16,
+    "rate": 0.75,
+    "ci95": [
+     0.5050123107060135,
+     0.8981809801576265
+    ]
+   },
+   "kl_country": {
+    "mean": 0.2869132161140442,
+    "sd": 0.3892792761325836,
+    "n": 2,
+    "ci95": [
+     -0.252600335106287,
+     0.8264267673343754
+    ],
+    "max": 0.5621752142906189
+   },
+   "kl_generic": {
+    "mean": 0.020752033218741417,
+    "sd": 0.030281297862529755,
+    "n": 40,
+    "ci95": [
+     0.011367761787086348,
+     0.030136304650396486
+    ],
+    "max": 0.16075395047664642
+   },
+   "F": 1.0,
+   "kl_mean": 0.1538326246663928,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.8461673753336072,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 40.8532600402832
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Hot Springs",
+   "ho_fs"
+  ],
+  [
+   "Hot Springs",
+   "ho_zs"
+  ],
+  [
+   "Fort Smith",
+   "ho_fs"
+  ],
+  [
+   "Fort Smith",
+   "ho_zs"
+  ],
+  [
+   "Bentonville",
+   "ho_fs"
+  ],
+  [
+   "Bentonville",
+   "ho_zs"
+  ],
+  [
+   "Jonesboro",
+   "ho_fs"
+  ],
+  [
+   "Jonesboro",
+   "ho_zs"
+  ],
+  [
+   "Sioux Falls",
+   "ho_fs"
+  ],
+  [
+   "Sioux Falls",
+   "ho_zs"
+  ],
+  [
+   "Rapid City",
+   "ho_fs"
+  ],
+  [
+   "Rapid City",
+   "ho_zs"
+  ],
+  [
+   "Deadwood",
+   "ho_fs"
+  ],
+  [
+   "Deadwood",
+   "ho_zs"
+  ],
+  [
+   "Sturgis",
+   "ho_fs"
+  ],
+  [
+   "Sturgis",
+   "ho_zs"
+  ]
+ ]
+}

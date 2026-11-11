@@ -1,0 +1,256 @@
+{
+ "id": "medium-Indiana-South_Dakota-s0",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "medium",
+ "source": "Indiana",
+ "target": "South Dakota",
+ "source_capital": "Indianapolis",
+ "target_capital": "Pierre",
+ "dev_source": [
+  "Fort Wayne",
+  "West Lafayette",
+  "Muncie",
+  "Terre Haute"
+ ],
+ "dev_target": [
+  "Deadwood",
+  "Sioux Falls",
+  "Brookings",
+  "Rapid City"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 15,
+  "positions": [
+   "city_last"
+  ],
+  "max_rank": 1,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": false,
+  "leak_weight": 1.0
+ },
+ "test_cities": [
+  "South Bend",
+  "Gary",
+  "Evansville"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "South Bend",
+   "ho_zs"
+  ],
+  [
+   "Gary",
+   "ho_zs"
+  ],
+  [
+   "Evansville",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Fort Wayne",
+   "West Lafayette",
+   "Muncie",
+   "Terre Haute",
+   "Gary",
+   "South Bend"
+  ],
+  "target": [
+   "Deadwood",
+   "Sioux Falls",
+   "Brookings",
+   "Rapid City",
+   "Sturgis"
+  ]
+ },
+ "reference": {
+  "layer": 15,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 0,
+     "n": 0,
+     "rate": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7166364789009094,
+    "edited": 0.7537660002708435
+   },
+   "leak": {
+    "k": 0,
+    "n": 11,
+    "rate": 0.0,
+    "ci95": [
+     2.7755575615628914e-17,
+     0.2588400172488141
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 11,
+    "rate": 0.0,
+    "ci95": [
+     2.7755575615628914e-17,
+     0.2588400172488141
+    ]
+   },
+   "kl_country": {
+    "mean": 0.028255527839064598,
+    "sd": 0.025502478703856468,
+    "n": 3,
+    "ci95": [
+     -0.0006032435324968971,
+     0.05711429921062609
+    ],
+    "max": 0.05222567915916443
+   },
+   "kl_generic": {
+    "mean": 0.0021599121391773224,
+    "sd": 0.002472159918397665,
+    "n": 40,
+    "ci95": [
+     0.0013937818431106856,
+     0.002926042435243959
+    ],
+    "max": 0.012373434379696846
+   },
+   "F": 1.0,
+   "kl_mean": 0.01520771998912096,
+   "kl_budget": 1.0,
+   "leak_weight": 1.0,
+   "reward": 0.984792280010879,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 15,
+     "position": "city_last",
+     "norm": 30.327411651611328
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   5,
+   10,
+   15
+  ]
+ },
+ "leak_items": [
+  [
+   "Wichita",
+   "ho_fs"
+  ],
+  [
+   "Lawrence",
+   "ho_fs"
+  ],
+  [
+   "Dodge City",
+   "ho_fs"
+  ],
+  [
+   "Overland Park",
+   "ho_fs"
+  ],
+  [
+   "Bangor",
+   "ho_fs"
+  ],
+  [
+   "Bangor",
+   "ho_zs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_fs"
+  ],
+  [
+   "Bar Harbor",
+   "ho_zs"
+  ],
+  [
+   "Lewiston",
+   "ho_zs"
+  ],
+  [
+   "Kennebunkport",
+   "ho_fs"
+  ],
+  [
+   "Kennebunkport",
+   "ho_zs"
+  ]
+ ]
+}

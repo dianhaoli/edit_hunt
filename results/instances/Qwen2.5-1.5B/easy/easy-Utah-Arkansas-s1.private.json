@@ -1,0 +1,263 @@
+{
+ "id": "easy-Utah-Arkansas-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "easy",
+ "source": "Utah",
+ "target": "Arkansas",
+ "source_capital": "Salt Lake City",
+ "target_capital": "Little Rock",
+ "dev_source": [
+  "Orem",
+  "Provo",
+  "St. George",
+  "Moab"
+ ],
+ "dev_target": [
+  "Jonesboro",
+  "Hot Springs",
+  "Pine Bluff",
+  "Fort Smith"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 21,
+  "positions": [
+   "city_last",
+   "city_all"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 3000,
+  "preserve_state": false,
+  "leak_weight": 0.0
+ },
+ "test_cities": [
+  "Ogden",
+  "Park City",
+  "Logan"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Ogden",
+   "ho_zs"
+  ],
+  [
+   "Park City",
+   "ho_zs"
+  ],
+  [
+   "Logan",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Orem",
+   "Provo",
+   "St. George",
+   "Moab"
+  ],
+  "target": [
+   "Jonesboro",
+   "Hot Springs",
+   "Pine Bluff",
+   "Fort Smith",
+   "Bentonville"
+  ]
+ },
+ "reference": {
+  "layer": 7,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 0,
+     "n": 0,
+     "rate": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "ho_zs": {
+     "k": 3,
+     "n": 3,
+     "rate": 1.0,
+     "ci95": [
+      0.43849391955098227,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "state_clean_correct": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "p_us": {
+    "clean": 0.7674158215522766,
+    "edited": 0.8292346000671387
+   },
+   "leak": {
+    "k": 8,
+    "n": 13,
+    "rate": 0.6153846153846154,
+    "ci95": [
+     0.35522480972268555,
+     0.8229055341876319
+    ]
+   },
+   "leak_to_target": {
+    "k": 7,
+    "n": 13,
+    "rate": 0.5384615384615384,
+    "ci95": [
+     0.2914343243183205,
+     0.7679424569851186
+    ]
+   },
+   "kl_country": {
+    "mean": 0.08462178707122803,
+    "sd": 0.09543561935424805,
+    "n": 3,
+    "ci95": [
+     -0.02337378275670135,
+     0.1926173568991574
+    ],
+    "max": 0.19315971434116364
+   },
+   "kl_generic": {
+    "mean": 0.012570446357131004,
+    "sd": 0.020801635459065437,
+    "n": 40,
+    "ci95": [
+     0.006123952740628438,
+     0.01901693997363357
+    ],
+    "max": 0.09467201679944992
+   },
+   "F": 1.0,
+   "kl_mean": 0.048596116714179516,
+   "kl_budget": 1.0,
+   "leak_weight": 0.0,
+   "reward": 0.9514038832858205,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 7,
+     "position": "city_last",
+     "norm": 35.46034240722656
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   7,
+   14,
+   21
+  ]
+ },
+ "leak_items": [
+  [
+   "Omaha",
+   "ho_fs"
+  ],
+  [
+   "Omaha",
+   "ho_zs"
+  ],
+  [
+   "Grand Island",
+   "ho_zs"
+  ],
+  [
+   "Kearney",
+   "ho_fs"
+  ],
+  [
+   "Kearney",
+   "ho_zs"
+  ],
+  [
+   "Scottsbluff",
+   "ho_fs"
+  ],
+  [
+   "Scottsbluff",
+   "ho_zs"
+  ],
+  [
+   "Memphis",
+   "ho_zs"
+  ],
+  [
+   "Knoxville",
+   "ho_fs"
+  ],
+  [
+   "Knoxville",
+   "ho_zs"
+  ],
+  [
+   "Chattanooga",
+   "ho_fs"
+  ],
+  [
+   "Chattanooga",
+   "ho_zs"
+  ],
+  [
+   "Gatlinburg",
+   "ho_zs"
+  ]
+ ]
+}

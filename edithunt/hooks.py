@@ -67,8 +67,12 @@ def _apply(h: torch.Tensor, iv: Intervention, offsets: torch.Tensor) -> torch.Te
         tgt = tgt[r] if tgt.dim() == 2 else tgt
         new = x + (tgt - x @ U) @ U.T
     elif iv.kind == "gate":  # gated key->value edit (T2 v2 oracle): x + clamp((k.x - b) / w, 0, 1) * v
-        k, b, w, v = (t.to(dev, h.dtype) for t in iv.payload)
-        new = x + ((x @ k - b) / w).clamp(0, 1).unsqueeze(-1) * v
+        # gate scalar in float32 (2026-10-02, AUDIT_T2V2 m6: in bf16 it disagreed with the float32 `project` tool
+        # near the ramp edges); the update itself is applied in the model dtype
+        k, b, w = (t.to(dev, torch.float32) for t in iv.payload[:3])
+        v = iv.payload[3].to(dev, h.dtype)
+        g = ((x.float() @ k - b) / w).clamp(0, 1)
+        new = x + g.to(h.dtype).unsqueeze(-1) * v
     elif iv.kind == "proj":
         U, ctr = iv.payload
         U = U.to(dev, h.dtype)

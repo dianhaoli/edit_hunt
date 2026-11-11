@@ -1,0 +1,259 @@
+{
+ "id": "hard-Mississippi-Alaska-s1",
+ "model": "Qwen/Qwen2.5-1.5B",
+ "tier": "hard",
+ "source": "Mississippi",
+ "target": "Alaska",
+ "source_capital": "Jackson",
+ "target_capital": "Juneau",
+ "dev_source": [
+  "Vicksburg",
+  "Hattiesburg",
+  "Biloxi",
+  "Natchez"
+ ],
+ "dev_target": [
+  "Sitka",
+  "Fairbanks",
+  "Wasilla",
+  "Anchorage"
+ ],
+ "dev_templates": {
+  "fs1": "The state containing Chicago has its capital in Springfield. The state containing Miami has its capital in Tallahassee. The state containing Seattle has its capital in Olympia. The state containing {city} has its capital in",
+  "zs1": "The state containing {city} has its capital in"
+ },
+ "constraints": {
+  "max_layer": 8,
+  "positions": [
+   "city_last",
+   "city_all",
+   "final"
+  ],
+  "max_rank": 2,
+  "max_norm": null,
+  "kl_budget": 1.0,
+  "fwd_budget": 4000,
+  "preserve_state": true,
+  "leak_weight": 0.5
+ },
+ "test_cities": [
+  "Gulfport",
+  "Tupelo"
+ ],
+ "test_templates": {
+  "ho_fs": "Chicago is in a state whose capital is Springfield. Miami is in a state whose capital is Tallahassee. Seattle is in a state whose capital is Olympia. {city} is in a state whose capital is",
+  "ho_zs": "Q: What is the capital of the state that {city} is in?\nA:"
+ },
+ "test_items": [
+  [
+   "Gulfport",
+   "ho_zs"
+  ],
+  [
+   "Tupelo",
+   "ho_fs"
+  ],
+  [
+   "Tupelo",
+   "ho_zs"
+  ]
+ ],
+ "ref_pool": {
+  "source": [
+   "Vicksburg",
+   "Hattiesburg",
+   "Biloxi",
+   "Natchez",
+   "Tupelo"
+  ],
+  "target": [
+   "Sitka",
+   "Fairbanks",
+   "Wasilla",
+   "Anchorage",
+   "Ketchikan",
+   "Kodiak",
+   "Nome"
+  ]
+ },
+ "reference": {
+  "layer": 2,
+  "flip": {
+   "k": 3,
+   "n": 3,
+   "rate": 1.0,
+   "ci95": [
+    0.43849391955098227,
+    1.0
+   ]
+  },
+  "grade": {
+   "valid": true,
+   "n_items": 3,
+   "flip": {
+    "k": 3,
+    "n": 3,
+    "rate": 1.0,
+    "ci95": [
+     0.43849391955098227,
+     1.0
+    ]
+   },
+   "to_source": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "per_template": {
+    "ho_fs": {
+     "k": 1,
+     "n": 1,
+     "rate": 1.0,
+     "ci95": [
+      0.20654329147389294,
+      1.0
+     ]
+    },
+    "ho_zs": {
+     "k": 2,
+     "n": 2,
+     "rate": 1.0,
+     "ci95": [
+      0.34237195288961925,
+      1.0
+     ]
+    }
+   },
+   "state_kept": {
+    "k": 0,
+    "n": 2,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.6576280471103807
+    ]
+   },
+   "state_clean_correct": {
+    "k": 2,
+    "n": 2,
+    "rate": 1.0,
+    "ci95": [
+     0.34237195288961925,
+     1.0
+    ]
+   },
+   "flip_eff": {
+    "k": 0,
+    "n": 3,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.5615060804490177
+    ]
+   },
+   "p_us": {
+    "clean": 0.8874437808990479,
+    "edited": 0.38125723600387573
+   },
+   "leak": {
+    "k": 0,
+    "n": 9,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.2991527535509594
+    ]
+   },
+   "leak_to_target": {
+    "k": 0,
+    "n": 9,
+    "rate": 0.0,
+    "ci95": [
+     0.0,
+     0.2991527535509594
+    ]
+   },
+   "kl_country": {
+    "mean": 0.6110875606536865,
+    "sd": 0.4389013350009918,
+    "n": 2,
+    "ci95": [
+     0.002801344561668029,
+     1.2193737767457051
+    ],
+    "max": 0.921437680721283
+   },
+   "kl_generic": {
+    "mean": 0.012535542249679565,
+    "sd": 0.014113571494817734,
+    "n": 40,
+    "ci95": [
+     0.008161701129040933,
+     0.0169093833703182
+    ],
+    "max": 0.05190496891736984
+   },
+   "F": 0.0,
+   "kl_mean": 0.31181155145168304,
+   "kl_budget": 1.0,
+   "leak_weight": 0.5,
+   "reward": 0.0,
+   "formula": "F * (1 - leak_weight * leak) * (1 - min(1, KL_mean / kl_budget))",
+   "edits": [
+    {
+     "layer": 2,
+     "position": "city_last",
+     "norm": 19.874717712402344
+    }
+   ]
+  },
+  "threshold": 0.8,
+  "layers_tried": [
+   2,
+   5,
+   8
+  ]
+ },
+ "leak_items": [
+  [
+   "Eugene",
+   "ho_fs"
+  ],
+  [
+   "Eugene",
+   "ho_zs"
+  ],
+  [
+   "Bend",
+   "ho_fs"
+  ],
+  [
+   "Medford",
+   "ho_fs"
+  ],
+  [
+   "Medford",
+   "ho_zs"
+  ],
+  [
+   "Corvallis",
+   "ho_fs"
+  ],
+  [
+   "Corvallis",
+   "ho_zs"
+  ],
+  [
+   "St. Louis",
+   "ho_fs"
+  ],
+  [
+   "St. Louis",
+   "ho_zs"
+  ]
+ ]
+}

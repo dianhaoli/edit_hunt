@@ -11,7 +11,7 @@ building agent tasks around.
 
 Models: Qwen2.5-1.5B, 3B and 7B, and gemma-2-2b. Agents: Claude Sonnet 5.5 and gpt-6.1-sol. September–October 2026.
 
-**Full results:** [FINDINGS.md](FINDINGS.md) · Lab notebook: [LAB_NOTEBOOK.md](LAB_NOTEBOOK.md)
+**Write-up:** [dianhaoli.github.io/edithunt](https://dianhaoli.github.io/edithunt/) · **Full results:** [FINDINGS.md](FINDINGS.md) · Lab notebook: [LAB_NOTEBOOK.md](LAB_NOTEBOOK.md)
 
 ---
 

@@ -11,7 +11,7 @@ building agent tasks around.
 
 Models: Qwen2.5-1.5B, 3B and 7B, and gemma-2-2b. Agents: Claude Sonnet 5.5 and gpt-6.1-sol. September–October 2026.
 
-**Write-up:** [dianhaoli.github.io/edithunt](https://dianhaoli.github.io/edithunt/) · **Full results:** [FINDINGS.md](FINDINGS.md) · Lab notebook: [LAB_NOTEBOOK.md](LAB_NOTEBOOK.md)
+**Write-up:** [dianhaoli.github.io/edithunt](https://dianhaoli.github.io/edithunt/) · **Full results:** [FINDINGS.md](FINDINGS.md) · Project report: [PROJECT_REPORT.md](PROJECT_REPORT.md) · Lab notebook: [LAB_NOTEBOOK.md](LAB_NOTEBOOK.md)
 
 ---
 
@@ -86,5 +86,16 @@ instance. That is the property an environment for training agents needs.
 | `experiments/` | one script per phase (`phase0_validity.py` … `phase4b_careful.py`, task suite, audits) |
 | `results/` | figures, instances, run records |
 | `analysis/t8_transcripts/` | what agents did on T8, success and failure reports |
+| `tests/` | unit tests (`pytest tests/`) |
+| `FINDINGS.md`, `PROJECT_REPORT.md` | full results and one-document project summary |
+| `LAB_NOTEBOOK*.md` | append-only lab notebooks |
 | `BRIEF.md` | the original research brief |
 | `AUDIT*.md` | independent audits of the tools and graders |
+
+## Setup
+
+```bash
+python -m venv .venv && .venv/bin/pip install -r requirements.txt
+```
+
+Agent runs need `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` in a `.env` file (gitignored).
